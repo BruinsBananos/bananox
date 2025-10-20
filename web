@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bananox - Home</title>
+    <style>
+        /* Banano-themed colors: Yellow (#FBDD11), Green (#14A337), Light Yellow (#FFFBC9), Dark Brown (#6B3E26) */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #FFFBC9; /* Light yellow background */
+            color: #333;
+        }
+        header {
+            background-color: #FBDD11; /* Bright yellow header */
+            padding: 20px;
+            text-align: center;
+            border-bottom: 5px solid #14A337; /* Green accent border */
+        }
+        header h1 {
+            margin: 0;
+            color: #6B3E26; /* Dark brown text for contrast */
+        }
+        nav {
+            background-color: #14A337; /* Green navigation bar */
+            padding: 10px;
+            text-align: center;
+        }
+        nav a {
+            color: #FBDD11; /* Yellow text on green */
+            text-decoration: none;
+            margin: 0 15px;
+            font-weight: bold;
+        }
+        nav a:hover {
+            color: #FFFBC9; /* Light yellow on hover */
+        }
+        main {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #FFFFFF; /* White content area for readability */
+            border: 2px solid #FBDD11; /* Yellow border */
+            border-radius: 10px;
+        }
+        section {
+            margin-bottom: 40px;
+        }
+        h2 {
+            color: #14A337; /* Green headings */
+        }
+        footer {
+            background-color: #FBDD11; /* Yellow footer */
+            padding: 10px;
+            text-align: center;
+            color: #6B3E26; /* Dark brown text */
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Bananox</h1>
+    </header>
+    <nav>
+        <a href="#home">Home</a>
+        <a href="#about">About</a>
+        <a href="#wallet">Wallet</a>
+        <a href="#community">Community</a>
+        <a href="#contact">Contact</a>
+    </nav>
+    <main>
+        <section id="home">
+            <h2>Welcome to Bananox</h2>
+            <p>Bananox is your go-to site for all things Banano cryptocurrency. Explore the fun, fee-less, and instant transactions powered by Banano!</p>
+        </section>
+        <section id="about">
+            <h2>About Banano</h2>
+            <p>Banano is a feeless, instant, rich in potassium cryptocurrency powered by DAG technology disrupting the meme economy.</p>
+        </section>
+        <section id="wallet">
+            <h2>Wallet</h2>
+            <p>Get started with a Banano wallet to store, send, and receive BAN. Check out official wallets on banano.cc.</p>
+        </section>
+        <section id="community">
+            <h2>Community</h2>
+            <p>Join the vibrant Banano community on Discord, Reddit, and more. Share memes, participate in faucets, and earn free BAN!</p>
+        </section>
+        <section id="contact">
+            <h2>Contact Us</h2>
+            <p>Have questions? Reach out via email at info@bananox.com or join our social channels.</p>
+        </section>
+    </main>
+    <footer>
+        &copy; 2025 Bananox.com - All rights reserved.
+    </footer>
+</body>
+</html>
