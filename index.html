@@ -1,15 +1,10 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bananox - The Ultimate Banano Hub</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"> <!-- For icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"> <!-- Bootstrap for enhanced UI -->
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet"> <!-- Futuristic fonts -->
     <style>
-        /* Enhanced Banano-themed colors with futuristic flair */
         :root {
             --yellow: #FBDD11;
             --green: #14A337;
@@ -17,1054 +12,208 @@
             --dark-brown: #6B3E26;
             --white: #FFFFFF;
             --text-color: #333333;
-            --plaid-accent: #FF4500; /* Tesla Plaid red-orange for speed */
-            --starship-metal: #A9A9A9; /* Metallic gray for SpaceX vibe */
         }
 
         body {
-            font-family: 'Roboto', sans-serif;
+            font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
             background-color: var(--light-yellow);
             color: var(--text-color);
             line-height: 1.6;
-            overflow-x: hidden;
-            position: relative;
         }
 
-        /* Starship-inspired background particles */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Ccircle cx="10" cy="10" r="1" fill="%23FBDD11"/%3E%3Ccircle cx="90" cy="20" r="2" fill="%2314A337"/%3E%3Ccircle cx="50" cy="80" r="1.5" fill="%23FF4500"/%3E%3C/svg%3E') repeat;
-            opacity: 0.1;
-            z-index: -1;
-            animation: particle-float 20s infinite linear;
-        }
-
-        @keyframes particle-float {
-            0% { transform: translateY(0); }
-            100% { transform: translateY(-100px); }
-        }
-
-        /* Header with AI-glow effect */
         header {
             background-color: var(--yellow);
-            padding: 60px 20px;
+            padding: 40px 20px;
             text-align: center;
-            border-bottom: 10px solid var(--green);
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 0 20px rgba(251, 221, 17, 0.5); /* Glow */
-        }
-
-        header::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.4) 0%, transparent 70%);
-            animation: shine 4s infinite linear;
-        }
-
-        @keyframes shine {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            border-bottom: 5px solid var(--green);
         }
 
         header h1 {
-            font-family: 'Orbitron', sans-serif;
             margin: 0;
-            font-size: 4em;
             color: var(--dark-brown);
-            text-shadow: 3px 3px 6px rgba(0,0,0,0.3), 0 0 10px var(--plaid-accent);
+            font-size: 2.5em;
         }
 
         header p {
-            font-size: 1.4em;
+            margin: 10px 0 0;
             color: var(--dark-brown);
-            margin-top: 15px;
+            font-size: 1.2em;
         }
 
-        /* Navigation with hover effects */
         nav {
             background-color: var(--green);
-            padding: 20px 0;
+            padding: 15px 0;
             text-align: center;
             position: sticky;
             top: 0;
-            z-index: 1000;
-            box-shadow: 0 6px 8px rgba(0,0,0,0.2);
-            transition: background-color 0.5s ease;
-        }
-
-        nav:hover {
-            background-color: darken(var(--green), 10%);
+            z-index: 10;
         }
 
         nav a {
             color: var(--yellow);
             text-decoration: none;
-            margin: 0 25px;
+            margin: 0 15px;
             font-weight: bold;
-            font-size: 1.2em;
-            transition: color 0.3s ease, transform 0.3s ease, text-shadow 0.3s ease;
         }
 
         nav a:hover {
             color: var(--light-yellow);
-            transform: scale(1.15) rotate(5deg);
-            text-shadow: 0 0 5px var(--plaid-accent);
         }
 
-        /* Main Content */
         main {
-            max-width: 1400px;
-            margin: 50px auto;
-            padding: 0 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
         }
 
         section {
-            margin-bottom: 80px;
-            padding: 50px;
+            margin-bottom: 60px;
+            padding: 30px;
             background-color: var(--white);
-            border: 5px solid var(--yellow);
-            border-radius: 20px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
-            animation: fadeInUp 1.2s ease-out;
-            position: relative;
-            overflow: hidden;
+            border: 2px solid var(--yellow);
+            border-radius: 8px;
         }
 
-        section::after {
-            content: '';
-            position: absolute;
-            bottom: -50px;
-            right: -50px;
-            width: 100px;
-            height: 100px;
-            background: radial-gradient(circle, var(--plaid-accent) 20%, transparent 70%);
-            opacity: 0.3;
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(40px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        h2 {
-            font-family: 'Orbitron', sans-serif;
+        section h2 {
             color: var(--green);
-            font-size: 3em;
-            margin-bottom: 25px;
-            text-align: center;
-            position: relative;
-            text-shadow: 1px 1px 2px var(--starship-metal);
+            border-bottom: 2px solid var(--yellow);
+            padding-bottom: 10px;
         }
 
-        h2::after {
-            content: '';
-            display: block;
-            width: 150px;
-            height: 5px;
-            background: linear-gradient(to right, var(--yellow), var(--plaid-accent));
-            margin: 15px auto 0;
-            border-radius: 2.5px;
-        }
-
-        p {
-            font-size: 1.2em;
-            margin-bottom: 25px;
-        }
-
-        /* Hero Section with Carousel */
-        #hero {
-            background: linear-gradient(to bottom, var(--yellow), var(--light-yellow));
-            text-align: center;
-            padding: 100px 20px;
-            border-radius: 0;
-            border: none;
-            margin-bottom: 80px;
-            position: relative;
-        }
-
-        #hero h2 {
-            font-size: 3.5em;
-            color: var(--dark-brown);
-        }
-
-        #hero p {
-            font-size: 1.6em;
-            max-width: 900px;
-            margin: 25px auto;
-        }
-
-        .btn {
-            display: inline-block;
-            background: linear-gradient(to right, var(--green), darken(var(--green), 15%));
-            color: var(--yellow);
-            padding: 18px 36px;
-            text-decoration: none;
-            border-radius: 50px;
-            font-weight: bold;
-            transition: background 0.4s ease, transform 0.4s ease, box-shadow 0.4s ease;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-
-        .btn:hover {
-            background: linear-gradient(to right, var(--plaid-accent), darken(var(--plaid-accent), 15%));
-            transform: translateY(-5px) scale(1.05);
-            box-shadow: 0 8px 16px rgba(255,69,0,0.4);
-        }
-
-        /* Features Grid with AI hover effects */
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 40px;
-        }
-
-        .feature {
-            background-color: var(--light-yellow);
-            padding: 35px;
-            border-radius: 15px;
-            text-align: center;
-            transition: transform 0.4s ease, box-shadow 0.4s ease, background-color 0.4s ease;
-            position: relative;
-        }
-
-        .feature:hover {
-            transform: translateY(-15px) rotate(3deg);
-            box-shadow: 0 12px 24px rgba(0,0,0,0.25);
-            background-color: lighten(var(--light-yellow), 5%);
-        }
-
-        .feature i {
-            font-size: 4em;
-            color: var(--green);
-            margin-bottom: 25px;
-            transition: color 0.4s ease;
-        }
-
-        .feature:hover i {
-            color: var(--plaid-accent);
-            animation: icon-pulse 1s infinite;
-        }
-
-        @keyframes icon-pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-
-        .feature h3 {
-            font-family: 'Orbitron', sans-serif;
-            color: var(--dark-brown);
-            font-size: 2em;
-            margin-bottom: 15px;
-        }
-
-        /* Grok AI Chat Placeholder */
-        #grok-chat {
-            background: linear-gradient(to bottom, var(--starship-metal), var(--white));
-            padding: 50px;
-            border-radius: 20px;
-            text-align: center;
-        }
-
-        #grok-chat h2 {
-            color: var(--plaid-accent);
-        }
-
-        #grok-chat input {
-            width: 80%;
-            max-width: 600px;
-            padding: 15px;
-            border: 2px solid var(--green);
-            border-radius: 50px;
-            margin-bottom: 20px;
-            font-size: 1.1em;
-        }
-
-        /* Footer with social animations */
         footer {
             background-color: var(--yellow);
-            padding: 50px 20px;
+            padding: 20px;
             text-align: center;
             color: var(--dark-brown);
-            border-top: 10px solid var(--green);
-            position: relative;
+            border-top: 5px solid var(--green);
         }
 
-        footer a {
-            color: var(--green);
-            text-decoration: none;
-            margin: 0 15px;
-            transition: color 0.3s ease;
-        }
-
-        footer a:hover {
-            color: var(--plaid-accent);
-        }
-
-        footer .social-icons {
-            margin-top: 25px;
-        }
-
-        footer .social-icons i {
-            font-size: 2em;
-            margin: 0 20px;
-            color: var(--green);
-            transition: transform 0.4s ease, color 0.4s ease;
-        }
-
-        footer .social-icons i:hover {
-            transform: rotate(360deg) scale(1.2);
-            color: var(--plaid-accent);
-        }
-
-        /* Back to Top Button */
-        #back-to-top {
+        .easter-egg {
+            display: none;
             position: fixed;
-            bottom: 40px;
-            right: 40px;
-            background-color: var(--green);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--light-yellow);
+            padding: 20px;
+            border: 3px solid var(--green);
+            border-radius: 10px;
+            text-align: center;
+            z-index: 100;
+        }
+
+        .easter-egg button {
+            background: var(--green);
             color: var(--yellow);
             border: none;
-            border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            font-size: 1.5em;
+            padding: 10px;
+            border-radius: 5px;
             cursor: pointer;
-            display: none;
-            transition: opacity 0.3s ease, transform 0.3s ease;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
 
-        #back-to-top:hover {
-            transform: scale(1.1);
-            background-color: var(--plaid-accent);
-        }
-
-        /* Responsive Design */
         @media (max-width: 768px) {
             header h1 {
-                font-size: 3em;
+                font-size: 2em;
             }
 
             nav a {
-                margin: 0 15px;
-                font-size: 1.1em;
+                display: block;
+                margin: 5px 0;
             }
-
-            section {
-                padding: 40px 20px;
-            }
-
-            .features-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Banana Spin Animation */
-        .banana-spin {
-            animation: spin 1.5s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
-    <header>
-        <h1>Bananox</h1>
-        <p>Your Ultimate Gateway to the Banano Universe - Feeless, Fun, Potassium-Packed, and Now Grok-Some!</p>
+    <header onclick="showEasterEgg()">
+        <h1>Bananox 🐒</h1>
+        <p>Your simple hub for Banano crypto fun.</p>
     </header>
 
     <nav>
-        <a href="index.html">Home</a>
-        <a href="about.html">About</a>
-        <a href="features.html">Features</a>
-        <a href="wallet.html">Wallet</a>
-        <a href="community.html">Community</a>
-        <a href="news.html">News</a>
-        <a href="faq.html">FAQ</a>
-        <a href="contact.html">Contact</a>
+        <a href="#home" onclick="scrollToSection('home')">Home</a>
+        <a href="#about" onclick="scrollToSection('about')">About</a>
+        <a href="#features" onclick="scrollToSection('features')">Features</a>
+        <a href="#wallet" onclick="scrollToSection('wallet')">Wallet</a>
+        <a href="#community" onclick="scrollToSection('community')">Community</a>
+        <a href="#news" onclick="scrollToSection('news')">News</a>
+        <a href="#faq" onclick="scrollToSection('faq')">FAQ</a>
+        <a href="#contact" onclick="scrollToSection('contact')">Contact</a>
     </nav>
 
     <main>
-        <section id="hero">
-            <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel">
-                <div class="carousel-inner">
-                    <div class="carousel-item active">
-                        <h2>Welcome to Bananox</h2>
-                        <p>Blast off into the revolutionary world of Banano cryptocurrency. Instant transactions, zero fees, and a community as vibrant as a Starship launch!</p>
-                        <a href="about.html" class="btn">Launch Exploration</a>
-                    </div>
-                    <div class="carousel-item">
-                        <h2>Plaid Mode Activated</h2>
-                        <p>Experience hyper-fast, feeless transfers that outpace the competition. Banano: Ludicrous speed for your crypto needs!</p>
-                        <a href="features.html" class="btn">Engage Plaid</a>
-                    </div>
-                    <div class="carousel-item">
-                        <h2>AI-Powered Fun</h2>
-                        <p>Grok the future with Banano's meme economy. Potassium-rich and AI-smart!</p>
-                        <a href="community.html" class="btn">Join the Monkeys</a>
-                    </div>
-                </div>
-                <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Previous</span>
-                </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
-                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Next</span>
-                </button>
-            </div>
-            <div class="mt-5 text-center">
-                <i class="fas fa-rocket banana-spin" style="font-size: 4em; color: var(--plaid-accent);"></i> <!-- Spiced with rocket for Starship vibe -->
-            </div>
+        <section id="home">
+            <h2>Home</h2>
+            <p>Welcome to Bananox, a simple spot for all things Banano. Feeless, fun, and potassium-powered crypto.</p>
         </section>
 
-        <section id="quick-features">
-            <h2>Quick Features - Plaid Edition</h2>
-            <div class="features-grid">
-                <div class="feature">
-                    <i class="fas fa-rocket"></i>
-                    <h3>Starship-Speed Transactions</h3>
-                    <p>Send and receive BAN faster than a Falcon 9 boostback burn.</p>
-                </div>
-                <div class="feature">
-                    <i class="fas fa-ban"></i>
-                    <h3>Feeless Orbit</h3>
-                    <p>No fees, just pure escape velocity for your funds.</p>
-                </div>
-                <div class="feature">
-                    <i class="fas fa-brain"></i>
-                    <h3>AI-Enhanced Eco</h3>
-                    <p>Low energy, high intelligence – Grok-level efficiency.</p>
-                </div>
-            </div>
-        </section>
-
-        <section id="grok-chat">
-            <h2>Grok-Some AI Chat</h2>
-            <p>Ask Grok anything about Banano! (Placeholder for future AI integration)</p>
-            <input type="text" placeholder="What's the potassium level in Banano?">
-            <button class="btn">Ask Grok</button>
-        </section>
-
-        <section id="get-started">
-            <h2>Launch Your Mission</h2>
-            <p>Explore faucets, wallets, and community projects to colonize the Banano ecosystem.</p>
-            <a href="wallet.html" class="btn">Deploy Wallet</a>
-        </section>
-    </main>
-
-    <footer>
-        <p>&copy; 2025 Bananox.com - All rights reserved. Powered by Banano & xAI Inspiration.</p>
-        <div class="social-icons">
-            <a href="https://discord.gg/Banano"><i class="fab fa-discord"></i></a>
-            <a href="https://reddit.com/r/banano"><i class="fab fa-reddit"></i></a>
-            <a href="https://twitter.com/bananocoin"><i class="fab fa-twitter"></i></a>
-            <a href="https://t.me/banano_official"><i class="fab fa-telegram"></i></a>
-        </div>
-        <p><a href="#privacy">Privacy Policy</a> | <a href="#terms">Terms of Service</a> | <a href="https://x.ai" target="_blank">Powered by Grok</a></p>
-    </footer>
-
-    <button id="back-to-top"><i class="fas fa-arrow-up"></i></button>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Smooth Scrolling
-        document.querySelectorAll('nav a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function(e) {
-                e.preventDefault();
-                document.querySelector(this.getAttribute('href')).scrollIntoView({
-                    behavior: 'smooth'
-                });
-            });
-        });
-
-        // Back to Top Button
-        const backToTop = document.getElementById('back-to-top');
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 300) {
-                backToTop.style.display = 'block';
-            } else {
-                backToTop.style.display = 'none';
-            }
-        });
-
-        backToTop.addEventListener('click', () => {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
-
-        // Grok Chat Placeholder Demo
-        document.querySelector('#grok-chat button').addEventListener('click', () => {
-            alert('Grok says: Banano is infinitely potassium-rich! 🚀');
-        });
-    </script>
-</body>
-</html>
-
-<!-- about.html -->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bananox - About Banano</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        /* Same enhanced styles as index.html */
-        /* ... (omitted for brevity, assume copied from above) */
-    </style>
-</head>
-<body>
-    <header>
-        <h1>Bananox</h1>
-        <p>Your Ultimate Gateway to the Banano Universe - Feeless, Fun, and Potassium-Packed!</p>
-    </header>
-
-    <nav>
-        <a href="index.html">Home</a>
-        <a href="about.html">About</a>
-        <a href="features.html">Features</a>
-        <a href="wallet.html">Wallet</a>
-        <a href="community.html">Community</a>
-        <a href="news.html">News</a>
-        <a href="faq.html">FAQ</a>
-        <a href="contact.html">Contact</a>
-    </nav>
-
-    <main>
         <section id="about">
-            <h2>About Banano - Starship Edition</h2>
-            <p>Banano is a feeless, instant, rich in potassium cryptocurrency powered by DAG technology, disrupting the meme economy like a Starship flip maneuver.</p>
-            <p>Launched in 2018, Banano is a fork of Nano with more memes, lower PoW, and Plaid-level speed. It's designed to be fun, accessible, and AI-smart for the future.</p>
-            <p>Key stats: 1 Banano = 100 Banoshi, no mining, eco-friendly, and infinitely scalable – ready for Mars colonization!</p>
-            <div class="text-center mt-4">
-                <i class="fas fa-rocket banana-spin" style="font-size: 6em; color: var(--plaid-accent);"></i>
-            </div>
+            <h2>About</h2>
+            <p>Banano is a feeless cryptocurrency inspired by memes and efficiency. Launched in 2018, it's fast and eco-friendly.</p>
         </section>
 
-        <section id="history">
-            <h2>Orbital Roadmap</h2>
-            <p>From 2018 launch to 2025 upgrades, Banano's journey includes network boosts, community orbits, and AI integrations. Check banano.cc for full trajectory.</p>
-            <ul>
-                <li>2018: Initial Boost</li>
-                <li>2020: Meme Warp Drive</li>
-                <li>2025: Grok Fusion</li>
-            </ul>
-        </section>
-
-        <section id="vision">
-            <h2>Grok-Some Vision</h2>
-            <p>Banano aims to make crypto as intuitive as Grok, with fun at lightspeed and innovation that rivals Starship.</p>
-        </section>
-    </main>
-
-    <footer>
-        <!-- Same enhanced footer -->
-    </footer>
-
-    <button id="back-to-top"><i class="fas fa-arrow-up"></i></button>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Same scripts as index
-    </script>
-</body>
-</html>
-
-<!-- features.html -->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bananox - Features</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        /* Same styles */
-    </style>
-</head>
-<body>
-    <header>
-        <h1>Bananox</h1>
-        <p>Your Ultimate Gateway to the Banano Universe - Feeless, Fun, and Potassium-Packed!</p>
-    </header>
-
-    <nav>
-        <a href="index.html">Home</a>
-        <a href="about.html">About</a>
-        <a href="features.html">Features</a>
-        <a href="wallet.html">Wallet</a>
-        <a href="community.html">Community</a>
-        <a href="news.html">News</a>
-        <a href="faq.html">FAQ</a>
-        <a href="contact.html">Contact</a>
-    </nav>
-
-    <main>
         <section id="features">
-            <h2>Key Features - AI Level</h2>
-            <div class="features-grid">
-                <div class="feature">
-                    <i class="fas fa-rocket"></i>
-                    <h3>Starship Instant Transactions</h3>
-                    <p>Blast through blocks in seconds.</p>
-                </div>
-                <div class="feature">
-                    <i class="fas fa-ban"></i>
-                    <h3>Plaid Feeless</h3>
-                    <p>Zero fees, maximum acceleration.</p>
-                </div>
-                <div class="feature">
-                    <i class="fas fa-leaf"></i>
-                    <h3>Eco-Thrusters</h3>
-                    <p>Low energy, high orbit efficiency.</p>
-                </div>
-                <div class="feature">
-                    <i class="fas fa-users"></i>
-                    <h3>Community Fleet</h3>
-                    <p>Join the armada of monkeys.</p>
-                </div>
-                <div class="feature">
-                    <i class="fas fa-brain"></i>
-                    <h3>Grok AI Integration</h3>
-                    <p>Smart contracts with witty responses.</p>
-                </div>
-                <div class="feature">
-                    <i class="fas fa-shield-alt"></i>
-                    <h3>Quantum Security</h3>
-                    <p>DAG tech for unbreakable chains.</p>
-                </div>
-            </div>
+            <h2>Features</h2>
+            <ul>
+                <li>Instant transactions</li>
+                <li>Zero fees</li>
+                <li>Low energy use</li>
+                <li>Meme community</li>
+            </ul>
         </section>
-    </main>
 
-    <footer>
-        <!-- Same -->
-    </footer>
-
-    <button id="back-to-top"><i class="fas fa-arrow-up"></i></button>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Same scripts
-    </script>
-</body>
-</html>
-
-<!-- wallet.html -->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bananox - Wallet</title>
-    <!-- Links same -->
-    <style>
-        /* Same */
-    </style>
-</head>
-<body>
-    <header>
-        <h1>Bananox</h1>
-        <p>Your Ultimate Gateway to the Banano Universe - Feeless, Fun, and Potassium-Packed!</p>
-    </header>
-
-    <nav>
-        <!-- Same nav -->
-    </nav>
-
-    <main>
         <section id="wallet">
-            <h2>Deploy Your Wallet Payload</h2>
-            <p>Launch your Banano mission with secure wallets. Recommended: Kalium for mobile hyperspeed or Banano Vault for desktop command center.</p>
-            <p>Secure your seed – not your keys, not your boosters!</p>
-            <ul>
-                <li>Kalium: iOS/Android - <a href="https://kalium.banano.cc" target="_blank" class="btn">Download</a></li>
-                <li>Banano Stand: Browser/Ledger - <a href="https://thebananostand.com/" target="_blank" class="btn">Visit</a></li>
-                <li>Discord Tipbot: Social thrusting - <a href="https://chat.banano.cc" target="_blank" class="btn">Join</a></li>
-                <li>Reddit Tipbot: Meme fueling - <a href="https://np.reddit.com/r/banano/wiki/reddit-tipbot" target="_blank" class="btn">Learn</a></li>
-            </ul>
+            <h2>Wallet</h2>
+            <p>Get started with Kalium wallet: <a href="https://kalium.banano.cc">Download</a>.</p>
+            <p>Secure your seed and enjoy feeless sends.</p>
         </section>
 
-        <section id="wrapped">
-            <h2>Wrap for DeFi Reentry</h2>
-            <p>Wrap Banano for Ethereum, Polygon hyperspace jumps.</p>
-            <a href="https://wrap.banano.cc" target="_blank" class="btn">Initiate Wrap</a>
-        </section>
-    </main>
-
-    <footer>
-        <!-- Same -->
-    </footer>
-
-    <button id="back-to-top"><i class="fas fa-arrow-up"></i></button>
-
-    <script>
-        // Same
-    </script>
-</body>
-</html>
-
-<!-- community.html -->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bananox - Community</title>
-    <!-- Links -->
-    <style>
-        /* Same */
-    </style>
-</head>
-<body>
-    <header>
-        <h1>Bananox</h1>
-        <p>Your Ultimate Gateway to the Banano Universe - Feeless, Fun, and Potassium-Packed!</p>
-    </header>
-
-    <nav>
-        <!-- Same -->
-    </nav>
-
-    <main>
         <section id="community">
-            <h2>Join the Monkey Armada</h2>
-            <p>Link up with Banano pioneers across platforms:</p>
-            <ul>
-                <li>Discord: Memes & Faucets - <a href="https://chat.banano.cc" target="_blank" class="btn">Dock In</a></li>
-                <li>Reddit: r/banano Discussions - <a href="https://reddit.com/r/banano" target="_blank" class="btn">Orbit</a></li>
-                <li>Twitter: @bananocoin Updates - <a href="https://twitter.com/bananocoin" target="_blank" class="btn">Tweet Boost</a></li>
-                <li>Telegram: Instant Telemetry - <a href="https://t.me/banano_official" target="_blank" class="btn">Join Channel</a></li>
-            </ul>
-            <p>Engage in missions, earn BAN through games and airdrops!</p>
+            <h2>Community</h2>
+            <p>Join on Discord: <a href="https://chat.banano.cc">chat.banano.cc</a> or Reddit: <a href="https://reddit.com/r/banano">r/banano</a>.</p>
         </section>
 
-        <section id="projects">
-            <h2>Community Payloads</h2>
-            <ul>
-                <li>cryptomonKeys: NFT Boosters - <a href="https://cryptomonkeys.cc" target="_blank" class="btn">Launch</a></li>
-                <li>JungleTv.live: Earn while Viewing - <a href="https://jungletv.live" target="_blank" class="btn">Stream</a></li>
-                <li>Banano.how: Mission Briefings - <a href="https://banano.how" target="_blank" class="btn">Read</a></li>
-                <li>Banano.bet: Fair Dice Thrust - <a href="https://banano.bet" target="_blank" class="btn">Roll</a></li>
-            </ul>
-        </section>
-
-        <section id="monkey">
-            <h2>Discover Your MonKey Avatar</h2>
-            <p>Unique AI-generated MonKeys for each account. Scan at <a href="https://monkey.banano.cc" target="_blank" class="btn">monkey.banano.cc</a>.</p>
-        </section>
-    </main>
-
-    <footer>
-        <!-- Same -->
-    </footer>
-
-    <button id="back-to-top"><i class="fas fa-arrow-up"></i></button>
-
-    <script>
-        // Same
-    </script>
-</body>
-</html>
-
-<!-- news.html -->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bananox - News</title>
-    <!-- Links -->
-    <style>
-        /* Same */
-        .news-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 40px;
-        }
-
-        .news-item {
-            background-color: var(--light-yellow);
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
-            transition: transform 0.4s ease;
-        }
-
-        .news-item:hover {
-            transform: translateY(-10px);
-        }
-
-        .news-item h3 {
-            color: var(--green);
-            margin-bottom: 15px;
-        }
-
-        .news-item p {
-            margin-bottom: 15px;
-        }
-
-        .news-item .date {
-            font-size: 1em;
-            color: var(--dark-brown);
-        }
-    </style>
-</head>
-<body>
-    <header>
-        <h1>Bananox</h1>
-        <p>Your Ultimate Gateway to the Banano Universe - Feeless, Fun, and Potassium-Packed!</p>
-    </header>
-
-    <nav>
-        <!-- Same -->
-    </nav>
-
-    <main>
         <section id="news">
-            <h2>Latest Telemetry - October 20, 2025</h2>
-            <div class="news-grid">
-                <div class="news-item">
-                    <h3>Banano Achieves Plaid Mode</h3>
-                    <p>Network upgrades push transactions to ludicrous speeds!</p>
-                    <span class="date">October 15, 2025</span>
-                </div>
-                <div class="news-item">
-                    <h3>Starship Partnership Rumors</h3>
-                    <p>Banano to fuel Mars missions? Speculation abounds.</p>
-                    <span class="date">October 10, 2025</span>
-                </div>
-                <div class="news-item">
-                    <h3>Grok AI Integrates Banano</h3>
-                    <p>New AI features for meme predictions and faucet optimization.</p>
-                    <span class="date">October 5, 2025</span>
-                </div>
-                <div class="news-item">
-                    <h3>Community Launch Event</h3>
-                    <p>Banana Hunt: Free BAN prizes in virtual space race.</p>
-                    <span class="date">October 1, 2025</span>
-                </div>
-            </div>
+            <h2>News</h2>
+            <p>Latest: Banano network upgrade for even faster speeds. Check banano.cc for updates.</p>
         </section>
-    </main>
 
-    <footer>
-        <!-- Same -->
-    </footer>
-
-    <button id="back-to-top"><i class="fas fa-arrow-up"></i></button>
-
-    <script>
-        // Same
-    </script>
-</body>
-</html>
-
-<!-- faq.html -->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bananox - FAQ</title>
-    <!-- Links -->
-    <style>
-        /* Same */
-        .faq-item {
-            margin-bottom: 25px;
-        }
-
-        .faq-question {
-            background-color: var(--yellow);
-            color: var(--dark-brown);
-            padding: 20px;
-            cursor: pointer;
-            border-radius: 10px;
-            font-weight: bold;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: background-color 0.3s ease;
-        }
-
-        .faq-question:hover {
-            background-color: var(--plaid-accent);
-            color: var(--white);
-        }
-
-        .faq-answer {
-            display: none;
-            padding: 20px;
-            background-color: var(--white);
-            border: 3px solid var(--yellow);
-            border-top: none;
-            border-radius: 0 0 10px 10px;
-        }
-    </style>
-</head>
-<body>
-    <header>
-        <h1>Bananox</h1>
-        <p>Your Ultimate Gateway to the Banano Universe - Feeless, Fun, and Potassium-Packed!</p>
-    </header>
-
-    <nav>
-        <!-- Same -->
-    </nav>
-
-    <main>
         <section id="faq">
-            <h2>Frequently Asked Queries - Grok Edition</h2>
-            <div class="faq-item">
-                <div class="faq-question">What is Banano? <i class="fas fa-chevron-down"></i></div>
-                <div class="faq-answer">A feeless, instant crypto that's fun and potassium-powered, with AI smarts.</div>
-            </div>
-            <div class="faq-item">
-                <div class="faq-question">How to get free Banano? <i class="fas fa-chevron-down"></i></div>
-                <div class="faq-answer">Faucets, games, community events – like Starship giveaways!</div>
-            </div>
-            <div class="faq-item">
-                <div class="faq-question">Is Banano secure? <i class="fas fa-chevron-down"></i></div>
-                <div class="faq-answer">Yes, DAG tech with Plaid-level encryption.</div>
-            </div>
-            <div class="faq-item">
-                <div class="faq-question">Where to trade? <i class="fas fa-chevron-down"></i></div>
-                <div class="faq-answer">Coinex, Hotbit, and DeFi orbits.</div>
-            </div>
-            <div class="faq-item">
-                <div class="faq-question">Grok integration? <i class="fas fa-chevron-down"></i></div>
-                <div class="faq-answer">Coming soon: AI meme generators and prediction engines.</div>
-            </div>
+            <h2>FAQ</h2>
+            <p><strong>What is Banano?</strong> A fun, feeless crypto.</p>
+            <p><strong>How to get some?</strong> Use faucets on Discord or Reddit tipbots.</p>
         </section>
-    </main>
 
-    <footer>
-        <!-- Same -->
-    </footer>
-
-    <button id="back-to-top"><i class="fas fa-arrow-up"></i></button>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // FAQ Accordion
-        document.querySelectorAll('.faq-question').forEach(item => {
-            item.addEventListener('click', () => {
-                const answer = item.nextElementSibling;
-                answer.style.display = answer.style.display === 'block' ? 'none' : 'block';
-                item.querySelector('i').classList.toggle('fa-chevron-down');
-                item.querySelector('i').classList.toggle('fa-chevron-up');
-            });
-        });
-
-        // Other scripts
-    </script>
-</body>
-</html>
-
-<!-- contact.html -->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bananox - Contact</title>
-    <!-- Links -->
-    <style>
-        /* Same */
-        form {
-            display: grid;
-            gap: 25px;
-            max-width: 700px;
-            margin: 0 auto;
-        }
-
-        input, textarea {
-            padding: 18px;
-            border: 3px solid var(--green);
-            border-radius: 10px;
-            font-size: 1.1em;
-            transition: border-color 0.3s ease;
-        }
-
-        input:focus, textarea:focus {
-            border-color: var(--plaid-accent);
-        }
-
-        button {
-            background: linear-gradient(to right, var(--green), darken(var(--green), 15%));
-            color: var(--yellow);
-            border: none;
-            padding: 18px;
-            cursor: pointer;
-            font-weight: bold;
-            border-radius: 10px;
-            transition: background 0.4s ease, transform 0.4s ease;
-        }
-
-        button:hover {
-            background: linear-gradient(to right, var(--plaid-accent), darken(var(--plaid-accent), 15%));
-            transform: scale(1.05);
-        }
-    </style>
-</head>
-<body>
-    <header>
-        <h1>Bananox</h1>
-        <p>Your Ultimate Gateway to the Banano Universe - Feeless, Fun, and Potassium-Packed!</p>
-    </header>
-
-    <nav>
-        <!-- Same -->
-    </nav>
-
-    <main>
         <section id="contact">
-            <h2>Hail the Command Center</h2>
-            <p>Transmit your queries or suggestions – we'll respond at Plaid speed!</p>
-            <form id="contact-form">
-                <input type="text" placeholder="Your Callsign" required>
-                <input type="email" placeholder="Your Comm Link" required>
-                <textarea placeholder="Your Transmission" rows="8" required></textarea>
-                <button type="submit">Send Signal</button>
-            </form>
+            <h2>Contact</h2>
+            <p>Email: hello@bananox.com</p>
+            <p>Or join community links above.</p>
         </section>
     </main>
 
     <footer>
-        <!-- Same -->
+        <p>&copy; 2025 Bananox. Powered by Banano.</p>
     </footer>
 
-    <button id="back-to-top"><i class="fas fa-arrow-up"></i></button>
+    <div id="easter-egg" class="easter-egg">
+        <h3>🍌 Potassium Secret!</h3>
+        <p>Banano: Because who needs sodium when you have infinite peels?</p>
+        <button onclick="hideEasterEgg()">Close</button>
+    </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Contact Form Demo
-        document.getElementById('contact-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            alert('Signal received! Grok will analyze shortly. 🚀');
-        });
+        function scrollToSection(id) {
+            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+        }
 
-        // Other scripts
+        function showEasterEgg() {
+            document.getElementById('easter-egg').style.display = 'block';
+        }
+
+        function hideEasterEgg() {
+            document.getElementById('easter-egg').style.display = 'none';
+        }
     </script>
 </body>
 </html>
