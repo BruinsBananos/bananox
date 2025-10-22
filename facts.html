@@ -124,4 +124,10 @@
         function toggleFact(card) {
             const p = card.querySelector('p');
             p.classList.toggle('hidden');
-            if
+            if (!p.classList.contains('hidden')) {
+                p.style.animation = 'fadeIn 1s';
+            }
+        }
+    </script>
+</body>
+</html>
