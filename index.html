@@ -1,11 +1,13 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mars Odyssey: An xAI-Powered Adventure</title>
+    <title>Mars Odyssey: Home</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
     <style>
-        /* Global Styles */
+        /* Shared Styles */
         body {
             margin: 0;
             padding: 0;
@@ -14,7 +16,20 @@
             color: #ffffff;
             overflow-x: hidden;
         }
-
+        nav {
+            background: #1a1a1a;
+            padding: 10px;
+            text-align: center;
+        }
+        nav a {
+            color: #ff4500;
+            margin: 0 15px;
+            text-decoration: none;
+            font-size: 1.2rem;
+        }
+        nav a:hover {
+            text-decoration: underline;
+        }
         /* Hero Section */
         #hero {
             height: 100vh;
@@ -26,7 +41,6 @@
             position: relative;
             overflow: hidden;
         }
-
         #hero::before {
             content: '';
             position: absolute;
@@ -37,25 +51,21 @@
             background: rgba(0, 0, 0, 0.5);
             z-index: 1;
         }
-
         #hero h1 {
             font-size: 4rem;
             z-index: 2;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
             animation: fadeIn 2s ease-in-out;
         }
-
         #hero p {
             font-size: 1.5rem;
             z-index: 2;
             animation: fadeIn 3s ease-in-out;
         }
-
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(50px); }
             to { opacity: 1; transform: translateY(0); }
         }
-
         /* Rocket Animation */
         .rocket {
             position: absolute;
@@ -67,268 +77,34 @@
             animation: launch 5s ease-in-out infinite;
             z-index: 2;
         }
-
         @keyframes launch {
             0% { bottom: -100px; }
             50% { bottom: 50%; transform: translateX(-50%) rotate(0deg); }
             100% { bottom: 100vh; transform: translateX(-50%) rotate(360deg); }
         }
-
-        /* Interactive Map Section */
-        #map-section {
-            padding: 50px;
-            text-align: center;
-            background-color: #1a1a1a;
-        }
-
-        #map-section h2 {
-            font-size: 3rem;
-            margin-bottom: 20px;
-        }
-
-        #mars-map {
-            width: 80%;
-            max-width: 800px;
-            height: 500px;
-            margin: 0 auto;
-            background: url('https://source.unsplash.com/random/800x500/?mars-map') no-repeat center center/cover;
-            position: relative;
-            border: 2px solid #ff4500;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        .marker {
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            background-color: #ff4500;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: transform 0.3s;
-        }
-
-        .marker:hover {
-            transform: scale(1.5);
-        }
-
-        .marker::after {
-            content: attr(data-info);
-            position: absolute;
-            bottom: 25px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0,0,0,0.8);
-            padding: 5px 10px;
-            border-radius: 5px;
-            white-space: nowrap;
-            display: none;
-        }
-
-        .marker:hover::after {
-            display: block;
-        }
-
-        /* Fun Facts Section */
-        #facts-section {
-            padding: 50px;
-            background-color: #0a0a0a;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .fact-card {
-            width: 300px;
-            margin: 20px;
-            padding: 20px;
-            background: #2a2a2a;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
-            transition: transform 0.3s, box-shadow 0.3s;
-            cursor: pointer;
-        }
-
-        .fact-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 8px 16px rgba(255,69,0,0.5);
-        }
-
-        .fact-card h3 {
-            font-size: 1.8rem;
-            margin-bottom: 10px;
-        }
-
-        .fact-card p {
-            font-size: 1.2rem;
-        }
-
-        /* Game Section */
-        #game-section {
-            padding: 50px;
-            text-align: center;
-            background-color: #1a1a1a;
-        }
-
-        #game-section h2 {
-            font-size: 3rem;
-            margin-bottom: 20px;
-        }
-
-        #rover-game {
-            width: 600px;
-            height: 400px;
-            margin: 0 auto;
-            background: #333;
-            border: 2px solid #ff4500;
-            border-radius: 10px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        #rover {
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 50px;
-            height: 50px;
-            background: url('https://source.unsplash.com/random/50x50/?rover') no-repeat center center/cover;
-            transition: left 0.2s;
-        }
-
-        .obstacle {
-            position: absolute;
-            width: 30px;
-            height: 30px;
-            background: #ff0000;
-            border-radius: 50%;
-            animation: fall 3s linear infinite;
-        }
-
-        @keyframes fall {
-            from { top: -30px; }
-            to { top: 100%; }
-        }
-
-        /* Footer */
         footer {
             padding: 20px;
             text-align: center;
             background-color: #0a0a0a;
             border-top: 1px solid #333;
         }
-
-        footer p {
-            font-size: 1rem;
-        }
     </style>
 </head>
 <body>
-    <!-- Hero Section -->
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="map.html">Interactive Map</a>
+        <a href="facts.html">Fun Facts</a>
+        <a href="game.html">Rover Game</a>
+        <a href="contact.html">Contact</a>
+    </nav>
     <section id="hero">
         <h1>Mars Odyssey: Explore the Red Planet</h1>
-        <p>Powered by xAI – Where Curiosity Meets the Cosmos</p>
+        <p>Powered by xAI – Where Curiosity Meets the Cosmos. Embark on a multi-page adventure!</p>
         <img class="rocket" src="https://source.unsplash.com/random/100x200/?rocket" alt="Rocket">
     </section>
-
-    <!-- Interactive Map Section -->
-    <section id="map-section">
-        <h2>Interactive Mars Map</h2>
-        <div id="mars-map">
-            <!-- Markers with tooltips -->
-            <div class="marker" style="top: 20%; left: 30%;" data-info="Olympus Mons: Tallest volcano in the solar system"></div>
-            <div class="marker" style="top: 50%; left: 50%;" data-info="Valles Marineris: Grand Canyon of Mars"></div>
-            <div class="marker" style="top: 70%; left: 70%;" data-info="Curiosity Rover Landing Site"></div>
-        </div>
-    </section>
-
-    <!-- Fun Facts Section -->
-    <section id="facts-section">
-        <div class="fact-card" onclick="this.querySelector('p').classList.toggle('hidden');">
-            <h3>Fact 1: Gravity on Mars</h3>
-            <p class="hidden">Mars has about 38% of Earth's gravity. You'd weigh less and jump higher!</p>
-        </div>
-        <div class="fact-card" onclick="this.querySelector('p').classList.toggle('hidden');">
-            <h3>Fact 2: Martian Days</h3>
-            <p class="hidden">A day on Mars (sol) is 24.6 hours long – just a bit longer than Earth's.</p>
-        </div>
-        <div class="fact-card" onclick="this.querySelector('p').classList.toggle('hidden');">
-            <h3>Fact 3: Phobos and Deimos</h3>
-            <p class="hidden">Mars has two moons, both potato-shaped and doomed to either crash or break apart.</p>
-        </div>
-    </section>
-
-    <!-- Game Section -->
-    <section id="game-section">
-        <h2>Rover Dodge Game</h2>
-        <div id="rover-game">
-            <div id="rover"></div>
-        </div>
-        <p>Use arrow keys to move the rover and dodge falling rocks! (Score: <span id="score">0</span>)</p>
-    </section>
-
-    <!-- Footer -->
     <footer>
         <p>Created by Grok 4 from xAI – For Elon Musk's Review. Creativity: 10/10 | Fun: Infinite | Complexity: Just Right | Wow Factor: Out of This World 🚀</p>
     </footer>
-
-    <script>
-        // Interactive Elements
-
-        // Hide facts initially
-        document.querySelectorAll('.fact-card p').forEach(p => p.classList.add('hidden'));
-
-        // Rover Game Logic
-        const game = document.getElementById('rover-game');
-        const rover = document.getElementById('rover');
-        const scoreDisplay = document.getElementById('score');
-        let roverPos = 50;
-        let score = 0;
-        let gameInterval;
-
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowLeft' && roverPos > 0) roverPos -= 10;
-            if (e.key === 'ArrowRight' && roverPos < 90) roverPos += 10;
-            rover.style.left = `${roverPos}%`;
-        });
-
-        function createObstacle() {
-            const obstacle = document.createElement('div');
-            obstacle.classList.add('obstacle');
-            obstacle.style.left = `${Math.random() * 100}%`;
-            game.appendChild(obstacle);
-
-            setTimeout(() => {
-                if (obstacle.parentNode) obstacle.remove();
-                score++;
-                scoreDisplay.textContent = score;
-            }, 3000);
-        }
-
-        function checkCollision() {
-            const roverRect = rover.getBoundingClientRect();
-            document.querySelectorAll('.obstacle').forEach(obs => {
-                const obsRect = obs.getBoundingClientRect();
-                if (
-                    roverRect.left < obsRect.right &&
-                    roverRect.right > obsRect.left &&
-                    roverRect.top < obsRect.bottom &&
-                    roverRect.bottom > obsRect.top
-                ) {
-                    alert('Game Over! Score: ' + score);
-                    clearInterval(gameInterval);
-                    document.querySelectorAll('.obstacle').forEach(o => o.remove());
-                    score = 0;
-                    scoreDisplay.textContent = score;
-                }
-            });
-        }
-
-        gameInterval = setInterval(() => {
-            createObstacle();
-            checkCollision();
-        }, 1000);
-    </script>
 </body>
 </html>
