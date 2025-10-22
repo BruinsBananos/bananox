@@ -1,0 +1,109 @@
+<!-- node.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banano Jungle: Run a Node</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍌</text></svg>">
+    <style>
+        /* Shared Styles */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background-color: #000000;
+            color: #FFD700;
+            overflow-x: hidden;
+        }
+        nav {
+            background: #228B22;
+            padding: 10px;
+            text-align: center;
+        }
+        nav a {
+            color: #FFD700;
+            margin: 0 15px;
+            text-decoration: none;
+            font-size: 1.2rem;
+        }
+        nav a:hover {
+            text-decoration: underline;
+        }
+        /* Node Section */
+        #node-section {
+            padding: 50px;
+            text-align: center;
+            background-color: #228B22;
+            min-height: 100vh;
+        }
+        #node-section h2 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+        .step {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #000000;
+            border-radius: 10px;
+            text-align: left;
+        }
+        .step h3 {
+            font-size: 2rem;
+        }
+        .step p {
+            font-size: 1.2rem;
+        }
+        footer {
+            padding: 20px;
+            text-align: center;
+            background-color: #000000;
+            border-top: 1px solid #228B22;
+        }
+        /* Fun Animation */
+        .monkey-jump {
+            animation: jump 2s infinite;
+        }
+        @keyframes jump {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="ecosystem.html">Ecosystem Map</a>
+        <a href="facts.html">Fun Facts</a>
+        <a href="node.html">Run a Node</a>
+        <a href="faucet.html">Faucets</a>
+        <a href="game.html">Banana Game</a>
+        <a href="contact.html">Contact</a>
+    </nav>
+    <section id="node-section">
+        <h2>Run Your Own Banano Node 🍌</h2>
+        <p>Become a jungle guardian! Running a node helps the network – and it's easier than peeling a banana. Follow these steps (based on official guides). Watch the monkey jump for fun!</p>
+        <img class="monkey-jump" src="https://source.unsplash.com/random/100x100/?monkey" alt="Jumping Monkey" style="margin-bottom: 20px;">
+        <div class="step">
+            <h3>Step 1: Install Docker</h3>
+            <p>First, install Docker on your system (Ubuntu recommended). Visit docker.com for instructions. 🐳</p>
+        </div>
+        <div class="step">
+            <h3>Step 2: Run the Bananode Container</h3>
+            <p>Use this command: <code>sudo docker run --restart unless-stopped -d -p 7072:7072/udp -p 7072:7072 -p [::1]:7074:7074/udp -p [::1]:7074:7074 -v /path/to/data:/BananoData --name bananode bananocoin/banano:latest</code> Replace /path/to/data with your storage path. 🚀</p>
+        </div>
+        <div class="step">
+            <h3>Step 3: Manage Your Node</h3>
+            <p>Stop: <code>sudo docker stop bananode</code><br>Start: <code>sudo docker start bananode</code><br>Check status via explorer or API. Contribute to the potassium-powered network! 🌿</p>
+        </div>
+        <div class="step">
+            <h3>Pro Tip</h3>
+            <p>For advanced setups, check the Banano Wiki or Reddit for RAM-based nodes or custom configs. Have fun decentralizing! 🍌</p>
+        </div>
+    </section>
+    <footer>
+        <p>Created by Grok 4 from xAI – Banano Edition: Even More Fun, Feeless, and Full of Potassium! 🍌</p>
+    </footer>
+</body>
+</html>

@@ -4,25 +4,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mars Odyssey: Home</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
+    <title>Banano Jungle: Home</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍌</text></svg>">
     <style>
         /* Shared Styles */
         body {
             margin: 0;
             padding: 0;
             font-family: 'Arial', sans-serif;
-            background-color: #0a0a0a;
-            color: #ffffff;
+            background-color: #000000;
+            color: #FFD700;
             overflow-x: hidden;
         }
         nav {
-            background: #1a1a1a;
+            background: #228B22;
             padding: 10px;
             text-align: center;
         }
         nav a {
-            color: #ff4500;
+            color: #FFD700;
             margin: 0 15px;
             text-decoration: none;
             font-size: 1.2rem;
@@ -37,7 +37,7 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background: url('https://source.unsplash.com/random/1920x1080/?mars') no-repeat center center/cover;
+            background: url('https://source.unsplash.com/random/1920x1080/?banana,jungle') no-repeat center center/cover;
             position: relative;
             overflow: hidden;
         }
@@ -61,50 +61,61 @@
             font-size: 1.5rem;
             z-index: 2;
             animation: fadeIn 3s ease-in-out;
+            text-align: center;
+            max-width: 800px;
         }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(50px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        /* Rocket Animation */
-        .rocket {
+        /* Banana Animation - More bananas for fun! */
+        .banana {
             position: absolute;
-            bottom: -100px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100px;
+            width: 50px;
             height: auto;
-            animation: launch 5s ease-in-out infinite;
+            animation: fall 5s linear infinite;
             z-index: 2;
+            opacity: 0.8;
         }
-        @keyframes launch {
-            0% { bottom: -100px; }
-            50% { bottom: 50%; transform: translateX(-50%) rotate(0deg); }
-            100% { bottom: 100vh; transform: translateX(-50%) rotate(360deg); }
+        @keyframes fall {
+            0% { top: -50px; transform: rotate(0deg); }
+            100% { top: 100vh; transform: rotate(720deg); } /* Double spin for extra fun */
         }
         footer {
             padding: 20px;
             text-align: center;
-            background-color: #0a0a0a;
-            border-top: 1px solid #333;
+            background-color: #000000;
+            border-top: 1px solid #228B22;
         }
     </style>
 </head>
 <body>
     <nav>
         <a href="index.html">Home</a>
-        <a href="map.html">Interactive Map</a>
+        <a href="ecosystem.html">Ecosystem Map</a>
         <a href="facts.html">Fun Facts</a>
-        <a href="game.html">Rover Game</a>
+        <a href="node.html">Run a Node</a>
+        <a href="faucet.html">Faucets</a>
+        <a href="game.html">Banana Game</a>
         <a href="contact.html">Contact</a>
     </nav>
     <section id="hero">
-        <h1>Mars Odyssey: Explore the Red Planet</h1>
-        <p>Powered by xAI – Where Curiosity Meets the Cosmos. Embark on a multi-page adventure!</p>
-        <img class="rocket" src="https://source.unsplash.com/random/100x200/?rocket" alt="Rocket">
+        <h1>Banano Jungle: Dive into the Meme Crypto!</h1>
+        <p>Banano is a feeless, instant, potassium-rich cryptocurrency powered by DAG technology, disrupting the meme economy with fun, community-driven vibes. Don't let your memes be dreams – join the jungle! Now with more pages and banana spins! 🍌🍌</p>
+        <!-- More Falling Bananas for Fun -->
+        <img class="banana" style="left: 5%; animation-delay: 0s;" src="https://source.unsplash.com/random/50x50/?banana" alt="Banana">
+        <img class="banana" style="left: 15%; animation-delay: 0.5s;" src="https://source.unsplash.com/random/50x50/?banana" alt="Banana">
+        <img class="banana" style="left: 25%; animation-delay: 1s;" src="https://source.unsplash.com/random/50x50/?banana" alt="Banana">
+        <img class="banana" style="left: 35%; animation-delay: 1.5s;" src="https://source.unsplash.com/random/50x50/?banana" alt="Banana">
+        <img class="banana" style="left: 45%; animation-delay: 2s;" src="https://source.unsplash.com/random/50x50/?banana" alt="Banana">
+        <img class="banana" style="left: 55%; animation-delay: 2.5s;" src="https://source.unsplash.com/random/50x50/?banana" alt="Banana">
+        <img class="banana" style="left: 65%; animation-delay: 3s;" src="https://source.unsplash.com/random/50x50/?banana" alt="Banana">
+        <img class="banana" style="left: 75%; animation-delay: 3.5s;" src="https://source.unsplash.com/random/50x50/?banana" alt="Banana">
+        <img class="banana" style="left: 85%; animation-delay: 4s;" src="https://source.unsplash.com/random/50x50/?banana" alt="Banana">
+        <img class="banana" style="left: 95%; animation-delay: 4.5s;" src="https://source.unsplash.com/random/50x50/?banana" alt="Banana">
     </section>
     <footer>
-        <p>Created by Grok 4 from xAI – For Elon Musk's Review. Creativity: 10/10 | Fun: Infinite | Complexity: Just Right | Wow Factor: Out of This World 🚀</p>
+        <p>Created by Grok 4 from xAI – Banano Edition: Even More Fun, Feeless, and Full of Potassium! 🍌</p>
     </footer>
 </body>
 </html>

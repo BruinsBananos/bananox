@@ -4,25 +4,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mars Odyssey: Contact</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
+    <title>Banano Jungle: Contact</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍌</text></svg>">
     <style>
         /* Shared Styles */
         body {
             margin: 0;
             padding: 0;
             font-family: 'Arial', sans-serif;
-            background-color: #0a0a0a;
-            color: #ffffff;
+            background-color: #000000;
+            color: #FFD700;
             overflow-x: hidden;
         }
         nav {
-            background: #1a1a1a;
+            background: #228B22;
             padding: 10px;
             text-align: center;
         }
         nav a {
-            color: #ff4500;
+            color: #FFD700;
             margin: 0 15px;
             text-decoration: none;
             font-size: 1.2rem;
@@ -34,7 +34,7 @@
         #contact-section {
             padding: 50px;
             text-align: center;
-            background-color: #1a1a1a;
+            background-color: #228B22;
             min-height: 100vh;
         }
         #contact-section h2 {
@@ -50,50 +50,52 @@
         input, textarea {
             margin: 10px 0;
             padding: 10px;
-            border: 1px solid #ff4500;
+            border: 1px solid #FFD700;
             border-radius: 5px;
-            background: #2a2a2a;
-            color: #ffffff;
+            background: #000000;
+            color: #FFD700;
         }
         button {
             padding: 10px;
-            background: #ff4500;
+            background: #FFD700;
             border: none;
-            color: #ffffff;
+            color: #000000;
             cursor: pointer;
             border-radius: 5px;
         }
         button:hover {
-            background: #cc3700;
+            background: #DAA520;
         }
         footer {
             padding: 20px;
             text-align: center;
-            background-color: #0a0a0a;
-            border-top: 1px solid #333;
+            background-color: #000000;
+            border-top: 1px solid #228B22;
         }
     </style>
 </head>
 <body>
     <nav>
         <a href="index.html">Home</a>
-        <a href="map.html">Interactive Map</a>
+        <a href="ecosystem.html">Ecosystem Map</a>
         <a href="facts.html">Fun Facts</a>
-        <a href="game.html">Rover Game</a>
+        <a href="node.html">Run a Node</a>
+        <a href="faucet.html">Faucets</a>
+        <a href="game.html">Banana Game</a>
         <a href="contact.html">Contact</a>
     </nav>
     <section id="contact-section">
-        <h2>Contact Us</h2>
-        <p>Share your thoughts on colonizing Mars or suggest features! (This is a mock form for demo; logs to console.)</p>
+        <h2>Contact the Jungle 🍌</h2>
+        <p>Share your Banano ideas, memes, or join the community! (Mock form logs to console.) Or visit banano.cc for official links.</p>
         <form id="contact-form">
             <input type="text" placeholder="Your Name" required>
             <input type="email" placeholder="Your Email" required>
-            <textarea placeholder="Your Message" rows="5" required></textarea>
-            <button type="submit">Send Message</button>
+            <textarea placeholder="Your Message (e.g., 'More potassium!')" rows="5" required></textarea>
+            <button type="submit">Send Banano Vibes</button>
         </form>
     </section>
     <footer>
-        <p>Created by Grok 4 from xAI – For Elon Musk's Review. Creativity: 10/10 | Fun: Infinite | Complexity: Just Right | Wow Factor: Out of This World 🚀</p>
+        <p>Created by Grok 4 from xAI – Banano Edition: Even More Fun, Feeless, and Full of Potassium! 🍌</p>
     </footer>
     <script>
         document.getElementById('contact-form').addEventListener('submit', (e) => {
@@ -103,7 +105,7 @@
                 email: e.target[1].value,
                 message: e.target[2].value
             });
-            alert('Message sent! (Logged to console)');
+            alert('Message sent! (Logged to console) – Join r/banano for more fun!');
             e.target.reset();
         });
     </script>

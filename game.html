@@ -4,25 +4,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mars Odyssey: Rover Game</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
+    <title>Banano Jungle: Banana Game</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍌</text></svg>">
     <style>
         /* Shared Styles */
         body {
             margin: 0;
             padding: 0;
             font-family: 'Arial', sans-serif;
-            background-color: #0a0a0a;
-            color: #ffffff;
+            background-color: #000000;
+            color: #FFD700;
             overflow-x: hidden;
         }
         nav {
-            background: #1a1a1a;
+            background: #228B22;
             padding: 10px;
             text-align: center;
         }
         nav a {
-            color: #ff4500;
+            color: #FFD700;
             margin: 0 15px;
             text-decoration: none;
             font-size: 1.2rem;
@@ -34,38 +34,38 @@
         #game-section {
             padding: 50px;
             text-align: center;
-            background-color: #1a1a1a;
+            background-color: #228B22;
             min-height: 100vh;
         }
         #game-section h2 {
             font-size: 3rem;
             margin-bottom: 20px;
         }
-        #rover-game {
+        #banana-game {
             width: 600px;
             height: 400px;
             margin: 0 auto;
-            background: url('https://source.unsplash.com/random/600x400/?mars-surface') no-repeat center center/cover;
-            border: 2px solid #ff4500;
+            background: url('https://source.unsplash.com/random/600x400/?jungle') no-repeat center center/cover;
+            border: 2px solid #FFD700;
             border-radius: 10px;
             position: relative;
             overflow: hidden;
         }
-        #rover {
+        #monkey {
             position: absolute;
             bottom: 0;
             left: 50%;
             transform: translateX(-50%);
             width: 50px;
             height: 50px;
-            background: url('https://source.unsplash.com/random/50x50/?rover') no-repeat center center/cover;
+            background: url('https://source.unsplash.com/random/50x50/?monkey') no-repeat center center/cover;
             transition: left 0.2s;
         }
-        .obstacle {
+        .peel {
             position: absolute;
             width: 30px;
             height: 30px;
-            background: #ff0000;
+            background: #8B4513;
             border-radius: 50%;
             animation: fall 3s linear infinite;
         }
@@ -76,97 +76,98 @@
         footer {
             padding: 20px;
             text-align: center;
-            background-color: #0a0a0a;
-            border-top: 1px solid #333;
+            background-color: #000000;
+            border-top: 1px solid #228B22;
         }
     </style>
 </head>
 <body>
     <nav>
         <a href="index.html">Home</a>
-        <a href="map.html">Interactive Map</a>
+        <a href="ecosystem.html">Ecosystem Map</a>
         <a href="facts.html">Fun Facts</a>
-        <a href="game.html">Rover Game</a>
+        <a href="node.html">Run a Node</a>
+        <a href="faucet.html">Faucets</a>
+        <a href="game.html">Banana Game</a>
         <a href="contact.html">Contact</a>
     </nav>
     <section id="game-section">
-        <h2>Rover Dodge Game</h2>
-        <p>Use arrow keys to move the rover and dodge falling rocks! Enhanced with background, more obstacles, and high score tracking.</p>
-        <div id="rover-game">
-            <div id="rover"></div>
+        <h2>Monkey Peel Dodge Game</h2>
+        <p>Use arrow keys to move the monkey and dodge banana peels! Collect points, with increasing difficulty and high scores. 🍌</p>
+        <div id="banana-game">
+            <div id="monkey"></div>
         </div>
         <p>Score: <span id="score">0</span> | High Score: <span id="highScore">0</span></p>
     </section>
     <footer>
-        <p>Created by Grok 4 from xAI – For Elon Musk's Review. Creativity: 10/10 | Fun: Infinite | Complexity: Just Right | Wow Factor: Out of This World 🚀</p>
+        <p>Created by Grok 4 from xAI – Banano Edition: Even More Fun, Feeless, and Full of Potassium! 🍌</p>
     </footer>
     <script>
-        const game = document.getElementById('rover-game');
-        const rover = document.getElementById('rover');
+        const game = document.getElementById('banana-game');
+        const monkey = document.getElementById('monkey');
         const scoreDisplay = document.getElementById('score');
         const highScoreDisplay = document.getElementById('highScore');
-        let roverPos = 50;
+        let monkeyPos = 50;
         let score = 0;
-        let highScore = localStorage.getItem('highScore') || 0;
+        let highScore = localStorage.getItem('bananoHighScore') || 0;
         highScoreDisplay.textContent = highScore;
         let gameInterval;
-        let obstacleInterval = 1000; // Start with 1s interval
+        let obstacleInterval = 1000;
 
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowLeft' && roverPos > 0) roverPos -= 10;
-            if (e.key === 'ArrowRight' && roverPos < 90) roverPos += 10;
-            rover.style.left = `${roverPos}%`;
+            if (e.key === 'ArrowLeft' && monkeyPos > 0) monkeyPos -= 10;
+            if (e.key === 'ArrowRight' && monkeyPos < 90) monkeyPos += 10;
+            monkey.style.left = `${monkeyPos}%`;
         });
 
-        function createObstacle() {
-            const obstacle = document.createElement('div');
-            obstacle.classList.add('obstacle');
-            obstacle.style.left = `${Math.random() * 100}%`;
-            game.appendChild(obstacle);
+        function createPeel() {
+            const peel = document.createElement('div');
+            peel.classList.add('peel');
+            peel.style.left = `${Math.random() * 100}%`;
+            game.appendChild(peel);
 
             setTimeout(() => {
-                if (obstacle.parentNode) {
-                    obstacle.remove();
+                if (peel.parentNode) {
+                    peel.remove();
                     score++;
                     scoreDisplay.textContent = score;
                     if (score > highScore) {
                         highScore = score;
                         highScoreDisplay.textContent = highScore;
-                        localStorage.setItem('highScore', highScore);
+                        localStorage.setItem('bananoHighScore', highScore);
                     }
-                    // Increase difficulty
                     if (score % 10 === 0 && obstacleInterval > 200) {
                         clearInterval(gameInterval);
                         obstacleInterval -= 100;
-                        gameInterval = setInterval(createObstacle, obstacleInterval);
+                        gameInterval = setInterval(createPeel, obstacleInterval);
                     }
                 }
             }, 3000);
         }
 
         function checkCollision() {
-            const roverRect = rover.getBoundingClientRect();
-            document.querySelectorAll('.obstacle').forEach(obs => {
-                const obsRect = obs.getBoundingClientRect();
+            const monkeyRect = monkey.getBoundingClientRect();
+            document.querySelectorAll('.peel').forEach(peel => {
+                const peelRect = peel.getBoundingClientRect();
                 if (
-                    roverRect.left < obsRect.right &&
-                    roverRect.right > obsRect.left &&
-                    roverRect.top < obsRect.bottom &&
-                    roverRect.bottom > obsRect.top
+                    monkeyRect.left < peelRect.right &&
+                    monkeyRect.right > peelRect.left &&
+                    monkeyRect.top < peelRect.bottom &&
+                    monkeyRect.bottom > peelRect.top
                 ) {
-                    alert('Game Over! Score: ' + score);
+                    alert('Game Over! Score: ' + score + ' – Slipped on a peel!');
                     clearInterval(gameInterval);
-                    document.querySelectorAll('.obstacle').forEach(o => o.remove());
+                    document.querySelectorAll('.peel').forEach(p => p.remove());
                     score = 0;
                     scoreDisplay.textContent = score;
-                    gameInterval = setInterval(createObstacle, 1000); // Reset
                     obstacleInterval = 1000;
+                    gameInterval = setInterval(createPeel, obstacleInterval);
                 }
             });
         }
 
         gameInterval = setInterval(() => {
-            createObstacle();
+            createPeel();
             checkCollision();
         }, obstacleInterval);
     </script>

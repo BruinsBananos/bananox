@@ -4,25 +4,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mars Odyssey: Fun Facts</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
+    <title>Banano Jungle: Fun Facts</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍌</text></svg>">
     <style>
         /* Shared Styles */
         body {
             margin: 0;
             padding: 0;
             font-family: 'Arial', sans-serif;
-            background-color: #0a0a0a;
-            color: #ffffff;
+            background-color: #000000;
+            color: #FFD700;
             overflow-x: hidden;
         }
         nav {
-            background: #1a1a1a;
+            background: #228B22;
             padding: 10px;
             text-align: center;
         }
         nav a {
-            color: #ff4500;
+            color: #FFD700;
             margin: 0 15px;
             text-decoration: none;
             font-size: 1.2rem;
@@ -33,7 +33,7 @@
         /* Facts Section */
         #facts-section {
             padding: 50px;
-            background-color: #0a0a0a;
+            background-color: #000000;
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
@@ -43,15 +43,15 @@
             width: 300px;
             margin: 20px;
             padding: 20px;
-            background: #2a2a2a;
+            background: #228B22;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.5);
             transition: transform 0.3s, box-shadow 0.3s;
             cursor: pointer;
         }
         .fact-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 8px 16px rgba(255,69,0,0.5);
+            transform: translateY(-10px) rotate(5deg); /* Added rotate for fun */
+            box-shadow: 0 8px 16px rgba(255,215,0,0.5);
         }
         .fact-card h3 {
             font-size: 1.8rem;
@@ -66,54 +66,62 @@
         footer {
             padding: 20px;
             text-align: center;
-            background-color: #0a0a0a;
-            border-top: 1px solid #333;
+            background-color: #000000;
+            border-top: 1px solid #228B22;
         }
     </style>
 </head>
 <body>
     <nav>
         <a href="index.html">Home</a>
-        <a href="map.html">Interactive Map</a>
+        <a href="ecosystem.html">Ecosystem Map</a>
         <a href="facts.html">Fun Facts</a>
-        <a href="game.html">Rover Game</a>
+        <a href="node.html">Run a Node</a>
+        <a href="faucet.html">Faucets</a>
+        <a href="game.html">Banana Game</a>
         <a href="contact.html">Contact</a>
     </nav>
     <section id="facts-section">
-        <h2 style="width: 100%; text-align: center; font-size: 3rem;">Fun Mars Facts</h2>
-        <p style="width: 100%; text-align: center; font-size: 1.5rem;">Click to reveal! Added more facts and animations for extra fun.</p>
+        <h2 style="width: 100%; text-align: center; font-size: 3rem;">Fun Banano Facts 🍌</h2>
+        <p style="width: 100%; text-align: center; font-size: 1.5rem;">Click to reveal in-depth info! From tech to community memes. Now with wobbly hover! 🍌</p>
         <div class="fact-card" onclick="toggleFact(this)">
-            <h3>Fact 1: Gravity on Mars</h3>
-            <p class="hidden">Mars has about 38% of Earth's gravity. You'd weigh less and jump higher!</p>
+            <h3>Fact 1: Feeless & Instant</h3>
+            <p class="hidden">Banano uses DAG tech for zero fees and near-instant transactions – perfect for tipping memes!</p>
         </div>
         <div class="fact-card" onclick="toggleFact(this)">
-            <h3>Fact 2: Martian Days</h3>
-            <p class="hidden">A day on Mars (sol) is 24.6 hours long – just a bit longer than Earth's.</p>
+            <h3>Fact 2: Potassium Power</h3>
+            <p class="hidden">Inspired by bananas, Banano is 'rich in potassium' – a fun twist on Nano's tech.</p>
         </div>
         <div class="fact-card" onclick="toggleFact(this)">
-            <h3>Fact 3: Phobos and Deimos</h3>
-            <p class="hidden">Mars has two moons, both potato-shaped and doomed to either crash or break apart.</p>
+            <h3>Fact 3: Community-Driven</h3>
+            <p class="hidden">Active on Reddit, X, and Discord; celebrates anniversaries like turning 7 on April 1, 2025.</p>
         </div>
         <div class="fact-card" onclick="toggleFact(this)">
-            <h3>Fact 4: Dust Storms</h3>
-            <p class="hidden">Global dust storms can engulf the entire planet for months!</p>
+            <h3>Fact 4: Faucets Galore</h3>
+            <p class="hidden">Free BAN from faucets – earn by folding proteins or playing games in the ecosystem.</p>
         </div>
         <div class="fact-card" onclick="toggleFact(this)">
-            <h3>Fact 5: Water Evidence</h3>
-            <p class="hidden">Ancient river valleys suggest Mars once had liquid water on its surface.</p>
+            <h3>Fact 5: Market Stats</h3>
+            <p class="hidden">As of recent data, ~$0.001 USD per BAN, market cap ~$1.7M, circulating supply over 1.5B.</p>
+        </div>
+        <div class="fact-card" onclick="toggleFact(this)">
+            <h3>Fact 6: Meme Economy Disruptor</h3>
+            <p class="hidden">Banano aims to disrupt memes with fun distributions, airdrops, and community events.</p>
+        </div>
+        <div class="fact-card" onclick="toggleFact(this)">
+            <h3>Fact 7: Wallets & Tools</h3>
+            <p class="hidden">Use Kalium for mobile or TheBananoStand for web; explore with Creeper explorer.</p>
+        </div>
+        <div class="fact-card" onclick="toggleFact(this)">
+            <h3>Fact 8: Eco-Friendly</h3>
+            <p class="hidden">No mining – energy-efficient DAG means green crypto, like a sustainable banana farm.</p>
         </div>
     </section>
     <footer>
-        <p>Created by Grok 4 from xAI – For Elon Musk's Review. Creativity: 10/10 | Fun: Infinite | Complexity: Just Right | Wow Factor: Out of This World 🚀</p>
+        <p>Created by Grok 4 from xAI – Banano Edition: Even More Fun, Feeless, and Full of Potassium! 🍌</p>
     </footer>
     <script>
         function toggleFact(card) {
             const p = card.querySelector('p');
             p.classList.toggle('hidden');
-            if (!p.classList.contains('hidden')) {
-                p.style.animation = 'fadeIn 1s';
-            }
-        }
-    </script>
-</body>
-</html>
+            if
