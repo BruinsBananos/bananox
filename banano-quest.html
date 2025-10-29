@@ -131,7 +131,7 @@
         <canvas id="gameCanvas" width="800" height="600"></canvas>
         <div id="ui">
             <div id="lives">Lives: 20</div>
-            <div id="money">Bananos: 200</div>
+            <div id="money">Bananos: 500</div> <!-- Increased starting money for easier buildup -->
             <div id="wave">Wave: 1</div>
         </div>
         <div id="towerMenu">
@@ -194,7 +194,7 @@
         ].map(p => ({x: p.x * gridSize, y: p.y * gridSize}));
 
         let lives = 20;
-        let money = 200;
+        let money = 500; // Increased for easier start
         let wave = 1;
         let towers = [];
         let enemies = [];
@@ -290,7 +290,8 @@
                 range: 100,
                 fireRate: 60,
                 cooldown: 0,
-                type
+                type,
+                animationFrame: 0 // For firing animation
             };
             if (type === 'slow') {
                 base.damage = 5;
@@ -309,14 +310,14 @@
         }
 
         function startWave() {
-            const numEnemies = wave * 5;
+            const numEnemies = Math.min(wave * 2 + 3, 20); // Easier early waves, cap at higher
             let spawnInterval = setInterval(() => {
                 if (enemies.length < numEnemies) {
                     enemies.push(createEnemy());
                 } else {
                     clearInterval(spawnInterval);
                 }
-            }, 1000);
+            }, 1500); // Slower spawn for buildup
         }
 
         function createEnemy() {
@@ -324,17 +325,18 @@
                 x: path[0].x,
                 y: path[0].y,
                 pathIndex: 1,
-                health: 50 + wave * 10,
-                maxHealth: 50 + wave * 10,
-                speed: 2,
-                slowTimer: 0
+                health: 30 + wave * 5, // Reduced base health for easier starts
+                maxHealth: 30 + wave * 5,
+                speed: 1 + wave * 0.1, // Slower early
+                slowTimer: 0,
+                animationFrame: 0 // For wobble
             };
         }
 
         function update() {
             if (gameState !== 'playing') return;
 
-            // Update enemies
+            // Update enemies with smooth animation
             enemies = enemies.filter(e => {
                 if (e.slowTimer > 0) e.slowTimer--;
                 const speed = e.slowTimer > 0 ? e.speed / 2 : e.speed;
@@ -363,25 +365,28 @@
                 }
 
                 if (e.health <= 0) {
-                    money += 10;
+                    money += 20 + wave * 2; // More money per kill for buildup
                     return false;
                 }
+                e.animationFrame += 0.1; // For wobble
                 return true;
             });
 
-            // Update towers
+            // Update towers with firing animation
             towers.forEach(t => {
+                t.animationFrame *= 0.9; // Reset animation
                 if (t.cooldown > 0) t.cooldown--;
                 if (t.cooldown <= 0) {
                     const target = findTarget(t);
                     if (target) {
                         projectiles.push(createProjectile(t, target));
                         t.cooldown = t.fireRate;
+                        t.animationFrame = 1; // Trigger fire animation
                     }
                 }
             });
 
-            // Update projectiles
+            // Update projectiles with trail
             projectiles = projectiles.filter(p => {
                 p.x += p.vx;
                 p.y += p.vy;
@@ -433,43 +438,55 @@
                 vy: (dy / dist) * 10,
                 damage: t.damage,
                 target,
-                towerType: t.type
+                towerType: t.type,
+                trail: [] // For pretty trail
             };
         }
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Draw path
+            // Draw path with glow
             ctx.strokeStyle = '#8B4513';
             ctx.lineWidth = gridSize / 2;
+            ctx.shadowColor = '#FFD700';
+            ctx.shadowBlur = 10;
             ctx.beginPath();
             path.forEach((p, i) => {
                 if (i === 0) ctx.moveTo(p.x + gridSize/2, p.y + gridSize/2);
                 else ctx.lineTo(p.x + gridSize/2, p.y + gridSize/2);
             });
             ctx.stroke();
+            ctx.shadowBlur = 0;
 
-            // Draw towers
+            // Draw towers with animation
             towers.forEach(t => {
                 ctx.fillStyle = t.type === 'basic' ? '#00FF00' : t.type === 'slow' ? '#0000FF' : '#FF0000';
-                ctx.fillRect(t.x, t.y, t.width, t.height);
+                const scale = 1 + t.animationFrame * 0.2; // Pulse on fire
+                ctx.save();
+                ctx.translate(t.x + gridSize / 2, t.y + gridSize / 2);
+                ctx.scale(scale, scale);
+                ctx.fillRect(-gridSize / 2, -gridSize / 2, gridSize, gridSize);
+                ctx.restore();
                 ctx.fillStyle = '#FFF';
                 ctx.font = '12px Arial';
                 ctx.fillText(`Lv${t.level}`, t.x + 5, t.y + 15);
                 if (t === selectedTower) {
                     ctx.strokeStyle = '#FFD700';
                     ctx.lineWidth = 2;
-                    ctx.strokeRect(t.x, t.y, t.width, t.height);
+                    ctx.strokeRect(t.x, t.y, gridSize, gridSize);
                 }
             });
 
-            // Draw enemies
+            // Draw enemies with wobble and shadow
             enemies.forEach(e => {
+                ctx.shadowColor = '#000';
+                ctx.shadowBlur = 5;
                 ctx.fillStyle = '#8B4513';
                 ctx.beginPath();
-                ctx.arc(e.x, e.y, 15, 0, Math.PI * 2);
+                ctx.arc(e.x + Math.sin(e.animationFrame) * 2, e.y, 15, 0, Math.PI * 2);
                 ctx.fill();
+                ctx.shadowBlur = 0;
                 // Health bar
                 ctx.fillStyle = '#FF0000';
                 ctx.fillRect(e.x - 20, e.y - 25, 40, 5);
@@ -477,8 +494,18 @@
                 ctx.fillRect(e.x - 20, e.y - 25, 40 * (e.health / e.maxHealth), 5);
             });
 
-            // Draw projectiles
+            // Draw projectiles with trail
             projectiles.forEach(p => {
+                p.trail.push({x: p.x, y: p.y});
+                if (p.trail.length > 5) p.trail.shift();
+                ctx.strokeStyle = '#FFD700';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                p.trail.forEach((pt, i) => {
+                    if (i === 0) ctx.moveTo(pt.x, pt.y);
+                    else ctx.lineTo(pt.x, pt.y);
+                });
+                ctx.stroke();
                 ctx.fillStyle = '#FFD700';
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
