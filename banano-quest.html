@@ -3,18 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Banano Browser Quest - Enhanced Edition</title>
+    <title>Banano Browser Quest - Epic Edition 🍌</title>
     <style>
         body {
             margin: 0;
             padding: 0;
-            background-color: #000;
+            background: linear-gradient(to bottom, #000, #228B22);
             color: #FFD700;
-            font-family: Arial, sans-serif;
+            font-family: 'Arial Black', sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
             height: 100vh;
             overflow: hidden;
         }
@@ -22,9 +21,11 @@
             position: relative;
             width: 800px;
             height: 600px;
-            border: 2px solid #228B22;
-            background-color: #228B22;
+            border: 4px solid #FFD700;
+            box-shadow: 0 0 20px #FFD700;
+            background: url('https://source.unsplash.com/random/800x600/?jungle,night') no-repeat center/cover;
             overflow: hidden;
+            border-radius: 10px;
         }
         canvas {
             position: absolute;
@@ -34,48 +35,112 @@
         #ui {
             position: absolute;
             top: 10px;
-            left: 10px;
+            right: 10px;
             z-index: 10;
-            background: rgba(0,0,0,0.5);
-            padding: 10px;
-            border-radius: 5px;
+            background: rgba(0,0,0,0.7);
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #FFD700;
+            box-shadow: 0 0 10px #FFD700;
         }
         #health, #score, #level {
+            font-size: 1.5rem;
+            text-shadow: 0 0 5px #000;
+        }
+        #startMenu, #gameOver {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 20;
+            background: rgba(0,0,0,0.8);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            border: 3px solid #FFD700;
+            box-shadow: 0 0 30px #FFD700;
+            display: none;
+        }
+        button {
+            padding: 10px 20px;
+            background: #FFD700;
+            color: #000;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
             font-size: 1.2rem;
+            margin-top: 20px;
+            box-shadow: 0 0 10px #FFD700;
+        }
+        button:hover {
+            background: #DAA520;
         }
         #controls {
             margin-top: 10px;
             text-align: center;
             max-width: 800px;
+            font-size: 0.8rem;
+            color: #fff;
+            text-shadow: 0 0 3px #000;
+        }
+        h1 {
+            text-shadow: 0 0 10px #FFD700;
+            animation: glow 2s infinite alternate;
+        }
+        @keyframes glow {
+            from { text-shadow: 0 0 10px #FFD700; }
+            to { text-shadow: 0 0 20px #FFD700; }
         }
     </style>
 </head>
 <body>
-    <h1>Banano Browser Quest - Enhanced Single-Player Edition 🍌</h1>
+    <h1>Banano Browser Quest - Epic Edition 🍌</h1>
     <div id="gameContainer">
         <canvas id="backgroundCanvas" width="800" height="600"></canvas>
+        <canvas id="particleCanvas" width="800" height="600"></canvas>
         <canvas id="entityCanvas" width="800" height="600"></canvas>
         <div id="ui">
             <div id="health">Health: 100/100</div>
             <div id="score">Score: 0</div>
             <div id="level">Level: 1</div>
         </div>
+        <div id="startMenu">
+            <h2>Welcome to the Banano Jungle!</h2>
+            <p>Collect bananas, slash peels, survive the quest!</p>
+            <button id="startButton">Start Adventure</button>
+        </div>
+        <div id="gameOver">
+            <h2>Game Over!</h2>
+            <p>Final Score: <span id="finalScore">0</span></p>
+            <button id="restartButton">Restart</button>
+        </div>
     </div>
     <div id="controls">
-        <p>Controls: Arrow keys or WASD to move. Space to attack (slash peels). Collect bananas for score, power-ups for health/boosts. Avoid or defeat peels!</p>
+        <p>Controls: Arrow keys or WASD to move. Space to attack. Collect power-ups for boosts!</p>
     </div>
+    <audio id="bgMusic" loop>
+        <source src="https://www.soundjay.com/buttons/button-20.mp3" type="audio/mpeg"> <!-- Placeholder; replace with free jungle music URL -->
+    </audio>
+    <audio id="collectSound">
+        <source src="https://www.soundjay.com/buttons/button-3.mp3" type="audio/mpeg"> <!-- Placeholder for collect sound -->
+    </audio>
+    <audio id="attackSound">
+        <source src="https://www.soundjay.com/buttons/button-4.mp3" type="audio/mpeg"> <!-- Placeholder for attack -->
+    </audio>
     <script>
         const bgCanvas = document.getElementById('backgroundCanvas');
         const bgCtx = bgCanvas.getContext('2d');
+        const particleCanvas = document.getElementById('particleCanvas');
+        const particleCtx = particleCanvas.getContext('2d');
         const entityCanvas = document.getElementById('entityCanvas');
         const entityCtx = entityCanvas.getContext('2d');
         const tileSize = 40;
         const mapWidth = bgCanvas.width / tileSize;
         const mapHeight = bgCanvas.height / tileSize;
 
-        // Multi-level maps
+        // Levels
         const levels = [
-            // Level 1: Simple jungle
+            // Level 1
             [
                 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
                 [0,1,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0],
@@ -93,7 +158,7 @@
                 [0,0,0,1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,1],
                 [0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0]
             ],
-            // Level 2: Denser jungle
+            // Level 2
             [
                 [1,1,0,0,1,1,0,0,1,0,0,1,0,1,1,0,0,1,1,0],
                 [0,1,1,0,0,1,0,1,0,0,1,0,0,0,1,1,0,0,1,0],
@@ -110,6 +175,24 @@
                 [1,0,0,0,1,0,1,1,0,0,1,0,0,0,1,1,0,1,0,0],
                 [0,1,1,0,0,0,0,1,1,0,0,0,1,0,0,1,1,0,1,0],
                 [0,0,1,1,0,1,0,0,1,0,0,1,1,0,0,0,1,1,0,1]
+            ],
+            // Level 3: Boss level
+            [
+                [0,1,1,1,0,0,1,1,1,0,0,1,1,1,0,0,1,1,1,0],
+                [0,0,1,0,0,1,0,1,0,0,1,0,1,0,0,1,0,1,0,0],
+                [1,0,0,0,1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1],
+                [0,1,0,1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,1,0],
+                [0,0,1,0,0,0,1,0,0,0,0,1,0,0,0,0,1,0,0,0],
+                [1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,1,0,0,0,1],
+                [0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,0,1,1,1,0],
+                [0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,1,0,0],
+                [1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,1,0,0,0,1],
+                [0,1,0,1,0,1,1,1,0,1,1,1,0,1,1,0,1,0,1,0],
+                [0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,1,0,0],
+                [1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,1,0,0,0,1],
+                [0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,0,1,1,1,0],
+                [0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,1,0,0],
+                [1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,1,0,0,0,1]
             ]
         ];
 
@@ -118,8 +201,8 @@
 
         // Player
         let player = {
-            x: 1 * tileSize,
-            y: 1 * tileSize,
+            x: tileSize,
+            y: tileSize,
             width: tileSize,
             height: tileSize,
             speed: 5,
@@ -128,18 +211,24 @@
             attackRange: tileSize * 1.5,
             attacking: false,
             attackCooldown: 0,
-            score: 0
+            score: 0,
+            animationFrame: 0,
+            direction: 'down'
         };
 
         // Entities
         let bananas = [];
         let peels = [];
         let powerUps = [];
+        let particles = [];
+        let boss = null;
 
         function spawnEntities() {
             bananas = [];
             peels = [];
             powerUps = [];
+            particles = [];
+            boss = null;
             const numBananas = 10 + currentLevel * 5;
             const numPeels = 5 + currentLevel * 3;
             const numPowerUps = 3 + currentLevel;
@@ -150,7 +239,7 @@
                     bx = Math.floor(Math.random() * mapWidth) * tileSize;
                     by = Math.floor(Math.random() * mapHeight) * tileSize;
                 } while (map[by / tileSize][bx / tileSize] === 1);
-                bananas.push({x: bx, y: by, collected: false});
+                bananas.push({x: bx, y: by, rotation: 0, collected: false});
             }
 
             for (let i = 0; i < numPeels; i++) {
@@ -165,7 +254,8 @@
                     width: tileSize / 2,
                     height: tileSize / 2,
                     speed: 2 + currentLevel * 0.5,
-                    health: 20 + currentLevel * 10
+                    health: 20 + currentLevel * 10,
+                    wobble: 0
                 });
             }
 
@@ -175,7 +265,21 @@
                     px = Math.floor(Math.random() * mapWidth) * tileSize;
                     py = Math.floor(Math.random() * mapHeight) * tileSize;
                 } while (map[py / tileSize][px / tileSize] === 1);
-                powerUps.push({x: px, y: py, type: Math.random() > 0.5 ? 'health' : 'speed'});
+                powerUps.push({x: px, y: py, type: Math.random() > 0.5 ? 'health' : 'speed', pulse: 0});
+            }
+
+            if (currentLevel === levels.length - 1) {
+                // Spawn boss
+                boss = {
+                    x: (mapWidth / 2) * tileSize,
+                    y: (mapHeight / 2) * tileSize,
+                    width: tileSize * 2,
+                    height: tileSize * 2,
+                    speed: 3,
+                    health: 200,
+                    attackCooldown: 60,
+                    phase: 0
+                };
             }
         }
 
@@ -184,8 +288,26 @@
         const healthDisplay = document.getElementById('health');
         const scoreDisplay = document.getElementById('score');
         const levelDisplay = document.getElementById('level');
+        const startMenu = document.getElementById('startMenu');
+        const gameOver = document.getElementById('gameOver');
+        const finalScore = document.getElementById('finalScore');
+        const bgMusic = document.getElementById('bgMusic');
+        const collectSound = document.getElementById('collectSound');
+        const attackSound = document.getElementById('attackSound');
 
-        // Keyboard controls
+        let gameState = 'menu'; // menu, playing, over
+
+        document.getElementById('startButton').addEventListener('click', () => {
+            startMenu.style.display = 'none';
+            gameState = 'playing';
+            bgMusic.play().catch(() => {}); // Play music
+        });
+
+        document.getElementById('restartButton').addEventListener('click', () => {
+            location.reload();
+        });
+
+        // Keyboard
         const keys = {};
         document.addEventListener('keydown', (e) => {
             keys[e.key] = true;
@@ -201,66 +323,141 @@
             for (let y = 0; y < mapHeight; y++) {
                 for (let x = 0; x < mapWidth; x++) {
                     if (map[y][x] === 0) {
-                        bgCtx.fillStyle = '#32CD32'; // Grass
+                        bgCtx.fillStyle = '#32CD32';
                     } else {
-                        bgCtx.fillStyle = '#006400'; // Tree
+                        bgCtx.fillStyle = '#006400';
                     }
                     bgCtx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
+                    // Add grass texture
+                    bgCtx.fillStyle = 'rgba(0,100,0,0.2)';
+                    bgCtx.fillRect(x * tileSize + 5, y * tileSize + 5, tileSize - 10, tileSize - 10);
                 }
             }
+        }
+
+        function createParticles(x, y, color, count = 20) {
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x,
+                    y,
+                    vx: Math.random() * 4 - 2,
+                    vy: Math.random() * 4 - 2,
+                    size: Math.random() * 5 + 5,
+                    life: 60,
+                    color
+                });
+            }
+        }
+
+        function updateParticles() {
+            particles = particles.filter(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life--;
+                p.size *= 0.98;
+                return p.life > 0;
+            });
+        }
+
+        function drawParticles() {
+            particleCtx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
+            particles.forEach(p => {
+                particleCtx.fillStyle = p.color;
+                particleCtx.beginPath();
+                particleCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                particleCtx.fill();
+            });
         }
 
         function drawEntities() {
             entityCtx.clearRect(0, 0, entityCanvas.width, entityCanvas.height);
 
-            // Draw player (monkey)
-            entityCtx.fillStyle = '#8B4513';
-            entityCtx.fillRect(player.x, player.y, player.width, player.height);
-
-            // Draw attack if attacking
-            if (player.attacking && player.attackCooldown <= 0) {
-                entityCtx.strokeStyle = '#FF0000';
-                entityCtx.beginPath();
-                entityCtx.arc(player.x + player.width / 2, player.y + player.height / 2, player.attackRange, 0, Math.PI * 2);
-                entityCtx.stroke();
-                player.attackCooldown = 30; // Frames cooldown
-            }
-
-            // Draw bananas
+            // Draw bananas with spin
             entityCtx.fillStyle = '#FFD700';
             bananas.forEach(b => {
                 if (!b.collected) {
+                    b.rotation = (b.rotation + 0.05) % (Math.PI * 2);
+                    entityCtx.save();
+                    entityCtx.translate(b.x + tileSize / 2, b.y + tileSize / 2);
+                    entityCtx.rotate(b.rotation);
                     entityCtx.beginPath();
-                    entityCtx.arc(b.x + tileSize / 2, b.y + tileSize / 2, tileSize / 3, 0, Math.PI * 2);
+                    entityCtx.arc(0, 0, tileSize / 3, 0, Math.PI * 2);
                     entityCtx.fill();
+                    entityCtx.restore();
                 }
             });
 
-            // Draw power-ups
+            // Draw power-ups with pulse
             powerUps.forEach(p => {
+                p.pulse = Math.sin(Date.now() / 200) * 5 + 10;
                 entityCtx.fillStyle = p.type === 'health' ? '#FF69B4' : '#00BFFF';
                 entityCtx.beginPath();
-                entityCtx.arc(p.x + tileSize / 2, p.y + tileSize / 2, tileSize / 4, 0, Math.PI * 2);
+                entityCtx.arc(p.x + tileSize / 2, p.y + tileSize / 2, p.pulse, 0, Math.PI * 2);
                 entityCtx.fill();
             });
 
-            // Draw peels
+            // Draw peels with wobble
             entityCtx.fillStyle = '#8B4513';
             peels.forEach(p => {
                 if (p.health > 0) {
-                    entityCtx.fillRect(p.x, p.y, p.width, p.height);
+                    p.wobble = Math.sin(Date.now() / 100) * 2;
+                    entityCtx.fillRect(p.x + p.wobble, p.y, p.width, p.height);
                 }
             });
+
+            // Draw boss if present
+            if (boss && boss.health > 0) {
+                entityCtx.fillStyle = '#FF0000';
+                entityCtx.fillRect(boss.x, boss.y, boss.width, boss.height);
+                // Boss phases
+                if (boss.phase === 1) {
+                    entityCtx.fillStyle = 'rgba(255,0,0,0.5)';
+                    entityCtx.beginPath();
+                    entityCtx.arc(boss.x + boss.width / 2, boss.y + boss.height / 2, boss.width, 0, Math.PI * 2);
+                    entityCtx.fill();
+                }
+            }
+
+            // Draw player with simple animation
+            player.animationFrame = (player.animationFrame + 0.1) % 4; // 4 frames
+            entityCtx.fillStyle = '#8B4513';
+            entityCtx.fillRect(player.x, player.y, player.width, player.height);
+            // Add eyes
+            entityCtx.fillStyle = '#FFF';
+            entityCtx.beginPath();
+            entityCtx.arc(player.x + tileSize / 4 + Math.sin(player.animationFrame) * 2, player.y + tileSize / 4, 5, 0, Math.PI * 2);
+            entityCtx.arc(player.x + tileSize * 3 / 4 + Math.sin(player.animationFrame) * 2, player.y + tileSize / 4, 5, 0, Math.PI * 2);
+            entityCtx.fill();
+
+            // Draw attack slash
+            if (player.attacking && player.attackCooldown <= 0) {
+                attackSound.play().catch(() => {});
+                entityCtx.strokeStyle = '#FF0000';
+                entityCtx.lineWidth = 5;
+                entityCtx.beginPath();
+                const attackX = player.x + player.width / 2;
+                const attackY = player.y + player.height / 2;
+                entityCtx.moveTo(attackX - player.attackRange, attackY);
+                entityCtx.lineTo(attackX + player.attackRange, attackY);
+                entityCtx.moveTo(attackX, attackY - player.attackRange);
+                entityCtx.lineTo(attackX, attackY + player.attackRange);
+                entityCtx.stroke();
+                player.attackCooldown = 20;
+            }
         }
 
         function updatePlayer() {
-            let dx = 0, dy = 0;
-            if (keys['ArrowLeft'] || keys['a']) dx -= player.speed;
-            if (keys['ArrowRight'] || keys['d']) dx += player.speed;
-            if (keys['ArrowUp'] || keys['w']) dy -= player.speed;
-            if (keys['ArrowDown'] || keys['s']) dy += player.speed;
+            if (gameState !== 'playing') return;
 
-            // Check collision with map
+            let dx = 0, dy = 0;
+            let moving = false;
+            if (keys['ArrowUp'] || keys['w']) { dy -= player.speed; player.direction = 'up'; moving = true; }
+            if (keys['ArrowDown'] || keys['s']) { dy += player.speed; player.direction = 'down'; moving = true; }
+            if (keys['ArrowLeft'] || keys['a']) { dx -= player.speed; player.direction = 'left'; moving = true; }
+            if (keys['ArrowRight'] || keys['d']) { dx += player.speed; player.direction = 'right'; moving = true; }
+
+            if (moving) player.animationFrame += 0.2;
+
             let newX = player.x + dx;
             let newY = player.y + dy;
             const px = Math.floor(newX / tileSize);
@@ -283,7 +480,6 @@
             peels.forEach(p => {
                 if (p.health <= 0) return;
 
-                // Move towards player
                 const dx = player.x - p.x;
                 const dy = player.y - p.y;
                 const dist = Math.sqrt(dx*dx + dy*dy);
@@ -292,21 +488,23 @@
                     p.y += (dy / dist) * p.speed;
                 }
 
-                // Collision with player
                 if (Math.abs(player.x - p.x) < (player.width + p.width) / 2 &&
                     Math.abs(player.y - p.y) < (player.height + p.height) / 2) {
-                    player.health -= 10;
+                    player.health -= 5 + currentLevel;
+                    createParticles(p.x, p.y, 'red', 5);
                     if (player.health <= 0) {
-                        alert('Game Over! Final Score: ' + player.score);
-                        location.reload();
+                        gameState = 'over';
+                        gameOver.style.display = 'block';
+                        finalScore.textContent = player.score;
+                        bgMusic.pause();
                     }
                 }
 
-                // Attack peels
                 if (player.attacking && player.attackCooldown <= 0) {
                     const pdist = Math.sqrt(Math.pow(player.x + player.width/2 - (p.x + p.width/2), 2) + Math.pow(player.y + player.height/2 - (p.y + p.height/2), 2));
                     if (pdist < player.attackRange) {
                         p.health -= 20;
+                        createParticles(p.x, p.y, '#FFD700', 10);
                         if (p.health <= 0) {
                             player.score += 50;
                         }
@@ -317,21 +515,78 @@
             peels = peels.filter(p => p.health > 0);
         }
 
+        function updateBoss() {
+            if (!boss || boss.health <= 0) return;
+
+            // Chase player
+            const dx = player.x - boss.x;
+            const dy = player.y - boss.y;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            if (dist > 0) {
+                boss.x += (dx / dist) * boss.speed;
+                boss.y += (dy / dist) * boss.speed;
+            }
+
+            // Attack
+            if (boss.attackCooldown <= 0) {
+                createParticles(boss.x + boss.width / 2, boss.y + boss.height / 2, 'red', 20);
+                if (Math.abs(player.x - boss.x) < boss.width && Math.abs(player.y - boss.y) < boss.height) {
+                    player.health -= 20;
+                }
+                boss.attackCooldown = 60;
+            } else {
+                boss.attackCooldown--;
+            }
+
+            // Phases
+            if (boss.health < 100 && boss.phase === 0) {
+                boss.phase = 1;
+                boss.speed *= 1.5;
+                createParticles(boss.x, boss.y, 'purple', 50);
+            }
+
+            // Player attack on boss
+            if (player.attacking && player.attackCooldown <= 0) {
+                const bdist = Math.sqrt(Math.pow(player.x + player.width/2 - (boss.x + boss.width/2), 2) + Math.pow(player.y + player.height/2 - (boss.y + boss.height/2), 2));
+                if (bdist < player.attackRange + boss.width / 2) {
+                    boss.health -= 10;
+                    createParticles(boss.x, boss.y, '#FFD700', 15);
+                    if (boss.health <= 0) {
+                        player.score += 500;
+                        createParticles(boss.x, boss.y, 'gold', 100);
+                    }
+                }
+            }
+
+            // Collision damage
+            if (Math.abs(player.x - boss.x) < (player.width + boss.width) / 2 &&
+                Math.abs(player.y - boss.y) < (player.height + boss.height) / 2) {
+                player.health -= 10;
+                createParticles(player.x, player.y, 'red', 10);
+            }
+        }
+
         function collectItems() {
-            bananas.forEach(b => {
+            bananas = bananas.filter(b => {
                 if (!b.collected && Math.abs(player.x - b.x) < tileSize && Math.abs(player.y - b.y) < tileSize) {
                     b.collected = true;
                     player.score += 10;
+                    collectSound.play().catch(() => {});
+                    createParticles(b.x, b.y, '#FFD700', 15);
+                    return false;
                 }
+                return true;
             });
 
             powerUps = powerUps.filter(p => {
                 if (Math.abs(player.x - p.x) < tileSize && Math.abs(player.y - p.y) < tileSize) {
                     if (p.type === 'health') {
-                        player.health = Math.min(player.health + 30, player.maxHealth);
+                        player.health = Math.min(player.health + 50, player.maxHealth);
                     } else {
-                        player.speed += 1; // Permanent speed boost
+                        player.speed += 2; // Boost
                     }
+                    collectSound.play().catch(() => {});
+                    createParticles(p.x, p.y, p.type === 'health' ? '#FF69B4' : '#00BFFF', 20);
                     return false;
                 }
                 return true;
@@ -339,11 +594,14 @@
         }
 
         function checkLevelProgress() {
-            if (bananas.every(b => b.collected) && peels.length === 0) {
+            if (bananas.length === 0 && peels.length === 0 && (!boss || boss.health <= 0)) {
                 currentLevel++;
                 if (currentLevel >= levels.length) {
-                    alert('You conquered the jungle! Final Score: ' + player.score);
-                    location.reload();
+                    gameState = 'over';
+                    gameOver.style.display = 'block';
+                    finalScore.textContent = player.score;
+                    alert('You defeated the Boss and conquered the Jungle! Epic Win!');
+                    bgMusic.pause();
                 } else {
                     map = levels[currentLevel];
                     spawnEntities();
@@ -353,21 +611,27 @@
         }
 
         function updateUI() {
-            healthDisplay.textContent = `Health: ${player.health}/${player.maxHealth}`;
+            healthDisplay.textContent = `Health: ${Math.max(0, player.health)}/${player.maxHealth}`;
             scoreDisplay.textContent = `Score: ${player.score}`;
             levelDisplay.textContent = `Level: ${currentLevel + 1}`;
         }
 
         function gameLoop() {
-            updatePlayer();
-            updatePeels();
-            collectItems();
-            checkLevelProgress();
+            if (gameState === 'playing') {
+                updatePlayer();
+                updatePeels();
+                updateBoss();
+                collectItems();
+                checkLevelProgress();
+                updateParticles();
+            }
             drawEntities();
+            drawParticles();
             updateUI();
             requestAnimationFrame(gameLoop);
         }
 
+        startMenu.style.display = 'block';
         drawBackground();
         gameLoop();
     </script>
