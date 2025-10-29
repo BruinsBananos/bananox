@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Banano Browser Quest - Epic Edition 🍌</title>
+    <title>Banano Tower Defense 🍌</title>
     <style>
         body {
             margin: 0;
@@ -23,7 +23,7 @@
             height: 600px;
             border: 4px solid #FFD700;
             box-shadow: 0 0 20px #FFD700;
-            background: url('https://source.unsplash.com/random/800x600/?jungle,night') no-repeat center/cover;
+            background: url('https://source.unsplash.com/random/800x600/?jungle') no-repeat center/cover;
             overflow: hidden;
             border-radius: 10px;
         }
@@ -34,7 +34,24 @@
         }
         #ui {
             position: absolute;
-            top: 10px;
+            bottom: 10px;
+            left: 10px;
+            z-index: 10;
+            background: rgba(0,0,0,0.7);
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #FFD700;
+            box-shadow: 0 0 10px #FFD700;
+            display: flex;
+            flex-direction: column;
+        }
+        #lives, #money, #wave {
+            font-size: 1.5rem;
+            text-shadow: 0 0 5px #000;
+        }
+        #towerMenu {
+            position: absolute;
+            bottom: 10px;
             right: 10px;
             z-index: 10;
             background: rgba(0,0,0,0.7);
@@ -43,9 +60,32 @@
             border: 2px solid #FFD700;
             box-shadow: 0 0 10px #FFD700;
         }
-        #health, #score, #level {
-            font-size: 1.5rem;
-            text-shadow: 0 0 5px #000;
+        .towerButton {
+            padding: 10px;
+            margin: 5px 0;
+            background: #FFD700;
+            color: #000;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .towerButton:hover {
+            background: #DAA520;
+        }
+        #upgradeMenu {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 20;
+            background: rgba(0,0,0,0.8);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            border: 3px solid #FFD700;
+            box-shadow: 0 0 30px #FFD700;
+            display: none;
         }
         #startMenu, #gameOver {
             position: absolute;
@@ -75,14 +115,6 @@
         button:hover {
             background: #DAA520;
         }
-        #controls {
-            margin-top: 10px;
-            text-align: center;
-            max-width: 800px;
-            font-size: 0.8rem;
-            color: #fff;
-            text-shadow: 0 0 3px #000;
-        }
         h1 {
             text-shadow: 0 0 10px #FFD700;
             animation: glow 2s infinite alternate;
@@ -94,541 +126,384 @@
     </style>
 </head>
 <body>
-    <h1>Banano Browser Quest - Epic Edition 🍌</h1>
+    <h1>Banano Tower Defense 🍌</h1>
     <div id="gameContainer">
-        <canvas id="backgroundCanvas" width="800" height="600"></canvas>
-        <canvas id="particleCanvas" width="800" height="600"></canvas>
-        <canvas id="entityCanvas" width="800" height="600"></canvas>
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
         <div id="ui">
-            <div id="health">Health: 100/100</div>
-            <div id="score">Score: 0</div>
-            <div id="level">Level: 1</div>
+            <div id="lives">Lives: 20</div>
+            <div id="money">Bananos: 200</div>
+            <div id="wave">Wave: 1</div>
+        </div>
+        <div id="towerMenu">
+            <button class="towerButton" data-type="basic">Basic Tower (50)</button>
+            <button class="towerButton" data-type="slow">Slow Tower (75)</button>
+            <button class="towerButton" data-type="aoe">AOE Tower (100)</button>
+        </div>
+        <div id="upgradeMenu">
+            <h2>Upgrade Tower</h2>
+            <p id="towerInfo"></p>
+            <button id="upgradeDamage">Upgrade Damage (50)</button>
+            <button id="upgradeRange">Upgrade Range (50)</button>
+            <button id="upgradeSpeed">Upgrade Speed (50)</button>
+            <button id="sellTower">Sell Tower</button>
+            <button id="closeUpgrade">Close</button>
         </div>
         <div id="startMenu">
-            <h2>Welcome to the Banano Jungle!</h2>
-            <p>Collect bananas, slash peels, survive the quest!</p>
-            <button id="startButton">Start Adventure</button>
+            <h2>Defend the Banano Jungle!</h2>
+            <p>Place towers to stop the peels from reaching the end!</p>
+            <button id="startButton">Start Defense</button>
         </div>
         <div id="gameOver">
             <h2>Game Over!</h2>
-            <p>Final Score: <span id="finalScore">0</span></p>
+            <p>Final Wave: <span id="finalWave">0</span></p>
             <button id="restartButton">Restart</button>
         </div>
     </div>
-    <div id="controls">
-        <p>Controls: Arrow keys or WASD to move. Space to attack. Collect power-ups for boosts!</p>
-    </div>
-    <audio id="bgMusic" loop>
-        <source src="https://www.soundjay.com/buttons/button-20.mp3" type="audio/mpeg"> <!-- Replace with free jungle music URL -->
-    </audio>
-    <audio id="collectSound">
-        <source src="https://www.soundjay.com/buttons/button-3.mp3" type="audio/mpeg"> <!-- Placeholder -->
-    </audio>
-    <audio id="attackSound">
-        <source src="https://www.soundjay.com/buttons/button-4.mp3" type="audio/mpeg"> <!-- Placeholder -->
-    </audio>
     <script>
-        const bgCanvas = document.getElementById('backgroundCanvas');
-        const bgCtx = bgCanvas.getContext('2d');
-        const particleCanvas = document.getElementById('particleCanvas');
-        const particleCtx = particleCanvas.getContext('2d');
-        const entityCanvas = document.getElementById('entityCanvas');
-        const entityCtx = entityCanvas.getContext('2d');
-        const tileSize = 40;
-        const mapWidth = bgCanvas.width / tileSize;
-        const mapHeight = bgCanvas.height / tileSize;
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const gridSize = 40;
+        const cols = canvas.width / gridSize;
+        const rows = canvas.height / gridSize;
 
-        // Levels
-        const levels = [
-            // Level 1
-            [
-                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-                [0,1,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0],
-                [0,0,0,0,0,0,1,0,0,1,0,0,1,0,0,0,0,0,0,0],
-                [0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0],
-                [0,0,0,0,1,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0],
-                [0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0],
-                [0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1],
-                [0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0],
-                [0,1,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0],
-                [0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0],
-                [0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,1,0],
-                [0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0],
-                [1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0],
-                [0,0,0,1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,1],
-                [0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0]
-            ],
-            // Level 2
-            [
-                [1,1,0,0,1,1,0,0,1,0,0,1,0,1,1,0,0,1,1,0],
-                [0,1,1,0,0,1,0,1,0,0,1,0,0,0,1,1,0,0,1,0],
-                [0,0,1,1,0,0,1,0,0,1,1,0,1,0,0,1,0,0,0,1],
-                [1,0,0,1,1,0,0,0,1,0,1,1,0,0,0,1,1,0,1,0],
-                [0,1,0,0,1,1,0,1,0,0,0,1,0,1,1,0,0,1,0,0],
-                [0,0,1,0,0,1,1,0,0,1,0,0,1,0,1,0,0,0,1,1],
-                [1,0,0,0,1,0,1,0,1,1,0,0,0,0,1,1,0,1,0,0],
-                [0,1,0,1,0,0,0,1,0,1,1,0,0,1,0,1,1,0,0,1],
-                [0,0,1,1,0,1,0,0,0,0,1,1,1,0,0,0,1,0,1,0],
-                [1,0,0,1,1,0,0,1,0,0,0,1,1,0,1,0,0,1,1,0],
-                [0,1,0,0,1,0,1,0,1,0,0,0,1,1,0,0,1,0,1,1],
-                [0,0,1,0,0,1,1,0,0,1,0,1,0,1,0,1,0,0,0,1],
-                [1,0,0,0,1,0,1,1,0,0,1,0,0,0,1,1,0,1,0,0],
-                [0,1,1,0,0,0,0,1,1,0,0,0,1,0,0,1,1,0,1,0],
-                [0,0,1,1,0,1,0,0,1,0,0,1,1,0,0,0,1,1,0,1]
-            ],
-            // Level 3: Boss level
-            [
-                [0,1,1,1,0,0,1,1,1,0,0,1,1,1,0,0,1,1,1,0],
-                [0,0,1,0,0,1,0,1,0,0,1,0,1,0,0,1,0,1,0,0],
-                [1,0,0,0,1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1],
-                [0,1,0,1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,1,0],
-                [0,0,1,0,0,0,1,0,0,0,0,1,0,0,0,0,1,0,0,0],
-                [1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,1,0,0,0,1],
-                [0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,0,1,1,1,0],
-                [0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,1,0,0],
-                [1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,1,0,0,0,1],
-                [0,1,0,1,0,1,1,1,0,1,1,1,0,1,1,0,1,0,1,0],
-                [0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,1,0,0],
-                [1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,1,0,0,0,1],
-                [0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,0,1,1,1,0],
-                [0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,1,0,0],
-                [1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,1,0,0,0,1]
-            ]
-        ];
+        // Path for enemies (simple zigzag)
+        const path = [
+            {x: 0, y: 0},
+            {x: 2, y: 0},
+            {x: 2, y: 3},
+            {x: 5, y: 3},
+            {x: 5, y: 1},
+            {x: 8, y: 1},
+            {x: 8, y: 4},
+            {x: 11, y: 4},
+            {x: 11, y: 2},
+            {x: 14, y: 2},
+            {x: 14, y: 5},
+            {x: 17, y: 5},
+            {x: 17, y: 3},
+            {x: 19, y: 3},
+            {x: 19, y: 6},
+            {x: 15, y: 6},
+            {x: 15, y: 8},
+            {x: 10, y: 8},
+            {x: 10, y: 10},
+            {x: 5, y: 10},
+            {x: 5, y: 12},
+            {x: 0, y: 12},
+            {x: 0, y: 14}
+        ].map(p => ({x: p.x * gridSize, y: p.y * gridSize}));
 
-        let currentLevel = 0;
-        let map = levels[currentLevel];
+        let lives = 20;
+        let money = 200;
+        let wave = 1;
+        let towers = [];
+        let enemies = [];
+        let projectiles = [];
+        let selectedTower = null;
+        let placingTowerType = null;
+        let gameState = 'menu';
 
-        // Player - start at a free position (0,0)
-        let player = {
-            x: 0,
-            y: 0,
-            width: tileSize,
-            height: tileSize,
-            speed: 5,
-            health: 100,
-            maxHealth: 100,
-            attackRange: tileSize * 1.5,
-            attacking: false,
-            attackCooldown: 0,
-            score: 0,
-            animationFrame: 0,
-            direction: 'down'
-        };
-
-        // Entities
-        let bananas = [];
-        let peels = [];
-        let powerUps = [];
-        let particles = [];
-        let boss = null;
-
-        function spawnEntities() {
-            bananas = [];
-            peels = [];
-            powerUps = [];
-            particles = [];
-            boss = null;
-            const numBananas = 10 + currentLevel * 5;
-            const numPeels = 5 + currentLevel * 3;
-            const numPowerUps = 3 + currentLevel;
-
-            for (let i = 0; i < numBananas; i++) {
-                let bx, by;
-                do {
-                    bx = Math.floor(Math.random() * mapWidth) * tileSize;
-                    by = Math.floor(Math.random() * mapHeight) * tileSize;
-                } while (map[by / tileSize][bx / tileSize] === 1 || (bx === player.x && by === player.y));
-                bananas.push({x: bx, y: by, rotation: 0, collected: false});
-            }
-
-            for (let i = 0; i < numPeels; i++) {
-                let px, py;
-                do {
-                    px = Math.floor(Math.random() * mapWidth) * tileSize;
-                    py = Math.floor(Math.random() * mapHeight) * tileSize;
-                } while (map[py / tileSize][px / tileSize] === 1 || (px === player.x && py === player.y));
-                peels.push({
-                    x: px,
-                    y: py,
-                    width: tileSize / 2,
-                    height: tileSize / 2,
-                    speed: 2 + currentLevel * 0.5,
-                    health: 20 + currentLevel * 10,
-                    wobble: 0
-                });
-            }
-
-            for (let i = 0; i < numPowerUps; i++) {
-                let px, py;
-                do {
-                    px = Math.floor(Math.random() * mapWidth) * tileSize;
-                    py = Math.floor(Math.random() * mapHeight) * tileSize;
-                } while (map[py / tileSize][px / tileSize] === 1 || (px === player.x && py === player.y));
-                powerUps.push({x: px, y: py, type: Math.random() > 0.5 ? 'health' : 'speed', pulse: 0});
-            }
-
-            if (currentLevel === levels.length - 1) {
-                // Spawn boss away from player
-                boss = {
-                    x: (mapWidth - 3) * tileSize,
-                    y: (mapHeight - 3) * tileSize,
-                    width: tileSize * 2,
-                    height: tileSize * 2,
-                    speed: 3,
-                    health: 200,
-                    attackCooldown: 60,
-                    phase: 0
-                };
-            }
-        }
-
-        spawnEntities();
-
-        const healthDisplay = document.getElementById('health');
-        const scoreDisplay = document.getElementById('score');
-        const levelDisplay = document.getElementById('level');
+        const livesDisplay = document.getElementById('lives');
+        const moneyDisplay = document.getElementById('money');
+        const waveDisplay = document.getElementById('wave');
+        const upgradeMenu = document.getElementById('upgradeMenu');
+        const towerInfo = document.getElementById('towerInfo');
         const startMenu = document.getElementById('startMenu');
         const gameOver = document.getElementById('gameOver');
-        const finalScore = document.getElementById('finalScore');
-        const bgMusic = document.getElementById('bgMusic');
-        const collectSound = document.getElementById('collectSound');
-        const attackSound = document.getElementById('attackSound');
-
-        let gameState = 'menu'; // menu, playing, over
+        const finalWave = document.getElementById('finalWave');
 
         document.getElementById('startButton').addEventListener('click', () => {
             startMenu.style.display = 'none';
             gameState = 'playing';
-            bgMusic.play().catch(() => {}); // Play music
+            startWave();
         });
 
         document.getElementById('restartButton').addEventListener('click', () => {
             location.reload();
         });
 
-        // Keyboard with preventDefault to avoid scroll
-        const keys = {};
-        document.addEventListener('keydown', (e) => {
-            if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
-                e.preventDefault();
-            }
-            keys[e.key] = true;
-            if (e.key === ' ') player.attacking = true;
-        });
-        document.addEventListener('keyup', (e) => {
-            keys[e.key] = false;
-            if (e.key === ' ') player.attacking = false;
+        document.getElementById('closeUpgrade').addEventListener('click', () => {
+            upgradeMenu.style.display = 'none';
+            selectedTower = null;
         });
 
-        function drawBackground() {
-            bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
-            for (let y = 0; y < mapHeight; y++) {
-                for (let x = 0; x < mapWidth; x++) {
-                    if (map[y][x] === 0) {
-                        bgCtx.fillStyle = '#32CD32';
-                    } else {
-                        bgCtx.fillStyle = '#006400';
-                    }
-                    bgCtx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
-                    // Add texture
-                    bgCtx.fillStyle = 'rgba(0,100,0,0.2)';
-                    bgCtx.fillRect(x * tileSize + 5, y * tileSize + 5, tileSize - 10, tileSize - 10);
-                }
+        document.getElementById('sellTower').addEventListener('click', () => {
+            if (selectedTower) {
+                money += selectedTower.cost / 2;
+                towers = towers.filter(t => t !== selectedTower);
+                upgradeMenu.style.display = 'none';
+                selectedTower = null;
             }
-        }
+        });
 
-        function createParticles(x, y, color, count = 20) {
-            for (let i = 0; i < count; i++) {
-                particles.push({
-                    x,
-                    y,
-                    vx: Math.random() * 4 - 2,
-                    vy: Math.random() * 4 - 2,
-                    size: Math.random() * 5 + 5,
-                    life: 60,
-                    color
-                });
-            }
-        }
-
-        function updateParticles() {
-            particles = particles.filter(p => {
-                p.x += p.vx;
-                p.y += p.vy;
-                p.life--;
-                p.size *= 0.98;
-                return p.life > 0;
-            });
-        }
-
-        function drawParticles() {
-            particleCtx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
-            particles.forEach(p => {
-                particleCtx.fillStyle = p.color;
-                particleCtx.beginPath();
-                particleCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                particleCtx.fill();
-            });
-        }
-
-        function drawEntities() {
-            entityCtx.clearRect(0, 0, entityCanvas.width, entityCanvas.height);
-
-            // Bananas
-            entityCtx.fillStyle = '#FFD700';
-            bananas.forEach(b => {
-                if (!b.collected) {
-                    b.rotation = (b.rotation + 0.05) % (Math.PI * 2);
-                    entityCtx.save();
-                    entityCtx.translate(b.x + tileSize / 2, b.y + tileSize / 2);
-                    entityCtx.rotate(b.rotation);
-                    entityCtx.beginPath();
-                    entityCtx.arc(0, 0, tileSize / 3, 0, Math.PI * 2);
-                    entityCtx.fill();
-                    entityCtx.restore();
+        ['upgradeDamage', 'upgradeRange', 'upgradeSpeed'].forEach(id => {
+            document.getElementById(id).addEventListener('click', () => {
+                if (selectedTower && money >= 50) {
+                    money -= 50;
+                    selectedTower.level++;
+                    selectedTower.damage += 5;
+                    selectedTower.range += 20;
+                    selectedTower.fireRate -= 5;
+                    updateUpgradeMenu();
                 }
             });
+        });
 
-            // Power-ups
-            powerUps.forEach(p => {
-                p.pulse = Math.sin(Date.now() / 200) * 5 + 10;
-                entityCtx.fillStyle = p.type === 'health' ? '#FF69B4' : '#00BFFF';
-                entityCtx.beginPath();
-                entityCtx.arc(p.x + tileSize / 2, p.y + tileSize / 2, p.pulse, 0, Math.PI * 2);
-                entityCtx.fill();
+        // Tower buttons
+        document.querySelectorAll('.towerButton').forEach(btn => {
+            btn.addEventListener('click', () => {
+                placingTowerType = btn.dataset.type;
             });
+        });
 
-            // Peels
-            entityCtx.fillStyle = '#8B4513';
-            peels.forEach(p => {
-                if (p.health > 0) {
-                    p.wobble = Math.sin(Date.now() / 100) * 2;
-                    entityCtx.fillRect(p.x + p.wobble, p.y, p.width, p.height);
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = Math.floor((e.clientX - rect.left) / gridSize) * gridSize;
+            const y = Math.floor((e.clientY - rect.top) / gridSize) * gridSize;
+
+            if (placingTowerType) {
+                const cost = placingTowerType === 'basic' ? 50 : placingTowerType === 'slow' ? 75 : 100;
+                if (money >= cost && !isOnPath(x, y) && !towers.some(t => t.x === x && t.y === y)) {
+                    towers.push(createTower(placingTowerType, x, y));
+                    money -= cost;
+                    placingTowerType = null;
                 }
-            });
-
-            // Boss
-            if (boss && boss.health > 0) {
-                entityCtx.fillStyle = '#FF0000';
-                entityCtx.fillRect(boss.x, boss.y, boss.width, boss.height);
-                if (boss.phase === 1) {
-                    entityCtx.fillStyle = 'rgba(255,0,0,0.5)';
-                    entityCtx.beginPath();
-                    entityCtx.arc(boss.x + boss.width / 2, boss.y + boss.height / 2, boss.width, 0, Math.PI * 2);
-                    entityCtx.fill();
+            } else {
+                selectedTower = towers.find(t => t.x === x && t.y === y);
+                if (selectedTower) {
+                    updateUpgradeMenu();
+                    upgradeMenu.style.display = 'block';
+                } else {
+                    upgradeMenu.style.display = 'none';
                 }
             }
+        });
 
-            // Player
-            player.animationFrame = (player.animationFrame + 0.1) % 4;
-            entityCtx.fillStyle = '#8B4513';
-            entityCtx.fillRect(player.x, player.y, player.width, player.height);
-            entityCtx.fillStyle = '#FFF';
-            entityCtx.beginPath();
-            entityCtx.arc(player.x + tileSize / 4 + Math.sin(player.animationFrame) * 2, player.y + tileSize / 4, 5, 0, Math.PI * 2);
-            entityCtx.arc(player.x + tileSize * 3 / 4 + Math.sin(player.animationFrame) * 2, player.y + tileSize / 4, 5, 0, Math.PI * 2);
-            entityCtx.fill();
-
-            // Attack
-            if (player.attacking && player.attackCooldown <= 0) {
-                attackSound.play().catch(() => {});
-                entityCtx.strokeStyle = '#FF0000';
-                entityCtx.lineWidth = 5;
-                entityCtx.beginPath();
-                const attackX = player.x + player.width / 2;
-                const attackY = player.y + player.height / 2;
-                entityCtx.moveTo(attackX - player.attackRange, attackY);
-                entityCtx.lineTo(attackX + player.attackRange, attackY);
-                entityCtx.moveTo(attackX, attackY - player.attackRange);
-                entityCtx.lineTo(attackX, attackY + player.attackRange);
-                entityCtx.stroke();
-                player.attackCooldown = 20;
+        function createTower(type, x, y) {
+            const base = {
+                x, y,
+                width: gridSize,
+                height: gridSize,
+                level: 1,
+                cost: type === 'basic' ? 50 : type === 'slow' ? 75 : 100,
+                damage: 10,
+                range: 100,
+                fireRate: 60,
+                cooldown: 0,
+                type
+            };
+            if (type === 'slow') {
+                base.damage = 5;
+                base.range = 150;
+                base.fireRate = 90;
+            } else if (type === 'aoe') {
+                base.damage = 15;
+                base.range = 80;
+                base.fireRate = 120;
             }
+            return base;
         }
 
-        function updatePlayer() {
+        function isOnPath(x, y) {
+            return path.some(p => p.x === x && p.y === y);
+        }
+
+        function startWave() {
+            const numEnemies = wave * 5;
+            let spawnInterval = setInterval(() => {
+                if (enemies.length < numEnemies) {
+                    enemies.push(createEnemy());
+                } else {
+                    clearInterval(spawnInterval);
+                }
+            }, 1000);
+        }
+
+        function createEnemy() {
+            return {
+                x: path[0].x,
+                y: path[0].y,
+                pathIndex: 1,
+                health: 50 + wave * 10,
+                maxHealth: 50 + wave * 10,
+                speed: 2,
+                slowTimer: 0
+            };
+        }
+
+        function update() {
             if (gameState !== 'playing') return;
 
-            let dx = 0, dy = 0;
-            let moving = false;
-            if (keys['ArrowUp'] || keys['w']) { dy -= player.speed; player.direction = 'up'; moving = true; }
-            if (keys['ArrowDown'] || keys['s']) { dy += player.speed; player.direction = 'down'; moving = true; }
-            if (keys['ArrowLeft'] || keys['a']) { dx -= player.speed; player.direction = 'left'; moving = true; }
-            if (keys['ArrowRight'] || keys['d']) { dx += player.speed; player.direction = 'right'; moving = true; }
+            // Update enemies
+            enemies = enemies.filter(e => {
+                if (e.slowTimer > 0) e.slowTimer--;
+                const speed = e.slowTimer > 0 ? e.speed / 2 : e.speed;
 
-            if (moving) player.animationFrame += 0.2;
-
-            let newX = player.x + dx;
-            let newY = player.y + dy;
-            const px = Math.floor(newX / tileSize);
-            const py = Math.floor(newY / tileSize);
-            const px2 = Math.floor((newX + player.width - 1) / tileSize);
-            const py2 = Math.floor((newY + player.height - 1) / tileSize);
-
-            if (newX >= 0 && newX + player.width <= bgCanvas.width &&
-                newY >= 0 && newY + player.height <= bgCanvas.height &&
-                map[py][px] === 0 && map[py][px2] === 0 &&
-                map[py2][px] === 0 && map[py2][px2] === 0) {
-                player.x = newX;
-                player.y = newY;
-            }
-
-            if (player.attackCooldown > 0) player.attackCooldown--;
-        }
-
-        function updatePeels() {
-            peels.forEach(p => {
-                if (p.health <= 0) return;
-
-                const dx = player.x - p.x;
-                const dy = player.y - p.y;
-                const dist = Math.sqrt(dx*dx + dy*dy);
-                if (dist > 0) {
-                    p.x += (dx / dist) * p.speed;
-                    p.y += (dy / dist) * p.speed;
-                }
-
-                if (Math.abs(player.x - p.x) < (player.width + p.width) / 2 &&
-                    Math.abs(player.y - p.y) < (player.height + p.height) / 2) {
-                    player.health -= 5 + currentLevel;
-                    createParticles(p.x, p.y, 'red', 5);
-                    if (player.health <= 0) {
+                const target = path[e.pathIndex];
+                if (target) {
+                    const dx = target.x - e.x;
+                    const dy = target.y - e.y;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    if (dist < speed) {
+                        e.x = target.x;
+                        e.y = target.y;
+                        e.pathIndex++;
+                    } else {
+                        e.x += (dx / dist) * speed;
+                        e.y += (dy / dist) * speed;
+                    }
+                } else {
+                    lives--;
+                    if (lives <= 0) {
                         gameState = 'over';
                         gameOver.style.display = 'block';
-                        finalScore.textContent = player.score;
-                        bgMusic.pause();
+                        finalWave.textContent = wave;
                     }
+                    return false;
                 }
 
-                if (player.attacking && player.attackCooldown <= 0) {
-                    const pdist = Math.sqrt(Math.pow(player.x + player.width/2 - (p.x + p.width/2), 2) + Math.pow(player.y + player.height/2 - (p.y + p.height/2), 2));
-                    if (pdist < player.attackRange) {
-                        p.health -= 20;
-                        createParticles(p.x, p.y, '#FFD700', 10);
-                        if (p.health <= 0) {
-                            player.score += 50;
-                        }
+                if (e.health <= 0) {
+                    money += 10;
+                    return false;
+                }
+                return true;
+            });
+
+            // Update towers
+            towers.forEach(t => {
+                if (t.cooldown > 0) t.cooldown--;
+                if (t.cooldown <= 0) {
+                    const target = findTarget(t);
+                    if (target) {
+                        projectiles.push(createProjectile(t, target));
+                        t.cooldown = t.fireRate;
                     }
                 }
             });
 
-            peels = peels.filter(p => p.health > 0);
+            // Update projectiles
+            projectiles = projectiles.filter(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                const dist = Math.sqrt(Math.pow(p.x - p.target.x, 2) + Math.pow(p.y - p.target.y, 2));
+                if (dist < 5) {
+                    p.target.health -= p.damage;
+                    if (p.towerType === 'slow') p.target.slowTimer = 60;
+                    if (p.towerType === 'aoe') {
+                        enemies.forEach(e => {
+                            if (e !== p.target && Math.sqrt(Math.pow(e.x - p.target.x, 2) + Math.pow(e.y - p.target.y, 2)) < 50) {
+                                e.health -= p.damage / 2;
+                            }
+                        });
+                    }
+                    return false;
+                }
+                return true;
+            });
+
+            if (enemies.length === 0 && projectiles.length === 0) {
+                wave++;
+                startWave();
+            }
         }
 
-        function updateBoss() {
-            if (!boss || boss.health <= 0) return;
+        function findTarget(t) {
+            let closest = null;
+            let minDist = t.range;
+            enemies.forEach(e => {
+                const dist = Math.sqrt(Math.pow(e.x - (t.x + gridSize/2), 2) + Math.pow(e.y - (t.y + gridSize/2), 2));
+                if (dist < minDist) {
+                    minDist = dist;
+                    closest = e;
+                }
+            });
+            return closest;
+        }
 
-            const dx = player.x - boss.x;
-            const dy = player.y - boss.y;
+        function createProjectile(t, target) {
+            const px = t.x + gridSize / 2;
+            const py = t.y + gridSize / 2;
+            const dx = target.x - px;
+            const dy = target.y - py;
             const dist = Math.sqrt(dx*dx + dy*dy);
-            if (dist > 0) {
-                boss.x += (dx / dist) * boss.speed;
-                boss.y += (dy / dist) * boss.speed;
-            }
-
-            if (boss.attackCooldown <= 0) {
-                createParticles(boss.x + boss.width / 2, boss.y + boss.height / 2, 'red', 20);
-                if (Math.abs(player.x - boss.x) < boss.width && Math.abs(player.y - boss.y) < boss.height) {
-                    player.health -= 20;
-                }
-                boss.attackCooldown = 60;
-            } else {
-                boss.attackCooldown--;
-            }
-
-            if (boss.health < 100 && boss.phase === 0) {
-                boss.phase = 1;
-                boss.speed *= 1.5;
-                createParticles(boss.x, boss.y, 'purple', 50);
-            }
-
-            if (player.attacking && player.attackCooldown <= 0) {
-                const bdist = Math.sqrt(Math.pow(player.x + player.width/2 - (boss.x + boss.width/2), 2) + Math.pow(player.y + player.height/2 - (boss.y + boss.height/2), 2));
-                if (bdist < player.attackRange + boss.width / 2) {
-                    boss.health -= 10;
-                    createParticles(boss.x, boss.y, '#FFD700', 15);
-                    if (boss.health <= 0) {
-                        player.score += 500;
-                        createParticles(boss.x, boss.y, 'gold', 100);
-                    }
-                }
-            }
-
-            if (Math.abs(player.x - boss.x) < (player.width + boss.width) / 2 &&
-                Math.abs(player.y - boss.y) < (player.height + boss.height) / 2) {
-                player.health -= 10;
-                createParticles(player.x, player.y, 'red', 10);
-            }
+            return {
+                x: px,
+                y: py,
+                vx: (dx / dist) * 10,
+                vy: (dy / dist) * 10,
+                damage: t.damage,
+                target,
+                towerType: t.type
+            };
         }
 
-        function collectItems() {
-            bananas = bananas.filter(b => {
-                if (!b.collected && Math.abs(player.x - b.x) < tileSize && Math.abs(player.y - b.y) < tileSize) {
-                    b.collected = true;
-                    player.score += 10;
-                    collectSound.play().catch(() => {});
-                    createParticles(b.x, b.y, '#FFD700', 15);
-                    return false;
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw path
+            ctx.strokeStyle = '#8B4513';
+            ctx.lineWidth = gridSize / 2;
+            ctx.beginPath();
+            path.forEach((p, i) => {
+                if (i === 0) ctx.moveTo(p.x + gridSize/2, p.y + gridSize/2);
+                else ctx.lineTo(p.x + gridSize/2, p.y + gridSize/2);
+            });
+            ctx.stroke();
+
+            // Draw towers
+            towers.forEach(t => {
+                ctx.fillStyle = t.type === 'basic' ? '#00FF00' : t.type === 'slow' ? '#0000FF' : '#FF0000';
+                ctx.fillRect(t.x, t.y, t.width, t.height);
+                ctx.fillStyle = '#FFF';
+                ctx.font = '12px Arial';
+                ctx.fillText(`Lv${t.level}`, t.x + 5, t.y + 15);
+                if (t === selectedTower) {
+                    ctx.strokeStyle = '#FFD700';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(t.x, t.y, t.width, t.height);
                 }
-                return true;
             });
 
-            powerUps = powerUps.filter(p => {
-                if (Math.abs(player.x - p.x) < tileSize && Math.abs(player.y - p.y) < tileSize) {
-                    if (p.type === 'health') {
-                        player.health = Math.min(player.health + 50, player.maxHealth);
-                    } else {
-                        player.speed += 2;
-                    }
-                    collectSound.play().catch(() => {});
-                    createParticles(p.x, p.y, p.type === 'health' ? '#FF69B4' : '#00BFFF', 20);
-                    return false;
-                }
-                return true;
+            // Draw enemies
+            enemies.forEach(e => {
+                ctx.fillStyle = '#8B4513';
+                ctx.beginPath();
+                ctx.arc(e.x, e.y, 15, 0, Math.PI * 2);
+                ctx.fill();
+                // Health bar
+                ctx.fillStyle = '#FF0000';
+                ctx.fillRect(e.x - 20, e.y - 25, 40, 5);
+                ctx.fillStyle = '#00FF00';
+                ctx.fillRect(e.x - 20, e.y - 25, 40 * (e.health / e.maxHealth), 5);
             });
-        }
 
-        function checkLevelProgress() {
-            if (bananas.length === 0 && peels.length === 0 && (!boss || boss.health <= 0)) {
-                currentLevel++;
-                if (currentLevel >= levels.length) {
-                    gameState = 'over';
-                    gameOver.style.display = 'block';
-                    finalScore.textContent = player.score;
-                    alert('You defeated the Boss and conquered the Jungle! Epic Win!');
-                    bgMusic.pause();
-                } else {
-                    map = levels[currentLevel];
-                    spawnEntities();
-                    drawBackground();
-                }
-            }
+            // Draw projectiles
+            projectiles.forEach(p => {
+                ctx.fillStyle = '#FFD700';
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
+                ctx.fill();
+            });
         }
 
         function updateUI() {
-            healthDisplay.textContent = `Health: ${Math.max(0, player.health)}/${player.maxHealth}`;
-            scoreDisplay.textContent = `Score: ${player.score}`;
-            levelDisplay.textContent = `Level: ${currentLevel + 1}`;
+            livesDisplay.textContent = `Lives: ${lives}`;
+            moneyDisplay.textContent = `Bananos: ${money}`;
+            waveDisplay.textContent = `Wave: ${wave}`;
+        }
+
+        function updateUpgradeMenu() {
+            towerInfo.innerHTML = `${selectedTower.type} Tower Lv${selectedTower.level}<br>Damage: ${selectedTower.damage}<br>Range: ${selectedTower.range}<br>Speed: ${100 - selectedTower.fireRate}`;
         }
 
         function gameLoop() {
-            if (gameState === 'playing') {
-                updatePlayer();
-                updatePeels();
-                updateBoss();
-                collectItems();
-                checkLevelProgress();
-                updateParticles();
-            }
-            drawEntities();
-            drawParticles();
+            update();
+            draw();
             updateUI();
             requestAnimationFrame(gameLoop);
         }
 
         startMenu.style.display = 'block';
-        drawBackground();
         gameLoop();
     </script>
 </body>
