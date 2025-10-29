@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banano Browser Quest - Simplified Edition</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            color: #FFD700;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        canvas {
+            border: 2px solid #228B22;
+            background-color: #228B22;
+        }
+        #controls {
+            margin-top: 20px;
+            text-align: center;
+        }
+        #score {
+            font-size: 1.5rem;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Banano Browser Quest - Simplified Single-Player Edition 🍌</h1>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <div id="controls">
+        <p>Use arrow keys to move the monkey hero. Collect bananas while avoiding peels!</p>
+        <p>Score: <span id="score">0</span></p>
+    </div>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const tileSize = 40;
+        const mapWidth = canvas.width / tileSize;
+        const mapHeight = canvas.height / tileSize;
+
+        // Simple map: 0 = grass, 1 = tree (obstacle)
+        const map = [
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,1,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0],
+            [0,0,0,0,0,0,1,0,0,1,0,0,1,0,0,0,0,0,0,0],
+            [0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0],
+            [0,0,0,0,1,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0],
+            [0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0],
+            [0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1],
+            [0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0],
+            [0,1,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0],
+            [0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,1,0],
+            [0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0],
+            [1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0],
+            [0,0,0,1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,1],
+            [0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0]
+        ];
+
+        // Player
+        let player = {
+            x: 1,
+            y: 1,
+            width: 1,
+            height: 1,
+            speed: 0.1
+        };
+
+        // Items: Bananas to collect
+        let bananas = [];
+        for (let i = 0; i < 10; i++) {
+            let bx, by;
+            do {
+                bx = Math.floor(Math.random() * mapWidth);
+                by = Math.floor(Math.random() * mapHeight);
+            } while (map[by][bx] === 1);
+            bananas.push({x: bx, y: by});
+        }
+
+        // Enemies: Peels to avoid
+        let peels = [];
+        for (let i = 0; i < 5; i++) {
+            let px, py;
+            do {
+                px = Math.floor(Math.random() * mapWidth);
+                py = Math.floor(Math.random() * mapHeight);
+            } while (map[py][px] === 1);
+            peels.push({x: px, y: py, dx: (Math.random() > 0.5 ? 0.05 : -0.05), dy: (Math.random() > 0.5 ? 0.05 : -0.05)});
+        }
+
+        let score = 0;
+        const scoreDisplay = document.getElementById('score');
+
+        // Keyboard controls
+        const keys = {};
+        document.addEventListener('keydown', (e) => keys[e.key] = true);
+        document.addEventListener('keyup', (e) => keys[e.key] = false);
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw map
+            for (let y = 0; y < mapHeight; y++) {
+                for (let x = 0; x < mapWidth; x++) {
+                    if (map[y][x] === 0) {
+                        ctx.fillStyle = '#32CD32'; // Grass
+                        ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
+                    } else {
+                        ctx.fillStyle = '#006400'; // Tree
+                        ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
+                    }
+                }
+            }
+
+            // Draw player (monkey)
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(player.x * tileSize, player.y * tileSize, tileSize, tileSize);
+
+            // Draw bananas
+            ctx.fillStyle = '#FFD700';
+            bananas.forEach(b => {
+                ctx.beginPath();
+                ctx.arc(b.x * tileSize + tileSize / 2, b.y * tileSize + tileSize / 2, tileSize / 3, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // Draw peels (enemies)
+            ctx.fillStyle = '#8B4513';
+            peels.forEach(p => {
+                ctx.fillRect(p.x * tileSize, p.y * tileSize, tileSize / 2, tileSize / 2);
+            });
+        }
+
+        function update() {
+            // Move player
+            if (keys['ArrowUp']) player.y -= player.speed;
+            if (keys['ArrowDown']) player.y += player.speed;
+            if (keys['ArrowLeft']) player.x -= player.speed;
+            if (keys['ArrowRight']) player.x += player.speed;
+
+            // Collision with walls/trees
+            const px = Math.floor(player.x);
+            const py = Math.floor(player.y);
+            if (player.x < 0 || player.x >= mapWidth - 1 || player.y < 0 || player.y >= mapHeight - 1 || map[py][px] === 1) {
+                // Reset to start if out of bounds or hit tree
+                player.x = 1;
+                player.y = 1;
+            }
+
+            // Collect bananas
+            bananas = bananas.filter(b => {
+                if (Math.abs(player.x - b.x) < 0.5 && Math.abs(player.y - b.y) < 0.5) {
+                    score += 10;
+                    scoreDisplay.textContent = score;
+                    return false;
+                }
+                return true;
+            });
+
+            // Move peels and check collision
+            peels.forEach(p => {
+                p.x += p.dx;
+                p.y += p.dy;
+                const pxInt = Math.floor(p.x);
+                const pyInt = Math.floor(p.y);
+                if (p.x < 0 || p.x >= mapWidth || p.y < 0 || p.y >= mapHeight || map[pyInt][pxInt] === 1) {
+                    p.dx = -p.dx;
+                    p.dy = -p.dy;
+                }
+                if (Math.abs(player.x - p.x) < 0.5 && Math.abs(player.y - p.y) < 0.5) {
+                    alert('Slipped on a peel! Game Over. Final Score: ' + score);
+                    location.reload();
+                }
+            });
+
+            // Win condition
+            if (bananas.length === 0) {
+                alert('You collected all bananas! You win! Score: ' + score);
+                location.reload();
+            }
+        }
+
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        gameLoop();
+    </script>
+</body>
+</html>
