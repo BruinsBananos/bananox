@@ -119,13 +119,13 @@
         <p>Controls: Arrow keys or WASD to move. Space to attack. Collect power-ups for boosts!</p>
     </div>
     <audio id="bgMusic" loop>
-        <source src="https://www.soundjay.com/buttons/button-20.mp3" type="audio/mpeg"> <!-- Placeholder; replace with free jungle music URL -->
+        <source src="https://www.soundjay.com/buttons/button-20.mp3" type="audio/mpeg"> <!-- Replace with free jungle music URL -->
     </audio>
     <audio id="collectSound">
-        <source src="https://www.soundjay.com/buttons/button-3.mp3" type="audio/mpeg"> <!-- Placeholder for collect sound -->
+        <source src="https://www.soundjay.com/buttons/button-3.mp3" type="audio/mpeg"> <!-- Placeholder -->
     </audio>
     <audio id="attackSound">
-        <source src="https://www.soundjay.com/buttons/button-4.mp3" type="audio/mpeg"> <!-- Placeholder for attack -->
+        <source src="https://www.soundjay.com/buttons/button-4.mp3" type="audio/mpeg"> <!-- Placeholder -->
     </audio>
     <script>
         const bgCanvas = document.getElementById('backgroundCanvas');
@@ -199,10 +199,10 @@
         let currentLevel = 0;
         let map = levels[currentLevel];
 
-        // Player
+        // Player - start at a free position (0,0)
         let player = {
-            x: tileSize,
-            y: tileSize,
+            x: 0,
+            y: 0,
             width: tileSize,
             height: tileSize,
             speed: 5,
@@ -238,7 +238,7 @@
                 do {
                     bx = Math.floor(Math.random() * mapWidth) * tileSize;
                     by = Math.floor(Math.random() * mapHeight) * tileSize;
-                } while (map[by / tileSize][bx / tileSize] === 1);
+                } while (map[by / tileSize][bx / tileSize] === 1 || (bx === player.x && by === player.y));
                 bananas.push({x: bx, y: by, rotation: 0, collected: false});
             }
 
@@ -247,7 +247,7 @@
                 do {
                     px = Math.floor(Math.random() * mapWidth) * tileSize;
                     py = Math.floor(Math.random() * mapHeight) * tileSize;
-                } while (map[py / tileSize][px / tileSize] === 1);
+                } while (map[py / tileSize][px / tileSize] === 1 || (px === player.x && py === player.y));
                 peels.push({
                     x: px,
                     y: py,
@@ -264,15 +264,15 @@
                 do {
                     px = Math.floor(Math.random() * mapWidth) * tileSize;
                     py = Math.floor(Math.random() * mapHeight) * tileSize;
-                } while (map[py / tileSize][px / tileSize] === 1);
+                } while (map[py / tileSize][px / tileSize] === 1 || (px === player.x && py === player.y));
                 powerUps.push({x: px, y: py, type: Math.random() > 0.5 ? 'health' : 'speed', pulse: 0});
             }
 
             if (currentLevel === levels.length - 1) {
-                // Spawn boss
+                // Spawn boss away from player
                 boss = {
-                    x: (mapWidth / 2) * tileSize,
-                    y: (mapHeight / 2) * tileSize,
+                    x: (mapWidth - 3) * tileSize,
+                    y: (mapHeight - 3) * tileSize,
                     width: tileSize * 2,
                     height: tileSize * 2,
                     speed: 3,
@@ -307,9 +307,12 @@
             location.reload();
         });
 
-        // Keyboard
+        // Keyboard with preventDefault to avoid scroll
         const keys = {};
         document.addEventListener('keydown', (e) => {
+            if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
+                e.preventDefault();
+            }
             keys[e.key] = true;
             if (e.key === ' ') player.attacking = true;
         });
@@ -328,7 +331,7 @@
                         bgCtx.fillStyle = '#006400';
                     }
                     bgCtx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
-                    // Add grass texture
+                    // Add texture
                     bgCtx.fillStyle = 'rgba(0,100,0,0.2)';
                     bgCtx.fillRect(x * tileSize + 5, y * tileSize + 5, tileSize - 10, tileSize - 10);
                 }
@@ -372,7 +375,7 @@
         function drawEntities() {
             entityCtx.clearRect(0, 0, entityCanvas.width, entityCanvas.height);
 
-            // Draw bananas with spin
+            // Bananas
             entityCtx.fillStyle = '#FFD700';
             bananas.forEach(b => {
                 if (!b.collected) {
@@ -387,7 +390,7 @@
                 }
             });
 
-            // Draw power-ups with pulse
+            // Power-ups
             powerUps.forEach(p => {
                 p.pulse = Math.sin(Date.now() / 200) * 5 + 10;
                 entityCtx.fillStyle = p.type === 'health' ? '#FF69B4' : '#00BFFF';
@@ -396,7 +399,7 @@
                 entityCtx.fill();
             });
 
-            // Draw peels with wobble
+            // Peels
             entityCtx.fillStyle = '#8B4513';
             peels.forEach(p => {
                 if (p.health > 0) {
@@ -405,11 +408,10 @@
                 }
             });
 
-            // Draw boss if present
+            // Boss
             if (boss && boss.health > 0) {
                 entityCtx.fillStyle = '#FF0000';
                 entityCtx.fillRect(boss.x, boss.y, boss.width, boss.height);
-                // Boss phases
                 if (boss.phase === 1) {
                     entityCtx.fillStyle = 'rgba(255,0,0,0.5)';
                     entityCtx.beginPath();
@@ -418,18 +420,17 @@
                 }
             }
 
-            // Draw player with simple animation
-            player.animationFrame = (player.animationFrame + 0.1) % 4; // 4 frames
+            // Player
+            player.animationFrame = (player.animationFrame + 0.1) % 4;
             entityCtx.fillStyle = '#8B4513';
             entityCtx.fillRect(player.x, player.y, player.width, player.height);
-            // Add eyes
             entityCtx.fillStyle = '#FFF';
             entityCtx.beginPath();
             entityCtx.arc(player.x + tileSize / 4 + Math.sin(player.animationFrame) * 2, player.y + tileSize / 4, 5, 0, Math.PI * 2);
             entityCtx.arc(player.x + tileSize * 3 / 4 + Math.sin(player.animationFrame) * 2, player.y + tileSize / 4, 5, 0, Math.PI * 2);
             entityCtx.fill();
 
-            // Draw attack slash
+            // Attack
             if (player.attacking && player.attackCooldown <= 0) {
                 attackSound.play().catch(() => {});
                 entityCtx.strokeStyle = '#FF0000';
@@ -518,7 +519,6 @@
         function updateBoss() {
             if (!boss || boss.health <= 0) return;
 
-            // Chase player
             const dx = player.x - boss.x;
             const dy = player.y - boss.y;
             const dist = Math.sqrt(dx*dx + dy*dy);
@@ -527,7 +527,6 @@
                 boss.y += (dy / dist) * boss.speed;
             }
 
-            // Attack
             if (boss.attackCooldown <= 0) {
                 createParticles(boss.x + boss.width / 2, boss.y + boss.height / 2, 'red', 20);
                 if (Math.abs(player.x - boss.x) < boss.width && Math.abs(player.y - boss.y) < boss.height) {
@@ -538,14 +537,12 @@
                 boss.attackCooldown--;
             }
 
-            // Phases
             if (boss.health < 100 && boss.phase === 0) {
                 boss.phase = 1;
                 boss.speed *= 1.5;
                 createParticles(boss.x, boss.y, 'purple', 50);
             }
 
-            // Player attack on boss
             if (player.attacking && player.attackCooldown <= 0) {
                 const bdist = Math.sqrt(Math.pow(player.x + player.width/2 - (boss.x + boss.width/2), 2) + Math.pow(player.y + player.height/2 - (boss.y + boss.height/2), 2));
                 if (bdist < player.attackRange + boss.width / 2) {
@@ -558,7 +555,6 @@
                 }
             }
 
-            // Collision damage
             if (Math.abs(player.x - boss.x) < (player.width + boss.width) / 2 &&
                 Math.abs(player.y - boss.y) < (player.height + boss.height) / 2) {
                 player.health -= 10;
@@ -583,7 +579,7 @@
                     if (p.type === 'health') {
                         player.health = Math.min(player.health + 50, player.maxHealth);
                     } else {
-                        player.speed += 2; // Boost
+                        player.speed += 2;
                     }
                     collectSound.play().catch(() => {});
                     createParticles(p.x, p.y, p.type === 'health' ? '#FF69B4' : '#00BFFF', 20);
