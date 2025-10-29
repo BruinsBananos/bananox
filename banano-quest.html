@@ -131,7 +131,7 @@
         <canvas id="gameCanvas" width="800" height="600"></canvas>
         <div id="ui">
             <div id="lives">Lives: 20</div>
-            <div id="money">Bananos: 500</div> <!-- Increased starting money for easier buildup -->
+            <div id="money">Bananos: 500</div>
             <div id="wave">Wave: 1</div>
         </div>
         <div id="towerMenu">
@@ -194,7 +194,7 @@
         ].map(p => ({x: p.x * gridSize, y: p.y * gridSize}));
 
         let lives = 20;
-        let money = 500; // Increased for easier start
+        let money = 500;
         let wave = 1;
         let towers = [];
         let enemies = [];
@@ -286,21 +286,21 @@
                 height: gridSize,
                 level: 1,
                 cost: type === 'basic' ? 50 : type === 'slow' ? 75 : 100,
-                damage: 10,
-                range: 100,
-                fireRate: 60,
+                damage: 20, // Increased damage to ensure kills
+                range: 150, // Increased base range
+                fireRate: 30, // Faster fire
                 cooldown: 0,
                 type,
-                animationFrame: 0 // For firing animation
+                animationFrame: 0
             };
             if (type === 'slow') {
-                base.damage = 5;
-                base.range = 150;
-                base.fireRate = 90;
+                base.damage = 10;
+                base.range = 200;
+                base.fireRate = 45;
             } else if (type === 'aoe') {
-                base.damage = 15;
-                base.range = 80;
-                base.fireRate = 120;
+                base.damage = 30;
+                base.range = 100;
+                base.fireRate = 60;
             }
             return base;
         }
@@ -310,14 +310,16 @@
         }
 
         function startWave() {
-            const numEnemies = Math.min(wave * 2 + 3, 20); // Easier early waves, cap at higher
-            let spawnInterval = setInterval(() => {
-                if (enemies.length < numEnemies) {
+            const numEnemies = wave * 2 + 3;
+            let spawned = 0;
+            const spawnInterval = setInterval(() => {
+                if (spawned < numEnemies) {
                     enemies.push(createEnemy());
+                    spawned++;
                 } else {
                     clearInterval(spawnInterval);
                 }
-            }, 1500); // Slower spawn for buildup
+            }, 1000); // Slower spawn
         }
 
         function createEnemy() {
@@ -325,18 +327,18 @@
                 x: path[0].x,
                 y: path[0].y,
                 pathIndex: 1,
-                health: 30 + wave * 5, // Reduced base health for easier starts
-                maxHealth: 30 + wave * 5,
-                speed: 1 + wave * 0.1, // Slower early
+                health: 50 + wave * 10,
+                maxHealth: 50 + wave * 10,
+                speed: 0.5 + wave * 0.05, // Slower speed
                 slowTimer: 0,
-                animationFrame: 0 // For wobble
+                animationFrame: 0
             };
         }
 
         function update() {
             if (gameState !== 'playing') return;
 
-            // Update enemies with smooth animation
+            // Update enemies
             enemies = enemies.filter(e => {
                 if (e.slowTimer > 0) e.slowTimer--;
                 const speed = e.slowTimer > 0 ? e.speed / 2 : e.speed;
@@ -365,33 +367,43 @@
                 }
 
                 if (e.health <= 0) {
-                    money += 20 + wave * 2; // More money per kill for buildup
+                    money += 20 + wave * 2;
                     return false;
                 }
-                e.animationFrame += 0.1; // For wobble
+                e.animationFrame += 0.1;
                 return true;
             });
 
-            // Update towers with firing animation
+            // Update towers
             towers.forEach(t => {
-                t.animationFrame *= 0.9; // Reset animation
+                t.animationFrame *= 0.9;
                 if (t.cooldown > 0) t.cooldown--;
                 if (t.cooldown <= 0) {
                     const target = findTarget(t);
                     if (target) {
                         projectiles.push(createProjectile(t, target));
                         t.cooldown = t.fireRate;
-                        t.animationFrame = 1; // Trigger fire animation
+                        t.animationFrame = 1;
                     }
                 }
             });
 
-            // Update projectiles with trail
+            // Update projectiles
             projectiles = projectiles.filter(p => {
+                // Homing adjustment
+                const dx = p.target.x - p.x;
+                const dy = p.target.y - p.y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                if (dist > 0) {
+                    p.vx = (dx / dist) * 5; // Reduced projectile speed for better hitting
+                    p.vy = (dy / dist) * 5;
+                }
                 p.x += p.vx;
                 p.y += p.vy;
-                const dist = Math.sqrt(Math.pow(p.x - p.target.x, 2) + Math.pow(p.y - p.target.y, 2));
-                if (dist < 5) {
+
+                // Check intersection with enemy
+                if (p.x > p.target.x - 15 && p.x < p.target.x + 15 &&
+                    p.y > p.target.y - 15 && p.y < p.target.y + 15) {
                     p.target.health -= p.damage;
                     if (p.towerType === 'slow') p.target.slowTimer = 60;
                     if (p.towerType === 'aoe') {
@@ -434,19 +446,19 @@
             return {
                 x: px,
                 y: py,
-                vx: (dx / dist) * 10,
-                vy: (dy / dist) * 10,
+                vx: (dx / dist) * 5,
+                vy: (dy / dist) * 5,
                 damage: t.damage,
                 target,
                 towerType: t.type,
-                trail: [] // For pretty trail
+                trail: []
             };
         }
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Draw path with glow
+            // Draw path
             ctx.strokeStyle = '#8B4513';
             ctx.lineWidth = gridSize / 2;
             ctx.shadowColor = '#FFD700';
@@ -459,10 +471,10 @@
             ctx.stroke();
             ctx.shadowBlur = 0;
 
-            // Draw towers with animation
+            // Draw towers
             towers.forEach(t => {
                 ctx.fillStyle = t.type === 'basic' ? '#00FF00' : t.type === 'slow' ? '#0000FF' : '#FF0000';
-                const scale = 1 + t.animationFrame * 0.2; // Pulse on fire
+                const scale = 1 + t.animationFrame * 0.2;
                 ctx.save();
                 ctx.translate(t.x + gridSize / 2, t.y + gridSize / 2);
                 ctx.scale(scale, scale);
@@ -478,7 +490,7 @@
                 }
             });
 
-            // Draw enemies with wobble and shadow
+            // Draw enemies
             enemies.forEach(e => {
                 ctx.shadowColor = '#000';
                 ctx.shadowBlur = 5;
@@ -487,14 +499,13 @@
                 ctx.arc(e.x + Math.sin(e.animationFrame) * 2, e.y, 15, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.shadowBlur = 0;
-                // Health bar
                 ctx.fillStyle = '#FF0000';
                 ctx.fillRect(e.x - 20, e.y - 25, 40, 5);
                 ctx.fillStyle = '#00FF00';
                 ctx.fillRect(e.x - 20, e.y - 25, 40 * (e.health / e.maxHealth), 5);
             });
 
-            // Draw projectiles with trail
+            // Draw projectiles
             projectiles.forEach(p => {
                 p.trail.push({x: p.x, y: p.y});
                 if (p.trail.length > 5) p.trail.shift();
