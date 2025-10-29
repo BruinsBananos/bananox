@@ -131,7 +131,7 @@
         <canvas id="gameCanvas" width="800" height="600"></canvas>
         <div id="ui">
             <div id="lives">Lives: 20</div>
-            <div id="money">Bananos: 500</div> <!-- Increased starting money for easier buildup -->
+            <div id="money">Bananos: 500</div>
             <div id="wave">Wave: 1</div>
         </div>
         <div id="towerMenu">
@@ -166,39 +166,62 @@
         const cols = canvas.width / gridSize;
         const rows = canvas.height / gridSize;
 
-        // Path for enemies (simple zigzag)
+        // Extended path for longer travel time
         const path = [
-            {x: 0, y: 0},
-            {x: 2, y: 0},
-            {x: 2, y: 3},
-            {x: 5, y: 3},
-            {x: 5, y: 1},
-            {x: 8, y: 1},
-            {x: 8, y: 4},
-            {x: 11, y: 4},
-            {x: 11, y: 2},
-            {x: 14, y: 2},
-            {x: 14, y: 5},
-            {x: 17, y: 5},
+            {x: 0, y: 2},
+            {x: 3, y: 2},
+            {x: 3, y: 0},
+            {x: 6, y: 0},
+            {x: 6, y: 4},
+            {x: 1, y: 4},
+            {x: 1, y: 6},
+            {x: 4, y: 6},
+            {x: 4, y: 8},
+            {x: 7, y: 8},
+            {x: 7, y: 5},
+            {x: 10, y: 5},
+            {x: 10, y: 9},
+            {x: 13, y: 9},
+            {x: 13, y: 6},
+            {x: 16, y: 6},
+            {x: 16, y: 10},
+            {x: 19, y: 10},
+            {x: 19, y: 7},
+            {x: 17, y: 7},
             {x: 17, y: 3},
-            {x: 19, y: 3},
-            {x: 19, y: 6},
-            {x: 15, y: 6},
-            {x: 15, y: 8},
-            {x: 10, y: 8},
-            {x: 10, y: 10},
-            {x: 5, y: 10},
-            {x: 5, y: 12},
-            {x: 0, y: 12},
-            {x: 0, y: 14}
+            {x: 14, y: 3},
+            {x: 14, y: 1},
+            {x: 11, y: 1},
+            {x: 11, y: 4},
+            {x: 8, y: 4},
+            {x: 8, y: 2},
+            {x: 5, y: 2},
+            {x: 5, y: 5},
+            {x: 2, y: 5},
+            {x: 2, y: 7},
+            {x: 0, y: 7},
+            {x: 0, y: 11},
+            {x: 3, y: 11},
+            {x: 3, y: 13},
+            {x: 6, y: 13},
+            {x: 6, y: 14},
+            {x: 9, y: 14},
+            {x: 9, y: 12},
+            {x: 12, y: 12},
+            {x: 12, y: 14},
+            {x: 15, y: 14},
+            {x: 15, y: 12},
+            {x: 18, y: 12},
+            {x: 18, y: 14}
         ].map(p => ({x: p.x * gridSize, y: p.y * gridSize}));
 
         let lives = 20;
-        let money = 500; // Increased for easier start
+        let money = 500;
         let wave = 1;
         let towers = [];
         let enemies = [];
         let projectiles = [];
+        let particles = [];
         let selectedTower = null;
         let placingTowerType = null;
         let gameState = 'menu';
@@ -286,21 +309,21 @@
                 height: gridSize,
                 level: 1,
                 cost: type === 'basic' ? 50 : type === 'slow' ? 75 : 100,
-                damage: 10,
-                range: 100,
-                fireRate: 60,
+                damage: 20,
+                range: 150,
+                fireRate: 30,
                 cooldown: 0,
                 type,
-                animationFrame: 0 // For firing animation
+                animationFrame: 0
             };
             if (type === 'slow') {
-                base.damage = 5;
-                base.range = 150;
-                base.fireRate = 90;
+                base.damage = 10;
+                base.range = 200;
+                base.fireRate = 45;
             } else if (type === 'aoe') {
-                base.damage = 15;
-                base.range = 80;
-                base.fireRate = 120;
+                base.damage = 30;
+                base.range = 100;
+                base.fireRate = 60;
             }
             return base;
         }
@@ -310,14 +333,16 @@
         }
 
         function startWave() {
-            const numEnemies = Math.min(wave * 2 + 3, 20); // Easier early waves, cap at higher
-            let spawnInterval = setInterval(() => {
-                if (enemies.length < numEnemies) {
+            const numEnemies = wave * 2 + 3;
+            let spawned = 0;
+            const spawnInterval = setInterval(() => {
+                if (spawned < numEnemies) {
                     enemies.push(createEnemy());
+                    spawned++;
                 } else {
                     clearInterval(spawnInterval);
                 }
-            }, 1500); // Slower spawn for buildup
+            }, 1000);
         }
 
         function createEnemy() {
@@ -325,18 +350,18 @@
                 x: path[0].x,
                 y: path[0].y,
                 pathIndex: 1,
-                health: 30 + wave * 5, // Reduced base health for easier starts
-                maxHealth: 30 + wave * 5,
-                speed: 1 + wave * 0.1, // Slower early
+                health: 50 + wave * 10,
+                maxHealth: 50 + wave * 10,
+                speed: 0.5 + wave * 0.05,
                 slowTimer: 0,
-                animationFrame: 0 // For wobble
+                animationFrame: 0
             };
         }
 
         function update() {
             if (gameState !== 'playing') return;
 
-            // Update enemies with smooth animation
+            // Update enemies
             enemies = enemies.filter(e => {
                 if (e.slowTimer > 0) e.slowTimer--;
                 const speed = e.slowTimer > 0 ? e.speed / 2 : e.speed;
@@ -365,45 +390,66 @@
                 }
 
                 if (e.health <= 0) {
-                    money += 20 + wave * 2; // More money per kill for buildup
+                    money += 20 + wave * 2;
+                    createParticles(e.x, e.y, '#FFD700', 20);
                     return false;
                 }
-                e.animationFrame += 0.1; // For wobble
+                e.animationFrame += 0.1;
                 return true;
             });
 
-            // Update towers with firing animation
+            // Update towers
             towers.forEach(t => {
-                t.animationFrame *= 0.9; // Reset animation
+                t.animationFrame *= 0.9;
                 if (t.cooldown > 0) t.cooldown--;
                 if (t.cooldown <= 0) {
                     const target = findTarget(t);
                     if (target) {
                         projectiles.push(createProjectile(t, target));
                         t.cooldown = t.fireRate;
-                        t.animationFrame = 1; // Trigger fire animation
+                        t.animationFrame = 1;
                     }
                 }
             });
 
-            // Update projectiles with trail
+            // Update projectiles
             projectiles = projectiles.filter(p => {
+                const dx = p.target.x - p.x;
+                const dy = p.target.y - p.y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                if (dist > 0) {
+                    p.vx = (dx / dist) * 10;
+                    p.vy = (dy / dist) * 10;
+                }
                 p.x += p.vx;
                 p.y += p.vy;
-                const dist = Math.sqrt(Math.pow(p.x - p.target.x, 2) + Math.pow(p.y - p.target.y, 2));
-                if (dist < 5) {
+
+                if (Math.abs(p.x - p.target.x) < 15 && Math.abs(p.y - p.target.y) < 15) {
                     p.target.health -= p.damage;
+                    createParticles(p.target.x, p.target.y, 'red', 10);
                     if (p.towerType === 'slow') p.target.slowTimer = 60;
                     if (p.towerType === 'aoe') {
                         enemies.forEach(e => {
                             if (e !== p.target && Math.sqrt(Math.pow(e.x - p.target.x, 2) + Math.pow(e.y - p.target.y, 2)) < 50) {
                                 e.health -= p.damage / 2;
+                                createParticles(e.x, e.y, 'red', 5);
                             }
                         });
                     }
                     return false;
                 }
+                p.trail.push({x: p.x, y: p.y});
+                if (p.trail.length > 5) p.trail.shift();
                 return true;
+            });
+
+            // Update particles
+            particles = particles.filter(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life--;
+                p.size *= 0.95;
+                return p.life > 0;
             });
 
             if (enemies.length === 0 && projectiles.length === 0) {
@@ -412,41 +458,24 @@
             }
         }
 
-        function findTarget(t) {
-            let closest = null;
-            let minDist = t.range;
-            enemies.forEach(e => {
-                const dist = Math.sqrt(Math.pow(e.x - (t.x + gridSize/2), 2) + Math.pow(e.y - (t.y + gridSize/2), 2));
-                if (dist < minDist) {
-                    minDist = dist;
-                    closest = e;
-                }
-            });
-            return closest;
-        }
-
-        function createProjectile(t, target) {
-            const px = t.x + gridSize / 2;
-            const py = t.y + gridSize / 2;
-            const dx = target.x - px;
-            const dy = target.y - py;
-            const dist = Math.sqrt(dx*dx + dy*dy);
-            return {
-                x: px,
-                y: py,
-                vx: (dx / dist) * 10,
-                vy: (dy / dist) * 10,
-                damage: t.damage,
-                target,
-                towerType: t.type,
-                trail: [] // For pretty trail
-            };
+        function createParticles(x, y, color, count = 20) {
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x,
+                    y,
+                    vx: Math.random() * 4 - 2,
+                    vy: Math.random() * 4 - 2,
+                    size: Math.random() * 5 + 5,
+                    life: 30,
+                    color
+                });
+            }
         }
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Draw path with glow
+            // Draw path
             ctx.strokeStyle = '#8B4513';
             ctx.lineWidth = gridSize / 2;
             ctx.shadowColor = '#FFD700';
@@ -459,10 +488,10 @@
             ctx.stroke();
             ctx.shadowBlur = 0;
 
-            // Draw towers with animation
+            // Draw towers
             towers.forEach(t => {
                 ctx.fillStyle = t.type === 'basic' ? '#00FF00' : t.type === 'slow' ? '#0000FF' : '#FF0000';
-                const scale = 1 + t.animationFrame * 0.2; // Pulse on fire
+                const scale = 1 + t.animationFrame * 0.2;
                 ctx.save();
                 ctx.translate(t.x + gridSize / 2, t.y + gridSize / 2);
                 ctx.scale(scale, scale);
@@ -478,7 +507,7 @@
                 }
             });
 
-            // Draw enemies with wobble and shadow
+            // Draw enemies
             enemies.forEach(e => {
                 ctx.shadowColor = '#000';
                 ctx.shadowBlur = 5;
@@ -487,14 +516,13 @@
                 ctx.arc(e.x + Math.sin(e.animationFrame) * 2, e.y, 15, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.shadowBlur = 0;
-                // Health bar
                 ctx.fillStyle = '#FF0000';
                 ctx.fillRect(e.x - 20, e.y - 25, 40, 5);
                 ctx.fillStyle = '#00FF00';
                 ctx.fillRect(e.x - 20, e.y - 25, 40 * (e.health / e.maxHealth), 5);
             });
 
-            // Draw projectiles with trail
+            // Draw projectiles
             projectiles.forEach(p => {
                 p.trail.push({x: p.x, y: p.y});
                 if (p.trail.length > 5) p.trail.shift();
@@ -509,6 +537,14 @@
                 ctx.fillStyle = '#FFD700';
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // Draw particles
+            particles.forEach(p => {
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
                 ctx.fill();
             });
         }
