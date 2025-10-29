@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Banano Browser Quest - Simplified Edition</title>
+    <title>Banano Browser Quest - Enhanced Edition</title>
     <style>
         body {
             margin: 0;
@@ -16,183 +16,359 @@
             align-items: center;
             justify-content: center;
             height: 100vh;
+            overflow: hidden;
         }
-        canvas {
+        #gameContainer {
+            position: relative;
+            width: 800px;
+            height: 600px;
             border: 2px solid #228B22;
             background-color: #228B22;
+            overflow: hidden;
+        }
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        #ui {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 10;
+            background: rgba(0,0,0,0.5);
+            padding: 10px;
+            border-radius: 5px;
+        }
+        #health, #score, #level {
+            font-size: 1.2rem;
         }
         #controls {
-            margin-top: 20px;
-            text-align: center;
-        }
-        #score {
-            font-size: 1.5rem;
             margin-top: 10px;
+            text-align: center;
+            max-width: 800px;
         }
     </style>
 </head>
 <body>
-    <h1>Banano Browser Quest - Simplified Single-Player Edition 🍌</h1>
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <h1>Banano Browser Quest - Enhanced Single-Player Edition 🍌</h1>
+    <div id="gameContainer">
+        <canvas id="backgroundCanvas" width="800" height="600"></canvas>
+        <canvas id="entityCanvas" width="800" height="600"></canvas>
+        <div id="ui">
+            <div id="health">Health: 100/100</div>
+            <div id="score">Score: 0</div>
+            <div id="level">Level: 1</div>
+        </div>
+    </div>
     <div id="controls">
-        <p>Use arrow keys to move the monkey hero. Collect bananas while avoiding peels!</p>
-        <p>Score: <span id="score">0</span></p>
+        <p>Controls: Arrow keys or WASD to move. Space to attack (slash peels). Collect bananas for score, power-ups for health/boosts. Avoid or defeat peels!</p>
     </div>
     <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
+        const bgCanvas = document.getElementById('backgroundCanvas');
+        const bgCtx = bgCanvas.getContext('2d');
+        const entityCanvas = document.getElementById('entityCanvas');
+        const entityCtx = entityCanvas.getContext('2d');
         const tileSize = 40;
-        const mapWidth = canvas.width / tileSize;
-        const mapHeight = canvas.height / tileSize;
+        const mapWidth = bgCanvas.width / tileSize;
+        const mapHeight = bgCanvas.height / tileSize;
 
-        // Simple map: 0 = grass, 1 = tree (obstacle)
-        const map = [
-            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-            [0,1,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0],
-            [0,0,0,0,0,0,1,0,0,1,0,0,1,0,0,0,0,0,0,0],
-            [0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0],
-            [0,0,0,0,1,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0],
-            [0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0],
-            [0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1],
-            [0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0],
-            [0,1,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0],
-            [0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0],
-            [0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,1,0],
-            [0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0],
-            [1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0],
-            [0,0,0,1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,1],
-            [0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0]
+        // Multi-level maps
+        const levels = [
+            // Level 1: Simple jungle
+            [
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,1,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0],
+                [0,0,0,0,0,0,1,0,0,1,0,0,1,0,0,0,0,0,0,0],
+                [0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0],
+                [0,0,0,0,1,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0],
+                [0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0],
+                [0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1],
+                [0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0],
+                [0,1,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0],
+                [0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,1,0],
+                [0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0],
+                [1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0],
+                [0,0,0,1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,1],
+                [0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0]
+            ],
+            // Level 2: Denser jungle
+            [
+                [1,1,0,0,1,1,0,0,1,0,0,1,0,1,1,0,0,1,1,0],
+                [0,1,1,0,0,1,0,1,0,0,1,0,0,0,1,1,0,0,1,0],
+                [0,0,1,1,0,0,1,0,0,1,1,0,1,0,0,1,0,0,0,1],
+                [1,0,0,1,1,0,0,0,1,0,1,1,0,0,0,1,1,0,1,0],
+                [0,1,0,0,1,1,0,1,0,0,0,1,0,1,1,0,0,1,0,0],
+                [0,0,1,0,0,1,1,0,0,1,0,0,1,0,1,0,0,0,1,1],
+                [1,0,0,0,1,0,1,0,1,1,0,0,0,0,1,1,0,1,0,0],
+                [0,1,0,1,0,0,0,1,0,1,1,0,0,1,0,1,1,0,0,1],
+                [0,0,1,1,0,1,0,0,0,0,1,1,1,0,0,0,1,0,1,0],
+                [1,0,0,1,1,0,0,1,0,0,0,1,1,0,1,0,0,1,1,0],
+                [0,1,0,0,1,0,1,0,1,0,0,0,1,1,0,0,1,0,1,1],
+                [0,0,1,0,0,1,1,0,0,1,0,1,0,1,0,1,0,0,0,1],
+                [1,0,0,0,1,0,1,1,0,0,1,0,0,0,1,1,0,1,0,0],
+                [0,1,1,0,0,0,0,1,1,0,0,0,1,0,0,1,1,0,1,0],
+                [0,0,1,1,0,1,0,0,1,0,0,1,1,0,0,0,1,1,0,1]
+            ]
         ];
+
+        let currentLevel = 0;
+        let map = levels[currentLevel];
 
         // Player
         let player = {
-            x: 1,
-            y: 1,
-            width: 1,
-            height: 1,
-            speed: 0.1
+            x: 1 * tileSize,
+            y: 1 * tileSize,
+            width: tileSize,
+            height: tileSize,
+            speed: 5,
+            health: 100,
+            maxHealth: 100,
+            attackRange: tileSize * 1.5,
+            attacking: false,
+            attackCooldown: 0,
+            score: 0
         };
 
-        // Items: Bananas to collect
+        // Entities
         let bananas = [];
-        for (let i = 0; i < 10; i++) {
-            let bx, by;
-            do {
-                bx = Math.floor(Math.random() * mapWidth);
-                by = Math.floor(Math.random() * mapHeight);
-            } while (map[by][bx] === 1);
-            bananas.push({x: bx, y: by});
-        }
-
-        // Enemies: Peels to avoid
         let peels = [];
-        for (let i = 0; i < 5; i++) {
-            let px, py;
-            do {
-                px = Math.floor(Math.random() * mapWidth);
-                py = Math.floor(Math.random() * mapHeight);
-            } while (map[py][px] === 1);
-            peels.push({x: px, y: py, dx: (Math.random() > 0.5 ? 0.05 : -0.05), dy: (Math.random() > 0.5 ? 0.05 : -0.05)});
+        let powerUps = [];
+
+        function spawnEntities() {
+            bananas = [];
+            peels = [];
+            powerUps = [];
+            const numBananas = 10 + currentLevel * 5;
+            const numPeels = 5 + currentLevel * 3;
+            const numPowerUps = 3 + currentLevel;
+
+            for (let i = 0; i < numBananas; i++) {
+                let bx, by;
+                do {
+                    bx = Math.floor(Math.random() * mapWidth) * tileSize;
+                    by = Math.floor(Math.random() * mapHeight) * tileSize;
+                } while (map[by / tileSize][bx / tileSize] === 1);
+                bananas.push({x: bx, y: by, collected: false});
+            }
+
+            for (let i = 0; i < numPeels; i++) {
+                let px, py;
+                do {
+                    px = Math.floor(Math.random() * mapWidth) * tileSize;
+                    py = Math.floor(Math.random() * mapHeight) * tileSize;
+                } while (map[py / tileSize][px / tileSize] === 1);
+                peels.push({
+                    x: px,
+                    y: py,
+                    width: tileSize / 2,
+                    height: tileSize / 2,
+                    speed: 2 + currentLevel * 0.5,
+                    health: 20 + currentLevel * 10
+                });
+            }
+
+            for (let i = 0; i < numPowerUps; i++) {
+                let px, py;
+                do {
+                    px = Math.floor(Math.random() * mapWidth) * tileSize;
+                    py = Math.floor(Math.random() * mapHeight) * tileSize;
+                } while (map[py / tileSize][px / tileSize] === 1);
+                powerUps.push({x: px, y: py, type: Math.random() > 0.5 ? 'health' : 'speed'});
+            }
         }
 
-        let score = 0;
+        spawnEntities();
+
+        const healthDisplay = document.getElementById('health');
         const scoreDisplay = document.getElementById('score');
+        const levelDisplay = document.getElementById('level');
 
         // Keyboard controls
         const keys = {};
-        document.addEventListener('keydown', (e) => keys[e.key] = true);
-        document.addEventListener('keyup', (e) => keys[e.key] = false);
+        document.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+            if (e.key === ' ') player.attacking = true;
+        });
+        document.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+            if (e.key === ' ') player.attacking = false;
+        });
 
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Draw map
+        function drawBackground() {
+            bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
             for (let y = 0; y < mapHeight; y++) {
                 for (let x = 0; x < mapWidth; x++) {
                     if (map[y][x] === 0) {
-                        ctx.fillStyle = '#32CD32'; // Grass
-                        ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
+                        bgCtx.fillStyle = '#32CD32'; // Grass
                     } else {
-                        ctx.fillStyle = '#006400'; // Tree
-                        ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
+                        bgCtx.fillStyle = '#006400'; // Tree
                     }
+                    bgCtx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
                 }
             }
+        }
+
+        function drawEntities() {
+            entityCtx.clearRect(0, 0, entityCanvas.width, entityCanvas.height);
 
             // Draw player (monkey)
-            ctx.fillStyle = '#8B4513';
-            ctx.fillRect(player.x * tileSize, player.y * tileSize, tileSize, tileSize);
+            entityCtx.fillStyle = '#8B4513';
+            entityCtx.fillRect(player.x, player.y, player.width, player.height);
+
+            // Draw attack if attacking
+            if (player.attacking && player.attackCooldown <= 0) {
+                entityCtx.strokeStyle = '#FF0000';
+                entityCtx.beginPath();
+                entityCtx.arc(player.x + player.width / 2, player.y + player.height / 2, player.attackRange, 0, Math.PI * 2);
+                entityCtx.stroke();
+                player.attackCooldown = 30; // Frames cooldown
+            }
 
             // Draw bananas
-            ctx.fillStyle = '#FFD700';
+            entityCtx.fillStyle = '#FFD700';
             bananas.forEach(b => {
-                ctx.beginPath();
-                ctx.arc(b.x * tileSize + tileSize / 2, b.y * tileSize + tileSize / 2, tileSize / 3, 0, Math.PI * 2);
-                ctx.fill();
+                if (!b.collected) {
+                    entityCtx.beginPath();
+                    entityCtx.arc(b.x + tileSize / 2, b.y + tileSize / 2, tileSize / 3, 0, Math.PI * 2);
+                    entityCtx.fill();
+                }
             });
 
-            // Draw peels (enemies)
-            ctx.fillStyle = '#8B4513';
+            // Draw power-ups
+            powerUps.forEach(p => {
+                entityCtx.fillStyle = p.type === 'health' ? '#FF69B4' : '#00BFFF';
+                entityCtx.beginPath();
+                entityCtx.arc(p.x + tileSize / 2, p.y + tileSize / 2, tileSize / 4, 0, Math.PI * 2);
+                entityCtx.fill();
+            });
+
+            // Draw peels
+            entityCtx.fillStyle = '#8B4513';
             peels.forEach(p => {
-                ctx.fillRect(p.x * tileSize, p.y * tileSize, tileSize / 2, tileSize / 2);
+                if (p.health > 0) {
+                    entityCtx.fillRect(p.x, p.y, p.width, p.height);
+                }
             });
         }
 
-        function update() {
-            // Move player
-            if (keys['ArrowUp']) player.y -= player.speed;
-            if (keys['ArrowDown']) player.y += player.speed;
-            if (keys['ArrowLeft']) player.x -= player.speed;
-            if (keys['ArrowRight']) player.x += player.speed;
+        function updatePlayer() {
+            let dx = 0, dy = 0;
+            if (keys['ArrowLeft'] || keys['a']) dx -= player.speed;
+            if (keys['ArrowRight'] || keys['d']) dx += player.speed;
+            if (keys['ArrowUp'] || keys['w']) dy -= player.speed;
+            if (keys['ArrowDown'] || keys['s']) dy += player.speed;
 
-            // Collision with walls/trees
-            const px = Math.floor(player.x);
-            const py = Math.floor(player.y);
-            if (player.x < 0 || player.x >= mapWidth - 1 || player.y < 0 || player.y >= mapHeight - 1 || map[py][px] === 1) {
-                // Reset to start if out of bounds or hit tree
-                player.x = 1;
-                player.y = 1;
+            // Check collision with map
+            let newX = player.x + dx;
+            let newY = player.y + dy;
+            const px = Math.floor(newX / tileSize);
+            const py = Math.floor(newY / tileSize);
+            const px2 = Math.floor((newX + player.width - 1) / tileSize);
+            const py2 = Math.floor((newY + player.height - 1) / tileSize);
+
+            if (newX >= 0 && newX + player.width <= bgCanvas.width &&
+                newY >= 0 && newY + player.height <= bgCanvas.height &&
+                map[py][px] === 0 && map[py][px2] === 0 &&
+                map[py2][px] === 0 && map[py2][px2] === 0) {
+                player.x = newX;
+                player.y = newY;
             }
 
-            // Collect bananas
-            bananas = bananas.filter(b => {
-                if (Math.abs(player.x - b.x) < 0.5 && Math.abs(player.y - b.y) < 0.5) {
-                    score += 10;
-                    scoreDisplay.textContent = score;
+            if (player.attackCooldown > 0) player.attackCooldown--;
+        }
+
+        function updatePeels() {
+            peels.forEach(p => {
+                if (p.health <= 0) return;
+
+                // Move towards player
+                const dx = player.x - p.x;
+                const dy = player.y - p.y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                if (dist > 0) {
+                    p.x += (dx / dist) * p.speed;
+                    p.y += (dy / dist) * p.speed;
+                }
+
+                // Collision with player
+                if (Math.abs(player.x - p.x) < (player.width + p.width) / 2 &&
+                    Math.abs(player.y - p.y) < (player.height + p.height) / 2) {
+                    player.health -= 10;
+                    if (player.health <= 0) {
+                        alert('Game Over! Final Score: ' + player.score);
+                        location.reload();
+                    }
+                }
+
+                // Attack peels
+                if (player.attacking && player.attackCooldown <= 0) {
+                    const pdist = Math.sqrt(Math.pow(player.x + player.width/2 - (p.x + p.width/2), 2) + Math.pow(player.y + player.height/2 - (p.y + p.height/2), 2));
+                    if (pdist < player.attackRange) {
+                        p.health -= 20;
+                        if (p.health <= 0) {
+                            player.score += 50;
+                        }
+                    }
+                }
+            });
+
+            peels = peels.filter(p => p.health > 0);
+        }
+
+        function collectItems() {
+            bananas.forEach(b => {
+                if (!b.collected && Math.abs(player.x - b.x) < tileSize && Math.abs(player.y - b.y) < tileSize) {
+                    b.collected = true;
+                    player.score += 10;
+                }
+            });
+
+            powerUps = powerUps.filter(p => {
+                if (Math.abs(player.x - p.x) < tileSize && Math.abs(player.y - p.y) < tileSize) {
+                    if (p.type === 'health') {
+                        player.health = Math.min(player.health + 30, player.maxHealth);
+                    } else {
+                        player.speed += 1; // Permanent speed boost
+                    }
                     return false;
                 }
                 return true;
             });
+        }
 
-            // Move peels and check collision
-            peels.forEach(p => {
-                p.x += p.dx;
-                p.y += p.dy;
-                const pxInt = Math.floor(p.x);
-                const pyInt = Math.floor(p.y);
-                if (p.x < 0 || p.x >= mapWidth || p.y < 0 || p.y >= mapHeight || map[pyInt][pxInt] === 1) {
-                    p.dx = -p.dx;
-                    p.dy = -p.dy;
-                }
-                if (Math.abs(player.x - p.x) < 0.5 && Math.abs(player.y - p.y) < 0.5) {
-                    alert('Slipped on a peel! Game Over. Final Score: ' + score);
+        function checkLevelProgress() {
+            if (bananas.every(b => b.collected) && peels.length === 0) {
+                currentLevel++;
+                if (currentLevel >= levels.length) {
+                    alert('You conquered the jungle! Final Score: ' + player.score);
                     location.reload();
+                } else {
+                    map = levels[currentLevel];
+                    spawnEntities();
+                    drawBackground();
                 }
-            });
-
-            // Win condition
-            if (bananas.length === 0) {
-                alert('You collected all bananas! You win! Score: ' + score);
-                location.reload();
             }
         }
 
+        function updateUI() {
+            healthDisplay.textContent = `Health: ${player.health}/${player.maxHealth}`;
+            scoreDisplay.textContent = `Score: ${player.score}`;
+            levelDisplay.textContent = `Level: ${currentLevel + 1}`;
+        }
+
         function gameLoop() {
-            update();
-            draw();
+            updatePlayer();
+            updatePeels();
+            collectItems();
+            checkLevelProgress();
+            drawEntities();
+            updateUI();
             requestAnimationFrame(gameLoop);
         }
 
+        drawBackground();
         gameLoop();
     </script>
 </body>
