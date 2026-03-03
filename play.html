@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Play • Banano Jungle</title>
+  <title>Play • Banana Tower</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body { font-family: system-ui, sans-serif; background: linear-gradient(#0a1f14, #000000); }
-    .glow { text-shadow: 0 0 30px #facc15; }
-    canvas { border: 12px solid #facc15; border-radius: 24px; box-shadow: 0 0 60px #eab308; }
+    .glow { text-shadow: 0 0 40px #facc15, 0 0 80px #eab308; }
+    canvas { border: 12px solid #facc15; border-radius: 24px; box-shadow: 0 0 80px #eab308; image-rendering: pixelated; }
   </style>
 </head>
-<body class="text-lime-100 min-h-screen">
+<body class="text-lime-100 min-h-screen overflow-hidden">
   <nav class="fixed top-0 w-full bg-black/70 backdrop-blur-xl z-50 border-b border-yellow-400/20">
     <div class="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
       <a href="index.html" class="flex items-center gap-3 text-4xl font-black tracking-tighter glow">🍌 BANANO JUNGLE</a>
@@ -25,67 +25,277 @@
     </div>
   </nav>
 
-  <div class="pt-32 px-6 text-center max-w-4xl mx-auto">
-    <h1 class="text-7xl font-black glow mb-6">Flappy Monkey Midnight Run 🐒🍌</h1>
-    <p class="text-2xl mb-8">Tap / Space / Click to flap • Collect glowing Ban coins • Dodge peels • Night high scores saved</p>
-    <canvas id="game" width="520" height="680" class="mx-auto"></canvas>
-    <div class="mt-8 flex justify-center gap-12 text-2xl">
-      <div>Score: <span id="score" class="text-yellow-400 font-mono">0</span></div>
-      <div>High: <span id="high" class="text-yellow-400 font-mono">0</span></div>
-      <div>Lives: <span id="lives" class="text-red-400">❤️❤️❤️</span></div>
+  <div class="pt-24 flex items-center justify-center min-h-screen">
+    <div class="text-center">
+      <h1 class="text-7xl font-black glow mb-4">BANANA TOWER</h1>
+      <p class="text-2xl text-lime-300 mb-8">Midnight Potassium Climb 🐒🍌</p>
+      <canvas id="canvas" width="520" height="680" class="mx-auto"></canvas>
+      <div id="ui" class="mt-6 text-2xl font-mono flex justify-center gap-12">
+        <div>Height: <span id="height" class="text-yellow-400">0</span>m</div>
+        <div>Score: <span id="score" class="text-yellow-400">0</span></div>
+        <div>Combo: <span id="combo" class="text-yellow-400">x1</span></div>
+      </div>
+      <div id="startScreen" class="absolute inset-0 flex items-center justify-center bg-black/80">
+        <div class="text-center">
+          <p class="text-5xl font-black glow mb-6">PRESS SPACE OR TAP TO START</p>
+          <p class="text-xl text-lime-400">Climb as high as you can!<br>Perfect lands = bigger multipliers</p>
+        </div>
+      </div>
+      <div id="gameOverScreen" class="hidden absolute inset-0 flex items-center justify-center bg-black/90">
+        <div class="text-center">
+          <p class="text-6xl font-black text-red-400 mb-4">FELL OFF THE TOWER!</p>
+          <p class="text-4xl mb-2">Final Height: <span id="finalHeight" class="text-yellow-400">0</span>m</p>
+          <p class="text-3xl mb-8">Best: <span id="finalHigh" class="text-yellow-400">0</span>m</p>
+          <button onclick="startGame()" class="px-16 py-6 bg-yellow-400 text-black font-bold text-3xl rounded-3xl hover:scale-105 transition">CLIMB AGAIN</button>
+        </div>
+      </div>
     </div>
-    <button onclick="startGame()" class="mt-8 px-14 py-6 bg-yellow-400 text-black font-bold text-3xl rounded-3xl hover:scale-105 transition">START / RESTART</button>
   </div>
 
   <script>
-    const canvas = document.getElementById('game');
+    const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
-    let x = 180, y = 300, vy = 0, score = 0, lives = 3, high = localStorage.getItem('bjHigh') || 0, running = false;
-    let peels = [], coins = [];
-    document.getElementById('high').textContent = high;
+    let player = { x: 260, y: 400, vx: 0, vy: 0, width: 50, height: 60 };
+    let platforms = [];
+    let coins = [];
+    let peels = [];
+    let particles = [];
+    let cameraY = 0;
+    let score = 0;
+    let highScore = localStorage.getItem('bananaTowerHigh') || 0;
+    let combo = 1;
+    let maxHeight = 0;
+    let gameRunning = false;
+    let keys = {};
+    let lastPlatformY = 0;
+
+    function createPlatform(y) {
+      const width = Math.max(80, 300 - (Math.abs(y) / 30));
+      return {
+        x: 60 + Math.random() * (520 - width - 120),
+        y: y,
+        width: width
+      };
+    }
+
+    function init() {
+      platforms = [];
+      coins = [];
+      peels = [];
+      particles = [];
+      for (let i = 0; i < 12; i++) {
+        platforms.push(createPlatform(600 - i * 70));
+      }
+      lastPlatformY = platforms[platforms.length-1].y;
+      player.x = 260;
+      player.y = 400;
+      player.vy = 0;
+      cameraY = 0;
+      score = 0;
+      combo = 1;
+      maxHeight = 0;
+    }
+
+    function addParticle(x, y, color) {
+      particles.push({ x, y, vx: Math.random()*6-3, vy: Math.random()*6-8, life: 30, color });
+    }
+
+    function update() {
+      if (!gameRunning) return;
+
+      // Player physics
+      if (keys['ArrowLeft'] || keys['a']) player.vx -= 1.2;
+      if (keys['ArrowRight'] || keys['d']) player.vx += 1.2;
+      player.vx *= 0.88; // friction
+      player.x += player.vx;
+      player.vy += 0.72; // gravity
+      player.y += player.vy;
+
+      // Wall bounce
+      if (player.x < 20) { player.x = 20; player.vx = 6; }
+      if (player.x > 480) { player.x = 480; player.vx = -6; }
+
+      // Platform collision
+      let onGround = false;
+      for (let p of platforms) {
+        if (player.vy > 0 &&
+            player.x + player.width > p.x && 
+            player.x < p.x + p.width &&
+            player.y + player.height > p.y && 
+            player.y + player.height - player.vy <= p.y) {
+          
+          const landCenter = Math.abs((player.x + 25) - (p.x + p.width/2));
+          player.y = p.y - player.height;
+          player.vy = -19.5 - (landCenter < 35 ? 3 : 0); // perfect landing = higher jump
+          onGround = true;
+          
+          if (landCenter < 35) {
+            combo = Math.min(combo + 1, 8);
+            for (let i = 0; i < 12; i++) addParticle(player.x + 25, player.y + 50, '#facc15');
+          } else {
+            combo = 1;
+          }
+          break;
+        }
+      }
+
+      // Coin collection
+      for (let i = coins.length - 1; i >= 0; i--) {
+        const c = coins[i];
+        if (Math.hypot(c.x - (player.x + 25), c.y - (player.y + 30)) < 35) {
+          score += 100 * combo;
+          for (let j = 0; j < 18; j++) addParticle(c.x, c.y, '#eab308');
+          coins.splice(i, 1);
+        }
+      }
+
+      // Peel hit
+      for (let i = peels.length - 1; i >= 0; i--) {
+        const p = peels[i];
+        if (Math.hypot(p.x - (player.x + 25), p.y - (player.y + 30)) < 40) {
+          combo = 1;
+          player.vy = -12;
+          peels.splice(i, 1);
+          for (let j = 0; j < 25; j++) addParticle(p.x, p.y, '#f43f5e');
+        }
+      }
+
+      // Scrolling camera
+      if (player.y < 280) {
+        const diff = 280 - player.y;
+        cameraY += diff;
+        player.y = 280;
+        score += Math.floor(diff * 0.3);
+      }
+
+      maxHeight = Math.max(maxHeight, Math.floor(cameraY / 8));
+
+      // Generate new platforms
+      while (lastPlatformY > cameraY - 800) {
+        lastPlatformY -= 65 + Math.random() * 12;
+        platforms.push(createPlatform(lastPlatformY));
+        // occasional coin
+        if (Math.random() < 0.6) coins.push({ x: platforms[platforms.length-1].x + 30 + Math.random() * (platforms[platforms.length-1].width - 80), y: lastPlatformY - 40 });
+        // occasional peel
+        if (Math.random() < 0.35) peels.push({ x: 60 + Math.random() * 400, y: lastPlatformY - 20, vx: Math.random()*2-1 });
+      }
+
+      // Clean old platforms
+      if (platforms[0] && platforms[0].y > cameraY + 800) platforms.shift();
+
+      // Peels movement
+      peels.forEach(p => { p.x += p.vx; p.vx *= 0.98; });
+
+      // Particles
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx; p.y += p.vy; p.vy += 0.4; p.life--;
+        if (p.life <= 0) particles.splice(i, 1);
+      }
+
+      // Fall off screen = game over
+      if (player.y > cameraY + 780) {
+        gameRunning = false;
+        document.getElementById('gameOverScreen').classList.remove('hidden');
+        document.getElementById('finalHeight').textContent = maxHeight;
+        document.getElementById('finalHigh').textContent = Math.max(maxHeight, highScore);
+        if (maxHeight > highScore) {
+          highScore = maxHeight;
+          localStorage.setItem('bananaTowerHigh', highScore);
+        }
+      }
+
+      // UI
+      document.getElementById('height').textContent = maxHeight;
+      document.getElementById('score').textContent = score;
+      document.getElementById('combo').textContent = 'x' + combo;
+    }
 
     function draw() {
       ctx.fillStyle = '#052e16';
       ctx.fillRect(0, 0, 520, 680);
-      ctx.font = '72px sans-serif';
-      ctx.fillText('🐒', x, y + 20);
-      ctx.fillStyle = '#facc15';
-      peels.forEach((p, i) => { ctx.fillText('🍌', p.x, p.y); p.y += 8; if (p.y > 720) peels.splice(i, 1); });
-      ctx.fillStyle = '#eab308';
-      coins.forEach((c, i) => { ctx.fillText('🪙', c.x, c.y); c.y += 7; if (c.y > 720) coins.splice(i, 1); });
 
-      peels.forEach((p, i) => { if (Math.hypot(p.x - x, p.y - y) < 45) { lives--; peels.splice(i, 1); } });
-      coins.forEach((c, i) => { if (Math.hypot(c.x - x, c.y - y) < 40) { score += 25; coins.splice(i, 1); } });
+      // Parallax vines background
+      ctx.fillStyle = '#166534';
+      for (let i = -2; i < 6; i++) {
+        ctx.fillText('🌿', 80 + (i*90), ((cameraY * 0.3) % 200) + i*140 - 100);
+      }
 
-      document.getElementById('score').textContent = score;
-      document.getElementById('lives').innerHTML = '❤️'.repeat(Math.max(0, lives));
-      if (score > high) { high = score; localStorage.setItem('bjHigh', high); document.getElementById('high').textContent = high; }
-      if (lives <= 0) running = false;
-      if (running) requestAnimationFrame(draw);
+      // Platforms
+      ctx.font = '42px sans-serif';
+      for (let p of platforms) {
+        const screenY = p.y - cameraY;
+        ctx.fillStyle = '#facc15';
+        ctx.fillText('🍌🍌🍌', p.x - 10, screenY + 28);
+      }
+
+      // Coins
+      ctx.font = '32px sans-serif';
+      for (let c of coins) {
+        const sy = c.y - cameraY;
+        ctx.fillStyle = '#eab308';
+        ctx.fillText('🪙', c.x, sy);
+      }
+
+      // Peels
+      ctx.font = '36px sans-serif';
+      for (let p of peels) {
+        const sy = p.y - cameraY;
+        ctx.fillStyle = '#f43f5e';
+        ctx.fillText('🍌', p.x, sy);
+      }
+
+      // Player monkey
+      ctx.font = '68px sans-serif';
+      ctx.fillStyle = '#bef574';
+      ctx.fillText('🐒', player.x - 8, player.y + 48);
+
+      // Particles
+      for (let p of particles) {
+        ctx.globalAlpha = p.life / 30;
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x, p.y - cameraY, 7, 7);
+      }
+      ctx.globalAlpha = 1;
+
+      // Ground glow at bottom
+      if (cameraY < 200) {
+        ctx.fillStyle = 'rgba(234, 179, 8, 0.2)';
+        ctx.fillRect(0, 640, 520, 40);
+      }
     }
 
-    function spawn() {
-      if (!running) return;
-      if (Math.random() < 0.75) peels.push({x: Math.random() * 380 + 60, y: -40});
-      if (Math.random() < 0.65) coins.push({x: Math.random() * 380 + 60, y: -40});
-      setTimeout(spawn, 280);
+    function loop() {
+      update();
+      draw();
+      requestAnimationFrame(loop);
     }
 
     function startGame() {
-      x = 180; y = 300; vy = 0; score = 0; lives = 3; peels = []; coins = []; running = true;
-      document.getElementById('score').textContent = '0';
-      draw(); spawn();
+      document.getElementById('startScreen').style.display = 'none';
+      document.getElementById('gameOverScreen').classList.add('hidden');
+      init();
+      gameRunning = true;
+      player.vy = -22;
     }
 
-    document.addEventListener('keydown', e => {
-      if ((e.key === ' ' || e.key === 'Spacebar') && running) vy = -16;
-      if (e.key === 'ArrowLeft' || e.key === 'a') x = Math.max(30, x - 28);
-      if (e.key === 'ArrowRight' || e.key === 'd') x = Math.min(420, x + 28);
+    // Controls
+    window.addEventListener('keydown', e => {
+      keys[e.key] = true;
+      if ((e.key === ' ' || e.key === 'Spacebar') && !gameRunning) startGame();
     });
-    canvas.addEventListener('click', () => { if (running) vy = -16; else startGame(); });
-    canvas.addEventListener('touchstart', e => { e.preventDefault(); if (running) vy = -16; else startGame(); });
+    window.addEventListener('keyup', e => keys[e.key] = false);
 
-    setInterval(() => { if (running) { vy += 0.85; y += vy; if (y > 590) { y = 590; vy = 0; } if (y < 40) { y = 40; vy = 3; } } }, 16);
+    canvas.addEventListener('touchstart', e => {
+      e.preventDefault();
+      if (!gameRunning) startGame();
+      else if (player.vy > -5) player.vy = -19; // tap to boost jump
+    });
+
+    // Start
+    init();
+    loop();
+    document.getElementById('startScreen').style.display = 'flex';
   </script>
 </body>
 </html>
