@@ -3,31 +3,49 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Faucets • Banano Jungle</title>
+  <title>Ecosystem • Banano Jungle</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <style>body { font-family: system-ui, sans-serif; background: linear-gradient(#0a1f14, #000000); }</style>
+  <style>
+    body { font-family: system-ui, sans-serif; background: linear-gradient(#0a1f14, #000000); }
+    .glow { text-shadow: 0 0 40px #facc15, 0 0 80px #eab308; }
+    .card { transition: all 0.3s ease; }
+    .card:hover { transform: translateY(-12px) scale(1.03); border-color: #facc15; box-shadow: 0 0 60px rgba(250, 204, 21, 0.3); }
+  </style>
 </head>
 <body class="text-lime-100 min-h-screen">
+  <!-- NAV (Play removed since we forgot the game) -->
   <nav class="fixed top-0 w-full bg-black/70 backdrop-blur-xl z-50 border-b border-yellow-400/20">
     <div class="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
       <a href="index.html" class="flex items-center gap-3 text-4xl font-black tracking-tighter glow">🍌 BANANO JUNGLE</a>
       <div class="flex gap-9 text-lg font-medium">
-        <a href="play.html" class="hover:text-yellow-400 transition">Play</a>
+        <a href="index.html" class="hover:text-yellow-400 transition">Home</a>
         <a href="facts.html" class="hover:text-yellow-400 transition">Facts</a>
-        <a href="ecosystem.html" class="hover:text-yellow-400 transition">Ecosystem</a>
-        <a href="faucets.html" class="text-yellow-400">Faucets</a>
+        <a href="ecosystem.html" class="text-yellow-400">Ecosystem</a>
+        <a href="faucets.html" class="hover:text-yellow-400 transition">Faucets</a>
         <a href="community.html" class="hover:text-yellow-400 transition">Community</a>
       </div>
     </div>
   </nav>
 
-  <div class="pt-32 px-6 max-w-4xl mx-auto">
-    <h1 class="text-7xl font-black glow text-center mb-16">Grab Free Bananos 🌧️</h1>
-    <div class="space-y-8">
-      <div class="bg-black/60 border border-yellow-400/30 p-10 rounded-3xl flex justify-between items-center"><div><strong class="text-2xl">IMalFect Faucet</strong><br>Daily 0.06–0.3 BAN</div><a href="https://banano.fandom.com/wiki/IMalFect_Faucet" target="_blank" class="px-8 py-4 bg-yellow-400 text-black font-bold rounded-2xl">Claim →</a></div>
-      <div class="bg-black/60 border border-yellow-400/30 p-10 rounded-3xl flex justify-between items-center"><div><strong class="text-2xl">Banano Miner (Folding)</strong><br>Earn while helping science</div><a href="https://bananominer.com" target="_blank" class="px-8 py-4 bg-yellow-400 text-black font-bold rounded-2xl">Start →</a></div>
-      <div class="bg-black/60 border border-yellow-400/30 p-10 rounded-3xl text-center"><a href="https://thefreebananofaucet.com/active-banano-faucet-list" target="_blank" class="text-3xl underline text-yellow-400">See ALL active faucets →</a></div>
+  <div class="pt-32 px-6 max-w-6xl mx-auto">
+    <div class="text-center mb-16">
+      <h1 class="text-7xl font-black glow mb-4">ECOSYSTEM EXPLORER</h1>
+      <p class="text-3xl text-lime-300">The living jungle of tools, wallets, and apps that make Banano thrive</p>
     </div>
-  </div>
-</body>
-</html>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+      
+      <!-- Kalium Wallet -->
+      <div class="card bg-black/60 border border-yellow-400/30 p-10 rounded-3xl">
+        <div class="text-7xl mb-6">📱</div>
+        <h3 class="text-4xl font-bold mb-4 text-yellow-400">Kalium Wallet</h3>
+        <p class="text-lime-300 leading-relaxed mb-8">The official mobile wallet. Send, receive, and manage your Banano instantly on iOS & Android. Beautiful, fast, and secure.</p>
+        <a href="https://kalium.banano.cc" target="_blank" class="inline-block px-8 py-4 bg-yellow-400 text-black font-bold rounded-2xl hover:bg-yellow-300 transition">Download Now →</a>
+      </div>
+
+      <!-- The Banano Stand -->
+      <div class="card bg-black/60 border border-yellow-400/30 p-10 rounded-3xl">
+        <div class="text-7xl mb-6">🌐</div>
+        <h3 class="text-4xl font-bold mb-4 text-yellow-400">The Banano Stand</h3>
+        <p class="text-lime-300 leading-relaxed mb-8">Browser-based light wallet. No install needed. Perfect for desktop and quick access. Successor to the classic Vault.</p>
+        <a href="
