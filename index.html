@@ -1,13 +1,93 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
   <meta charset="UTF-8">
-  <title>Banano Memes 🍌</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Banano Jungle • Midnight Potassium 🍌🌙</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    body { font-family: system-ui, sans-serif; background: linear-gradient(to bottom, #0a1f14, #000000); }
+    .glow { text-shadow: 0 0 30px #facc15, 0 0 60px #eab308; }
+    .falling { position: absolute; font-size: 2.2rem; animation: fall linear forwards; pointer-events: none; opacity: 0.9; }
+    @keyframes fall { to { transform: translateY(120vh) rotate(720deg); } }
+    .firefly { position: absolute; width: 6px; height: 6px; background: #bef575; border-radius: 50%; box-shadow: 0 0 12px #bef575; animation: firefly 4s infinite; }
+  </style>
 </head>
-<body class="bg-green-950 text-lime-100 p-8">
-  <h1 class="text-6xl font-black text-yellow-400">BANANO MEME VAULT 🏆</h1>
-  <p class="text-2xl mt-4">Add your funniest potassium memes here...</p>
-  <!-- your memes go here -->
+<body class="text-lime-100 min-h-screen overflow-x-hidden">
+  <!-- NAV -->
+  <nav class="fixed top-0 w-full bg-black/70 backdrop-blur-xl z-50 border-b border-yellow-400/20">
+    <div class="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
+      <a href="index.html" class="flex items-center gap-3 text-4xl font-black tracking-tighter glow">
+        🍌 BANANO JUNGLE
+      </a>
+      <div class="flex gap-9 text-lg font-medium">
+        <a href="play.html" class="hover:text-yellow-400 transition">Play</a>
+        <a href="facts.html" class="hover:text-yellow-400 transition">Facts</a>
+        <a href="ecosystem.html" class="hover:text-yellow-400 transition">Ecosystem</a>
+        <a href="faucets.html" class="hover:text-yellow-400 transition">Faucets</a>
+        <a href="community.html" class="hover:text-yellow-400 transition">Community</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="min-h-screen relative flex items-center pt-20">
+    <div id="particles" class="absolute inset-0 pointer-events-none"></div>
+    <div class="max-w-5xl mx-auto text-center px-6 relative z-10">
+      <div class="inline-flex items-center gap-3 bg-black/60 px-8 py-3 rounded-full border border-yellow-400/30 mb-8">
+        <span class="text-yellow-400">🌙 NIGHT MODE</span>
+      </div>
+      <h1 class="text-7xl md:text-8xl font-black leading-none glow mb-6">MIDNIGHT<br>POTASSIUM</h1>
+      <p class="text-3xl md:text-4xl text-lime-300 mb-12 max-w-2xl mx-auto">Feeless. Instant. Meme-fueled crypto thriving in the shadows.</p>
+      <div class="flex flex-col sm:flex-row gap-6 justify-center">
+        <a href="play.html" class="px-14 py-7 bg-yellow-400 hover:bg-yellow-300 text-black font-bold text-3xl rounded-3xl flex items-center gap-4 transition hover:scale-105">
+          <i class="fas fa-gamepad"></i> PLAY NOW
+        </a>
+        <a href="faucets.html" class="px-14 py-7 border-4 border-yellow-400 hover:bg-yellow-400/10 font-bold text-3xl rounded-3xl transition">GRAB FREE BANANOS</a>
+      </div>
+    </div>
+    <div class="absolute bottom-12 left-1/2 text-5xl animate-bounce">↓</div>
+  </section>
+
+  <!-- QUICK SECTIONS -->
+  <section class="py-24">
+    <div class="max-w-6xl mx-auto px-6 grid md:grid-cols-3 gap-8">
+      <div class="bg-black/60 border border-yellow-400/30 p-10 rounded-3xl hover:border-yellow-400 transition">
+        <div class="text-6xl mb-6">⚡</div>
+        <h3 class="text-3xl font-bold mb-4">Instant & Feeless</h3>
+        <p class="text-lime-300">DAG jungle vines — transactions in <1 second, zero fees forever.</p>
+      </div>
+      <div class="bg-black/60 border border-yellow-400/30 p-10 rounded-3xl hover:border-yellow-400 transition">
+        <div class="text-6xl mb-6">🌱</div>
+        <h3 class="text-3xl font-bold mb-4">Eco-Night Mode</h3>
+        <p class="text-lime-300">Uses almost no energy. Perfect for late-night potassium runs.</p>
+      </div>
+      <div class="bg-black/60 border border-yellow-400/30 p-10 rounded-3xl hover:border-yellow-400 transition">
+        <div class="text-6xl mb-6">😂</div>
+        <h3 class="text-3xl font-bold mb-4">Meme Kingdom</h3>
+        <p class="text-lime-300">Fair launch, community rains, and endless banana jokes.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer class="bg-black py-12 text-center text-lime-400">
+    <p>Built for billions • Fan site • Official: <a href="https://banano.cc" class="underline">banano.cc</a></p>
+  </footer>
+
+  <script>
+    // Falling bananas & fireflies
+    function createElement(type) {
+      const el = document.createElement('div');
+      el.className = type === 'banana' ? 'falling' : 'firefly';
+      el.textContent = type === 'banana' ? '🍌' : '';
+      el.style.left = Math.random() * 100 + 'vw';
+      el.style.animationDuration = (Math.random() * 8 + 8) + 's';
+      document.getElementById('particles').appendChild(el);
+      setTimeout(() => el.remove(), 20000);
+    }
+    setInterval(() => createElement('banana'), 280);
+    setInterval(() => createElement('firefly'), 120);
+  </script>
 </body>
 </html>

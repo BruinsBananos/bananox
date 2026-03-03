@@ -1,141 +1,33 @@
-<!-- ecosystem.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Banano Jungle: Ecosystem Map</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍌</text></svg>">
-    <style>
-        /* Shared Styles */
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Arial', sans-serif;
-            background-color: #000000;
-            color: #FFD700;
-            overflow-x: hidden;
-        }
-        nav {
-            background: #228B22;
-            padding: 10px;
-            text-align: center;
-        }
-        nav a {
-            color: #FFD700;
-            margin: 0 15px;
-            text-decoration: none;
-            font-size: 1.2rem;
-        }
-        nav a:hover {
-            text-decoration: underline;
-        }
-        /* Ecosystem Section */
-        #ecosystem-section {
-            padding: 50px;
-            text-align: center;
-            background-color: #228B22;
-            min-height: 100vh;
-        }
-        #ecosystem-section h2 {
-            font-size: 3rem;
-            margin-bottom: 20px;
-        }
-        #banano-map {
-            width: 80%;
-            max-width: 800px;
-            height: 500px;
-            margin: 0 auto;
-            background: url('https://source.unsplash.com/random/800x500/?jungle,map') no-repeat center center/cover;
-            position: relative;
-            border: 2px solid #FFD700;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-        .marker {
-            position: absolute;
-            width: 30px;
-            height: 30px;
-            background-color: #FFD700;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: transform 0.3s;
-        }
-        .marker:hover {
-            transform: scale(1.5);
-        }
-        .marker::after {
-            content: attr(data-info);
-            position: absolute;
-            bottom: 35px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0,0,0,0.8);
-            padding: 5px 10px;
-            border-radius: 5px;
-            white-space: nowrap;
-            display: none;
-            color: #FFFFFF;
-        }
-        .marker:hover::after {
-            display: block;
-        }
-        footer {
-            padding: 20px;
-            text-align: center;
-            background-color: #000000;
-            border-top: 1px solid #228B22;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Faucets • Banano Jungle</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>body { font-family: system-ui, sans-serif; background: linear-gradient(#0a1f14, #000000); }</style>
 </head>
-<body>
-    <nav>
-        <a href="index.html">Home</a>
-        <a href="ecosystem.html">Ecosystem Map</a>
-        <a href="facts.html">Fun Facts</a>
-        <a href="node.html">Run a Node</a>
-        <a href="faucet.html">Faucets</a>
-        <a href="game.html">Banana Game</a>
-        <a href="contact.html">Contact</a>
-    </nav>
-    <section id="ecosystem-section">
-        <h2>Interactive Banano Ecosystem Map</h2>
-        <p>Hover over markers to explore wallets, faucets, exchanges, and more in the Banano jungle! Draggable for extra adventure. Now with more fun spins! 🍌</p>
-        <div id="banano-map">
-            <div class="marker" style="top: 20%; left: 30%;" data-info="Official Site: banano.cc - Start your journey!"></div>
-            <div class="marker" style="top: 50%; left: 50%;" data-info="Kalium Wallet: Mobile app for iOS/Android - kalium.banano.cc"></div>
-            <div class="marker" style="top: 70%; left: 70%;" data-info="TheBananoStand: Web wallet - thebananostand.com"></div>
-            <div class="marker" style="top: 30%; left: 60%;" data-info="Faucets: Free BAN from community sites - Check r/banano for lists"></div>
-            <div class="marker" style="top: 40%; left: 20%;" data-info="Exchanges: Trade on Mercatox, Coinex, etc. - creeper.banano.cc/known-accounts"></div>
-            <div class="marker" style="top: 60%; left: 40%;" data-info="Community: Join Reddit r/banano, X @bananocoin, Discord"></div>
-            <div class="marker" style="top: 80%; left: 10%;" data-info="Games: Earn BAN via Folding@Home, jungle games"></div>
-            <div class="marker" style="top: 10%; left: 80%;" data-info="Explorer: creeper.banano.cc - Track transactions"></div>
-        </div>
-    </section>
-    <footer>
-        <p>Created by Grok 4 from xAI – Banano Edition: Even More Fun, Feeless, and Full of Potassium! 🍌</p>
-    </footer>
-    <script>
-        // Drag functionality
-        const map = document.getElementById('banano-map');
-        let isDragging = false;
-        let startX, scrollLeft;
+<body class="text-lime-100 min-h-screen">
+  <nav class="fixed top-0 w-full bg-black/70 backdrop-blur-xl z-50 border-b border-yellow-400/20">
+    <div class="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
+      <a href="index.html" class="flex items-center gap-3 text-4xl font-black tracking-tighter glow">🍌 BANANO JUNGLE</a>
+      <div class="flex gap-9 text-lg font-medium">
+        <a href="play.html" class="hover:text-yellow-400 transition">Play</a>
+        <a href="facts.html" class="hover:text-yellow-400 transition">Facts</a>
+        <a href="ecosystem.html" class="hover:text-yellow-400 transition">Ecosystem</a>
+        <a href="faucets.html" class="text-yellow-400">Faucets</a>
+        <a href="community.html" class="hover:text-yellow-400 transition">Community</a>
+      </div>
+    </div>
+  </nav>
 
-        map.addEventListener('mousedown', (e) => {
-            isDragging = true;
-            startX = e.pageX - map.offsetLeft;
-            scrollLeft = map.scrollLeft;
-        });
-
-        map.addEventListener('mouseleave', () => { isDragging = false; });
-        map.addEventListener('mouseup', () => { isDragging = false; });
-        map.addEventListener('mousemove', (e) => {
-            if (!isDragging) return;
-            e.preventDefault();
-            const x = e.pageX - map.offsetLeft;
-            const walk = (x - startX) * 2;
-            map.scrollLeft = scrollLeft - walk;
-        });
-    </script>
+  <div class="pt-32 px-6 max-w-4xl mx-auto">
+    <h1 class="text-7xl font-black glow text-center mb-16">Grab Free Bananos 🌧️</h1>
+    <div class="space-y-8">
+      <div class="bg-black/60 border border-yellow-400/30 p-10 rounded-3xl flex justify-between items-center"><div><strong class="text-2xl">IMalFect Faucet</strong><br>Daily 0.06–0.3 BAN</div><a href="https://banano.fandom.com/wiki/IMalFect_Faucet" target="_blank" class="px-8 py-4 bg-yellow-400 text-black font-bold rounded-2xl">Claim →</a></div>
+      <div class="bg-black/60 border border-yellow-400/30 p-10 rounded-3xl flex justify-between items-center"><div><strong class="text-2xl">Banano Miner (Folding)</strong><br>Earn while helping science</div><a href="https://bananominer.com" target="_blank" class="px-8 py-4 bg-yellow-400 text-black font-bold rounded-2xl">Start →</a></div>
+      <div class="bg-black/60 border border-yellow-400/30 p-10 rounded-3xl text-center"><a href="https://thefreebananofaucet.com/active-banano-faucet-list" target="_blank" class="text-3xl underline text-yellow-400">See ALL active faucets →</a></div>
+    </div>
+  </div>
 </body>
 </html>
