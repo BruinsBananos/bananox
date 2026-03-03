@@ -6,12 +6,12 @@
   <title>Play • Banana Tower</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body { font-family: system-ui, sans-serif; background: linear-gradient(#0a1f14, #000000); }
+    body { font-family: system-ui, sans-serif; background: linear-gradient(#0a1f14, #000000); overflow: hidden; }
     .glow { text-shadow: 0 0 40px #facc15, 0 0 80px #eab308; }
     canvas { border: 12px solid #facc15; border-radius: 24px; box-shadow: 0 0 80px #eab308; image-rendering: pixelated; }
   </style>
 </head>
-<body class="text-lime-100 min-h-screen overflow-hidden">
+<body class="text-lime-100 min-h-screen">
   <nav class="fixed top-0 w-full bg-black/70 backdrop-blur-xl z-50 border-b border-yellow-400/20">
     <div class="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
       <a href="index.html" class="flex items-center gap-3 text-4xl font-black tracking-tighter glow">🍌 BANANO JUNGLE</a>
@@ -26,27 +26,26 @@
   </nav>
 
   <div class="pt-24 flex items-center justify-center min-h-screen">
-    <div class="text-center">
+    <div class="text-center relative">
       <h1 class="text-7xl font-black glow mb-4">BANANA TOWER</h1>
       <p class="text-2xl text-lime-300 mb-8">Midnight Potassium Climb 🐒🍌</p>
       <canvas id="canvas" width="520" height="680" class="mx-auto"></canvas>
-      <div id="ui" class="mt-6 text-2xl font-mono flex justify-center gap-12">
-        <div>Height: <span id="height" class="text-yellow-400">0</span>m</div>
-        <div>Score: <span id="score" class="text-yellow-400">0</span></div>
-        <div>Combo: <span id="combo" class="text-yellow-400">x1</span></div>
-      </div>
-      <div id="startScreen" class="absolute inset-0 flex items-center justify-center bg-black/80">
+
+      <!-- Start Screen -->
+      <div id="startScreen" class="absolute inset-0 flex items-center justify-center bg-black/80 rounded-[20px]">
         <div class="text-center">
-          <p class="text-5xl font-black glow mb-6">PRESS SPACE OR TAP TO START</p>
-          <p class="text-xl text-lime-400">Climb as high as you can!<br>Perfect lands = bigger multipliers</p>
+          <p class="text-5xl font-black glow mb-6">TAP or PRESS SPACE TO CLIMB</p>
+          <p class="text-xl text-lime-400">Perfect center landings = combo multiplier!<br>Climb as high as you can!</p>
         </div>
       </div>
-      <div id="gameOverScreen" class="hidden absolute inset-0 flex items-center justify-center bg-black/90">
+
+      <!-- Game Over -->
+      <div id="gameOverScreen" class="hidden absolute inset-0 flex items-center justify-center bg-black/90 rounded-[20px]">
         <div class="text-center">
-          <p class="text-6xl font-black text-red-400 mb-4">FELL OFF THE TOWER!</p>
-          <p class="text-4xl mb-2">Final Height: <span id="finalHeight" class="text-yellow-400">0</span>m</p>
-          <p class="text-3xl mb-8">Best: <span id="finalHigh" class="text-yellow-400">0</span>m</p>
-          <button onclick="startGame()" class="px-16 py-6 bg-yellow-400 text-black font-bold text-3xl rounded-3xl hover:scale-105 transition">CLIMB AGAIN</button>
+          <p class="text-6xl font-black text-red-400 mb-4">YOU FELL OFF THE TOWER!</p>
+          <p class="text-4xl mb-2">Height: <span id="finalHeight" class="text-yellow-400">0</span>m</p>
+          <p class="text-3xl mb-8">Best: <span id="finalBest" class="text-yellow-400">0</span>m</p>
+          <button onclick="restartGame()" class="px-16 py-6 bg-yellow-400 text-black font-bold text-3xl rounded-3xl hover:scale-105 transition">CLIMB AGAIN 🍌</button>
         </div>
       </div>
     </div>
@@ -55,228 +54,205 @@
   <script>
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
-    let player = { x: 260, y: 400, vx: 0, vy: 0, width: 50, height: 60 };
+    let player = { x: 240, y: 400, vx: 0, vy: 0, w: 48, h: 52 };
     let platforms = [];
     let coins = [];
     let peels = [];
     let particles = [];
     let cameraY = 0;
     let score = 0;
-    let highScore = localStorage.getItem('bananaTowerHigh') || 0;
+    let best = localStorage.getItem('bananoTowerBest') || 0;
     let combo = 1;
-    let maxHeight = 0;
     let gameRunning = false;
     let keys = {};
-    let lastPlatformY = 0;
 
     function createPlatform(y) {
-      const width = Math.max(80, 300 - (Math.abs(y) / 30));
-      return {
-        x: 60 + Math.random() * (520 - width - 120),
-        y: y,
-        width: width
-      };
+      const w = Math.max(100, 340 - Math.floor(Math.abs(y)/25));
+      return { x: 40 + Math.random() * (520 - w - 80), y: y, w: w };
     }
 
-    function init() {
+    function initGame() {
       platforms = [];
       coins = [];
       peels = [];
       particles = [];
-      for (let i = 0; i < 12; i++) {
-        platforms.push(createPlatform(600 - i * 70));
+      for (let i = 0; i < 14; i++) {
+        platforms.push(createPlatform(620 - i * 62));
       }
-      lastPlatformY = platforms[platforms.length-1].y;
-      player.x = 260;
-      player.y = 400;
-      player.vy = 0;
+      player.x = 240;
+      player.y = 380;
+      player.vy = -18;
       cameraY = 0;
       score = 0;
       combo = 1;
-      maxHeight = 0;
     }
 
-    function addParticle(x, y, color) {
-      particles.push({ x, y, vx: Math.random()*6-3, vy: Math.random()*6-8, life: 30, color });
+    function spawnNew() {
+      while (platforms[platforms.length-1].y > cameraY - 900) {
+        const lastY = platforms[platforms.length-1].y - 62 - Math.random()*8;
+        platforms.push(createPlatform(lastY));
+        if (Math.random() < 0.55) coins.push({x: platforms[platforms.length-1].x + 30 + Math.random()*(platforms[platforms.length-1].w-70), y: lastY - 35});
+        if (Math.random() < 0.28) peels.push({x: 80 + Math.random()*360, y: lastY - 20, vx: (Math.random()-0.5)*1.2});
+      }
     }
 
     function update() {
       if (!gameRunning) return;
 
-      // Player physics
-      if (keys['ArrowLeft'] || keys['a']) player.vx -= 1.2;
-      if (keys['ArrowRight'] || keys['d']) player.vx += 1.2;
-      player.vx *= 0.88; // friction
+      // Controls
+      if (keys['ArrowLeft'] || keys['a']) player.vx -= 1.4;
+      if (keys['ArrowRight'] || keys['d']) player.vx += 1.4;
+      player.vx *= 0.86;
       player.x += player.vx;
-      player.vy += 0.72; // gravity
+      player.vy += 0.78; // gravity
       player.y += player.vy;
 
-      // Wall bounce
-      if (player.x < 20) { player.x = 20; player.vx = 6; }
-      if (player.x > 480) { player.x = 480; player.vx = -6; }
+      // Boundaries
+      if (player.x < 10) { player.x = 10; player.vx = 8; }
+      if (player.x > 460) { player.x = 460; player.vx = -8; }
 
-      // Platform collision
-      let onGround = false;
-      for (let p of platforms) {
+      // Platform landing
+      for (let i = platforms.length-1; i >= 0; i--) {
+        let p = platforms[i];
         if (player.vy > 0 &&
-            player.x + player.width > p.x && 
-            player.x < p.x + p.width &&
-            player.y + player.height > p.y && 
-            player.y + player.height - player.vy <= p.y) {
+            player.x + player.w > p.x && player.x < p.x + p.w &&
+            player.y + player.h > p.y && player.y + player.h - player.vy <= p.y) {
           
-          const landCenter = Math.abs((player.x + 25) - (p.x + p.width/2));
-          player.y = p.y - player.height;
-          player.vy = -19.5 - (landCenter < 35 ? 3 : 0); // perfect landing = higher jump
-          onGround = true;
+          const distFromCenter = Math.abs((player.x + player.w/2) - (p.x + p.w/2));
+          player.y = p.y - player.h;
+          player.vy = -19.8 - (distFromCenter < 38 ? 4.2 : 0); // perfect = higher jump
           
-          if (landCenter < 35) {
-            combo = Math.min(combo + 1, 8);
-            for (let i = 0; i < 12; i++) addParticle(player.x + 25, player.y + 50, '#facc15');
-          } else {
-            combo = 1;
-          }
+          if (distFromCenter < 38) {
+            combo = Math.min(combo + 1, 12);
+            for (let k = 0; k < 15; k++) particles.push({x: player.x+24, y: player.y+45, vx: Math.random()*8-4, vy: Math.random()*6-9, life: 26, color: '#facc15'});
+          } else combo = 1;
           break;
         }
       }
 
-      // Coin collection
-      for (let i = coins.length - 1; i >= 0; i--) {
-        const c = coins[i];
-        if (Math.hypot(c.x - (player.x + 25), c.y - (player.y + 30)) < 35) {
-          score += 100 * combo;
-          for (let j = 0; j < 18; j++) addParticle(c.x, c.y, '#eab308');
-          coins.splice(i, 1);
+      // Collect coins
+      for (let i = coins.length-1; i >= 0; i--) {
+        let c = coins[i];
+        if (Math.hypot(c.x - (player.x+24), c.y - (player.y+26)) < 34) {
+          score += 120 * combo;
+          for (let k = 0; k < 20; k++) particles.push({x: c.x, y: c.y, vx: Math.random()*10-5, vy: Math.random()*10-12, life: 22, color: '#eab308'});
+          coins.splice(i,1);
         }
       }
 
-      // Peel hit
-      for (let i = peels.length - 1; i >= 0; i--) {
-        const p = peels[i];
-        if (Math.hypot(p.x - (player.x + 25), p.y - (player.y + 30)) < 40) {
+      // Hit peel
+      for (let i = peels.length-1; i >= 0; i--) {
+        let p = peels[i];
+        if (Math.hypot(p.x - (player.x+24), p.y - (player.y+26)) < 38) {
           combo = 1;
-          player.vy = -12;
-          peels.splice(i, 1);
-          for (let j = 0; j < 25; j++) addParticle(p.x, p.y, '#f43f5e');
+          player.vy = -14;
+          peels.splice(i,1);
         }
       }
 
-      // Scrolling camera
-      if (player.y < 280) {
-        const diff = 280 - player.y;
+      // Camera follow
+      if (player.y < 260) {
+        const diff = 260 - player.y;
         cameraY += diff;
-        player.y = 280;
-        score += Math.floor(diff * 0.3);
+        player.y = 260;
+        score += Math.floor(diff * 0.35);
       }
 
-      maxHeight = Math.max(maxHeight, Math.floor(cameraY / 8));
+      spawnNew();
 
-      // Generate new platforms
-      while (lastPlatformY > cameraY - 800) {
-        lastPlatformY -= 65 + Math.random() * 12;
-        platforms.push(createPlatform(lastPlatformY));
-        // occasional coin
-        if (Math.random() < 0.6) coins.push({ x: platforms[platforms.length-1].x + 30 + Math.random() * (platforms[platforms.length-1].width - 80), y: lastPlatformY - 40 });
-        // occasional peel
-        if (Math.random() < 0.35) peels.push({ x: 60 + Math.random() * 400, y: lastPlatformY - 20, vx: Math.random()*2-1 });
-      }
+      // Clean old
+      while (platforms.length && platforms[0].y > cameraY + 800) platforms.shift();
+      while (coins.length && coins[0].y > cameraY + 800) coins.shift();
+      while (peels.length && peels[0].y > cameraY + 800) peels.shift();
 
-      // Clean old platforms
-      if (platforms[0] && platforms[0].y > cameraY + 800) platforms.shift();
-
-      // Peels movement
-      peels.forEach(p => { p.x += p.vx; p.vx *= 0.98; });
+      // Peels move
+      peels.forEach(p => { p.x += p.vx; p.vx *= 0.97; });
 
       // Particles
-      for (let i = particles.length - 1; i >= 0; i--) {
-        const p = particles[i];
-        p.x += p.vx; p.y += p.vy; p.vy += 0.4; p.life--;
-        if (p.life <= 0) particles.splice(i, 1);
+      for (let i = particles.length-1; i >= 0; i--) {
+        let p = particles[i];
+        p.x += p.vx; p.y += p.vy; p.vy += 0.35; p.life--;
+        if (p.life <= 0) particles.splice(i,1);
       }
 
-      // Fall off screen = game over
-      if (player.y > cameraY + 780) {
+      // Fall off = game over
+      if (player.y > cameraY + 740) {
         gameRunning = false;
         document.getElementById('gameOverScreen').classList.remove('hidden');
-        document.getElementById('finalHeight').textContent = maxHeight;
-        document.getElementById('finalHigh').textContent = Math.max(maxHeight, highScore);
-        if (maxHeight > highScore) {
-          highScore = maxHeight;
-          localStorage.setItem('bananaTowerHigh', highScore);
+        document.getElementById('finalHeight').textContent = Math.floor(cameraY / 6);
+        const newBest = Math.max(best, Math.floor(cameraY / 6));
+        document.getElementById('finalBest').textContent = newBest;
+        if (newBest > best) {
+          best = newBest;
+          localStorage.setItem('bananoTowerBest', best);
         }
       }
-
-      // UI
-      document.getElementById('height').textContent = maxHeight;
-      document.getElementById('score').textContent = score;
-      document.getElementById('combo').textContent = 'x' + combo;
     }
 
     function draw() {
       ctx.fillStyle = '#052e16';
       ctx.fillRect(0, 0, 520, 680);
 
-      // Parallax vines background
-      ctx.fillStyle = '#166534';
-      for (let i = -2; i < 6; i++) {
-        ctx.fillText('🌿', 80 + (i*90), ((cameraY * 0.3) % 200) + i*140 - 100);
+      // Jungle vines background
+      ctx.fillStyle = '#14532d';
+      ctx.font = '60px sans-serif';
+      for (let i = -3; i < 8; i++) {
+        ctx.fillText('🌿', 40 + (i*72), ((cameraY*0.25)%220) + i*130 - 80);
       }
 
-      // Platforms
-      ctx.font = '42px sans-serif';
+      // Platforms = banana bunches
+      ctx.font = '46px sans-serif';
       for (let p of platforms) {
-        const screenY = p.y - cameraY;
+        const sy = p.y - cameraY;
         ctx.fillStyle = '#facc15';
-        ctx.fillText('🍌🍌🍌', p.x - 10, screenY + 28);
+        ctx.fillText('🍌🍌🍌', p.x - 18, sy + 32);
       }
 
       // Coins
-      ctx.font = '32px sans-serif';
+      ctx.font = '34px sans-serif';
       for (let c of coins) {
         const sy = c.y - cameraY;
         ctx.fillStyle = '#eab308';
-        ctx.fillText('🪙', c.x, sy);
+        ctx.fillText('🪙', c.x, sy + 10);
       }
 
       // Peels
-      ctx.font = '36px sans-serif';
+      ctx.font = '38px sans-serif';
       for (let p of peels) {
         const sy = p.y - cameraY;
         ctx.fillStyle = '#f43f5e';
-        ctx.fillText('🍌', p.x, sy);
+        ctx.fillText('🍌', p.x, sy + 12);
       }
 
-      // Player monkey
+      // Monkey
       ctx.font = '68px sans-serif';
       ctx.fillStyle = '#bef574';
-      ctx.fillText('🐒', player.x - 8, player.y + 48);
+      ctx.fillText('🐒', player.x - 6, player.y + 46);
 
       // Particles
       for (let p of particles) {
-        ctx.globalAlpha = p.life / 30;
+        ctx.globalAlpha = p.life / 28;
         ctx.fillStyle = p.color;
-        ctx.fillRect(p.x, p.y - cameraY, 7, 7);
+        ctx.fillRect(p.x, p.y - cameraY, 9, 9);
       }
       ctx.globalAlpha = 1;
-
-      // Ground glow at bottom
-      if (cameraY < 200) {
-        ctx.fillStyle = 'rgba(234, 179, 8, 0.2)';
-        ctx.fillRect(0, 640, 520, 40);
-      }
     }
 
-    function loop() {
+    function gameLoop() {
       update();
       draw();
-      requestAnimationFrame(loop);
+      requestAnimationFrame(gameLoop);
     }
 
     function startGame() {
       document.getElementById('startScreen').style.display = 'none';
       document.getElementById('gameOverScreen').classList.add('hidden');
-      init();
+      initGame();
       gameRunning = true;
-      player.vy = -22;
+    }
+
+    function restartGame() {
+      startGame();
     }
 
     // Controls
@@ -289,12 +265,12 @@
     canvas.addEventListener('touchstart', e => {
       e.preventDefault();
       if (!gameRunning) startGame();
-      else if (player.vy > -5) player.vy = -19; // tap to boost jump
+      else if (player.vy > -4) player.vy = -19.5; // tap boost
     });
 
-    // Start
-    init();
-    loop();
+    // Init & start
+    initGame();
+    gameLoop();
     document.getElementById('startScreen').style.display = 'flex';
   </script>
 </body>
