@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Play - Banano Jungle 🍌</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style> body { font-family: system-ui, sans-serif; } canvas { border: 8px solid #facc15; border-radius: 16px; box-shadow: 0 0 40px #facc15; } </style>
+</head>
+<body class="bg-gradient-to-b from-emerald-950 to-black text-lime-100 min-h-screen">
+  <nav class="fixed top-0 w-full bg-black/90 backdrop-blur z-50 border-b border-yellow-400/30">
+    <div class="max-w-4xl mx-auto px-6 py-5 flex justify-between items-center text-xl">
+      <div class="font-black text-3xl">🍌 BANANO JUNGLE</div>
+      <div class="flex gap-8">
+        <a href="index.html" class="hover:text-yellow-400">Home</a>
+        <a href="play.html" class="hover:text-yellow-400">Play</a>
+        <a href="learn.html" class="hover:text-yellow-400">Learn</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="pt-24 text-center px-6">
+    <h1 class="text-6xl font-black text-yellow-400 mb-4">Flappy Monkey 🍌🐒</h1>
+    <p class="text-xl mb-8">Tap / Space / Click to flap • Collect Ban coins • Dodge peels • Beat your high score!</p>
+    <canvas id="game" width="480" height="640" class="mx-auto"></canvas>
+    <div class="mt-6 text-2xl flex justify-center gap-12">
+      <div>Score: <span id="score" class="text-yellow-400 font-mono">0</span></div>
+      <div>High: <span id="high" class="text-yellow-400 font-mono">0</span></div>
+      <div>Lives: <span id="lives" class="text-red-400">❤️❤️❤️</span></div>
+    </div>
+    <button onclick="startGame()" class="mt-8 px-12 py-5 bg-yellow-400 text-black font-bold text-3xl rounded-3xl hover:scale-110">START / RESTART</button>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    let x = 150, y = 300, vy = 0, score = 0, lives = 3, high = localStorage.getItem('banHigh') || 0;
+    let peels = [], coins = [], running = false;
+    document.getElementById('high').textContent = high;
+
+    function draw() {
+      ctx.fillStyle = '#052e16';
+      ctx.fillRect(0, 0, 480, 640);
+      // monkey
+      ctx.font = '60px sans-serif';
+      ctx.fillText('🐒', x, y);
+      // falling stuff
+      peels.forEach((p,i) => { ctx.fillText('🍌', p.x, p.y); p.y += 7; if (p.y > 640) peels.splice(i,1); });
+      coins.forEach((c,i) => { ctx.fillText('🪙', c.x, c.y); c.y += 6; if (c.y > 640) coins.splice(i,1); });
+      // collision
+      peels.forEach((p,i) => { if (Math.hypot(p.x - x, p.y - y) < 40) { lives--; peels.splice(i,1); } });
+      coins.forEach((c,i) => { if (Math.hypot(c.x - x, c.y - y) < 40) { score += 20; coins.splice(i,1); } });
+      // UI
+      document.getElementById('score').textContent = score;
+      document.getElementById('lives').innerHTML = '❤️'.repeat(lives);
+      if (score > high) { high = score; localStorage.setItem('banHigh', high); document.getElementById('high').textContent = high; }
+      if (lives <= 0) running = false;
+      if (running) requestAnimationFrame(draw);
+    }
+
+    function spawn() {
+      if (!running) return;
+      if (Math.random() < 0.7) peels.push({x: Math.random()*400 + 40, y: -30});
+      if (Math.random() < 0.6) coins.push({x: Math.random()*400 + 40, y: -30});
+      setTimeout(spawn, 300);
+    }
+
+    function startGame() {
+      x = 150; y = 300; vy = 0; score = 0; lives = 3; peels = []; coins = []; running = true;
+      draw(); spawn();
+    }
+
+    // controls
+    document.addEventListener('keydown', e => {
+      if (e.key === ' ' || e.key === 'Spacebar') vy = -14;
+      if (e.key === 'ArrowLeft' || e.key === 'a') x = Math.max(20, x-25);
+      if (e.key === 'ArrowRight' || e.key === 'd') x = Math.min(400, x+25);
+    });
+    canvas.addEventListener('click', () => { if (running) vy = -14; else startGame(); });
+    canvas.addEventListener('touchstart', e => { e.preventDefault(); if (running) vy = -14; else startGame(); });
+
+    // gravity & movement loop
+    setInterval(() => {
+      if (running) {
+        vy += 0.8;   // gravity
+        y += vy;
+        if (y > 580) { y = 580; vy = 0; }
+        if (y < 30) { y = 30; vy = 2; }
+      }
+    }, 16);
+  </script>
+</body>
+</html>
