@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Play · Banana Tower · Banano X</title>
-  <meta name="description" content="Climb the Banana Tower — midnight potassium platformer.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Play · Catch the BAN · Banano X</title>
+  <meta name="description" content="Catch falling bananas with the monkey. Super simple Banano mini-game.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
@@ -32,249 +32,361 @@
 
   <main class="play-wrap">
     <div class="play-header">
-      <h1>Banana Tower</h1>
-      <p>Midnight potassium climb · perfect landings stack combos</p>
+      <h1>Catch the BAN</h1>
+      <p>Move the monkey. Catch bananas. Don’t miss three.</p>
     </div>
 
     <div class="game-frame" id="frame">
-      <canvas id="c" width="520" height="680" aria-label="Banana Tower game"></canvas>
+      <canvas id="game" width="360" height="480" aria-label="Catch the BAN game"></canvas>
 
       <div id="start" class="game-overlay">
         <div>
-          <h2>Ready to climb?</h2>
-          <p style="margin-bottom: 1.25rem;">Tap, click, or press Space to start.<br>A/D or arrows to move · click to boost jump</p>
-          <button type="button" class="btn btn-primary" onclick="start()">Start climbing</button>
+          <h2>Catch the BAN 🍌</h2>
+          <p style="margin-bottom: 1.25rem;">
+            Move under falling bananas to catch them.<br>
+            Miss 3 and it’s game over.
+          </p>
+          <button type="button" class="btn btn-primary" id="btn-start">Play</button>
         </div>
       </div>
 
       <div id="over" class="game-overlay hidden">
         <div>
-          <h2 class="fail-title">You fell!</h2>
-          <p class="stat">Height: <em id="fh">0</em>m · Best: <em id="best">0</em>m</p>
-          <button type="button" class="btn btn-primary" onclick="start()">Climb again</button>
+          <h2 class="fail-title">Game over</h2>
+          <p class="stat">Score: <em id="final-score">0</em> · Best: <em id="final-best">0</em></p>
+          <button type="button" class="btn btn-primary" id="btn-retry">Play again</button>
         </div>
       </div>
     </div>
 
-    <p class="play-hint">← → or A / D to move · click or tap to jump (left/right side steers)</p>
+    <p class="play-hint">Move mouse / finger · or ← → / A D · Space to start</p>
   </main>
 
   <script src="site.js"></script>
   <script>
-    const c = document.getElementById("c");
-    const ctx = c.getContext("2d");
-    let p = { x: 240, y: 400, vx: 0, vy: 0, w: 48, h: 52 };
-    let plats = [], coins = [];
-    let cam = 0, score = 0, best = +localStorage.getItem("bt") || 0, combo = 1, running = false;
-    let keys = {};
+    (function () {
+      const canvas = document.getElementById("game");
+      const ctx = canvas.getContext("2d");
+      const W = canvas.width;
+      const H = canvas.height;
 
-    function newPlat(y) {
-      const w = Math.max(120, 360 - Math.abs(y) / 20);
-      return { x: 40 + Math.random() * (520 - w - 80), y, w };
-    }
+      const startEl = document.getElementById("start");
+      const overEl = document.getElementById("over");
+      const finalScoreEl = document.getElementById("final-score");
+      const finalBestEl = document.getElementById("final-best");
 
-    function reset() {
-      plats = [];
-      coins = [];
-      for (let i = 0; i < 15; i++) plats.push(newPlat(620 - i * 65));
-      p.x = 240;
-      p.y = 380;
-      p.vy = -18;
-      p.vx = 0;
-      cam = 0;
-      score = 0;
-      combo = 1;
-    }
+      const BEST_KEY = "banano-catch-best";
 
-    function start() {
-      document.getElementById("start").classList.add("hidden");
-      document.getElementById("over").classList.add("hidden");
-      reset();
-      running = true;
-    }
+      // --- State ---
+      let running = false;
+      let score = 0;
+      let lives = 3;
+      let best = Number(localStorage.getItem(BEST_KEY)) || 0;
+      let bananas = [];
+      let particles = [];
+      let spawnTimer = 0;
+      let elapsed = 0;
+      let lastTime = 0;
 
-    function update() {
-      if (!running) return;
-      if (keys["ArrowLeft"] || keys["a"] || keys["A"]) p.vx -= 1.5;
-      if (keys["ArrowRight"] || keys["d"] || keys["D"]) p.vx += 1.5;
-      p.vx *= 0.85;
-      p.x += p.vx;
-      p.vy += 0.75;
-      p.y += p.vy;
-
-      if (p.x < 10) { p.x = 10; p.vx = 7; }
-      if (p.x > 460) { p.x = 460; p.vx = -7; }
-
-      for (const pl of plats) {
-        if (
-          p.vy > 0 &&
-          p.x + p.w > pl.x &&
-          p.x < pl.x + pl.w &&
-          p.y + p.h > pl.y &&
-          p.y + p.h - p.vy <= pl.y
-        ) {
-          const center = Math.abs(p.x + 24 - (pl.x + pl.w / 2));
-          p.y = pl.y - p.h;
-          p.vy = -20 - (center < 40 ? 5 : 0);
-          combo = center < 40 ? Math.min(combo + 1, 10) : 1;
-          break;
-        }
-      }
-
-      for (let i = coins.length - 1; i >= 0; i--) {
-        const co = coins[i];
-        if (Math.hypot(co.x - (p.x + 24), co.y - (p.y + 26)) < 35) {
-          score += 150 * combo;
-          coins.splice(i, 1);
-        }
-      }
-
-      if (p.y < 260) {
-        const d = 260 - p.y;
-        cam += d;
-        p.y = 260;
-        score += Math.floor(d * 0.4);
-      }
-
-      while (plats[plats.length - 1].y > cam - 900) {
-        const ny = plats[plats.length - 1].y - 65;
-        plats.push(newPlat(ny));
-        if (Math.random() < 0.5) {
-          const last = plats[plats.length - 1];
-          coins.push({ x: last.x + 40 + Math.random() * (last.w - 80), y: ny - 40 });
-        }
-      }
-
-      if (p.y > cam + 750) {
-        running = false;
-        document.getElementById("over").classList.remove("hidden");
-        const h = Math.floor(cam / 7);
-        document.getElementById("fh").textContent = h;
-        const nb = Math.max(best, h);
-        document.getElementById("best").textContent = nb;
-        if (nb > best) {
-          best = nb;
-          localStorage.setItem("bt", best);
-        }
-      }
-    }
-
-    function draw() {
-      // sky gradient
-      const g = ctx.createLinearGradient(0, 0, 0, 680);
-      g.addColorStop(0, "#041a10");
-      g.addColorStop(1, "#0a2e1a");
-      ctx.fillStyle = g;
-      ctx.fillRect(0, 0, 520, 680);
-
-      // soft vignette dots
-      ctx.fillStyle = "rgba(190, 245, 116, 0.04)";
-      for (let i = 0; i < 8; i++) {
-        const x = ((i * 97 + cam * 0.05) % 520);
-        const y = ((i * 131 + cam * 0.08) % 680);
-        ctx.beginPath();
-        ctx.arc(x, y, 40 + (i % 3) * 20, 0, Math.PI * 2);
-        ctx.fill();
-      }
-
-      ctx.font = "48px sans-serif";
-      ctx.globalAlpha = 0.35;
-      for (let i = 0; i < 7; i++) {
-        ctx.fillText("🌿", 40 + i * 72, ((cam * 0.25) % 220) + i * 110 - 80);
-      }
-      ctx.globalAlpha = 1;
-
-      // platforms
-      ctx.font = "40px sans-serif";
-      for (const pl of plats) {
-        const sy = pl.y - cam;
-        if (sy < -60 || sy > 740) continue;
-        // platform glow bar
-        ctx.fillStyle = "rgba(245, 208, 65, 0.15)";
-        ctx.fillRect(pl.x - 4, sy + 18, pl.w + 8, 14);
-        ctx.fillStyle = "#f5d041";
-        const bananas = Math.max(2, Math.floor(pl.w / 36));
-        for (let b = 0; b < bananas; b++) {
-          ctx.fillText("🍌", pl.x + b * (pl.w / bananas) - 4, sy + 34);
-        }
-      }
-
-      ctx.font = "28px sans-serif";
-      for (const co of coins) {
-        const sy = co.y - cam;
-        if (sy < -40 || sy > 720) continue;
-        ctx.fillText("🪙", co.x, sy);
-      }
-
-      ctx.font = "60px sans-serif";
-      ctx.fillText("🐒", p.x - 6, p.y + 48);
-
-      // HUD
-      ctx.fillStyle = "rgba(3, 8, 6, 0.55)";
-      ctx.beginPath();
-      ctx.roundRect(12, 12, 200, 44, 12);
-      ctx.fill();
-      ctx.fillStyle = "#f5d041";
-      ctx.font = "600 16px 'DM Sans', system-ui, sans-serif";
-      ctx.fillText("HEIGHT  " + Math.floor(cam / 7) + " m", 28, 40);
-      if (combo > 1) {
-        ctx.fillStyle = "#b8e86a";
-        ctx.fillText("×" + combo, 170, 40);
-      }
-    }
-
-    function loop() {
-      update();
-      draw();
-      requestAnimationFrame(loop);
-    }
-
-    window.addEventListener("keydown", (e) => {
-      keys[e.key] = true;
-      if ((e.key === " " || e.code === "Space") && !running) {
-        e.preventDefault();
-        start();
-      }
-    });
-    window.addEventListener("keyup", (e) => { keys[e.key] = false; });
-
-    c.addEventListener("click", (e) => {
-      if (!running) { start(); return; }
-      p.vy = -19;
-      // side steer on click
-      const rect = c.getBoundingClientRect();
-      const x = ((e.clientX - rect.left) / rect.width) * 520;
-      if (x < 200) p.vx -= 8;
-      if (x > 320) p.vx += 8;
-    });
-
-    c.addEventListener("touchstart", (e) => {
-      e.preventDefault();
-      if (!running) { start(); return; }
-      p.vy = -19;
-      const t = e.changedTouches[0];
-      const rect = c.getBoundingClientRect();
-      const x = ((t.clientX - rect.left) / rect.width) * 520;
-      if (x < 200) p.vx -= 8;
-      if (x > 320) p.vx += 8;
-    }, { passive: false });
-
-    // Polyfill roundRect if missing
-    if (!CanvasRenderingContext2D.prototype.roundRect) {
-      CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
-        const radius = typeof r === "number" ? r : 8;
-        this.moveTo(x + radius, y);
-        this.arcTo(x + w, y, x + w, y + h, radius);
-        this.arcTo(x + w, y + h, x, y + h, radius);
-        this.arcTo(x, y + h, x, y, radius);
-        this.arcTo(x, y, x + w, y, radius);
-        this.closePath();
+      const player = {
+        x: W / 2,
+        y: H - 56,
+        w: 64,
+        speed: 380,
       };
-    }
 
-    reset();
-    loop();
-    document.getElementById("best").textContent = best;
+      const keys = { left: false, right: false };
+      let pointerX = null; // when set, player follows this
+
+      // --- Helpers ---
+      function rand(min, max) {
+        return min + Math.random() * (max - min);
+      }
+
+      function show(el) { el.classList.remove("hidden"); }
+      function hide(el) { el.classList.add("hidden"); }
+
+      function resetGame() {
+        score = 0;
+        lives = 3;
+        bananas = [];
+        particles = [];
+        spawnTimer = 0;
+        elapsed = 0;
+        player.x = W / 2;
+        lastTime = 0;
+      }
+
+      function startGame() {
+        resetGame();
+        hide(startEl);
+        hide(overEl);
+        running = true;
+      }
+
+      function endGame() {
+        running = false;
+        if (score > best) {
+          best = score;
+          localStorage.setItem(BEST_KEY, String(best));
+        }
+        finalScoreEl.textContent = score;
+        finalBestEl.textContent = best;
+        show(overEl);
+      }
+
+      function spawnBanana() {
+        bananas.push({
+          x: rand(28, W - 28),
+          y: -30,
+          r: 22,
+          vy: rand(140, 200) + Math.min(elapsed * 8, 180),
+          rot: rand(0, Math.PI * 2),
+          spin: rand(-3, 3),
+        });
+      }
+
+      function burst(x, y) {
+        for (let i = 0; i < 8; i++) {
+          particles.push({
+            x, y,
+            vx: rand(-80, 80),
+            vy: rand(-120, -20),
+            life: 0.45,
+            age: 0,
+          });
+        }
+      }
+
+      // --- Update ---
+      function update(dt) {
+        elapsed += dt;
+
+        // Movement: pointer wins when active, else keys
+        if (pointerX !== null) {
+          const target = pointerX;
+          const dx = target - player.x;
+          player.x += dx * Math.min(1, dt * 14);
+        } else {
+          if (keys.left) player.x -= player.speed * dt;
+          if (keys.right) player.x += player.speed * dt;
+        }
+
+        const half = player.w / 2;
+        player.x = Math.max(half, Math.min(W - half, player.x));
+
+        // Spawn rate ramps up gently
+        const interval = Math.max(0.45, 1.1 - elapsed * 0.03);
+        spawnTimer -= dt;
+        if (spawnTimer <= 0) {
+          spawnBanana();
+          spawnTimer = interval;
+        }
+
+        // Bananas
+        for (let i = bananas.length - 1; i >= 0; i--) {
+          const b = bananas[i];
+          b.y += b.vy * dt;
+          b.rot += b.spin * dt;
+
+          // Catch? (circle vs player hitbox)
+          const px = player.x;
+          const py = player.y;
+          const catchW = player.w * 0.55;
+          const catchH = 28;
+          const closestX = Math.max(px - catchW, Math.min(b.x, px + catchW));
+          const closestY = Math.max(py - catchH, Math.min(b.y, py + 20));
+          const dist = Math.hypot(b.x - closestX, b.y - closestY);
+
+          if (dist < b.r) {
+            score += 1;
+            burst(b.x, b.y);
+            bananas.splice(i, 1);
+            continue;
+          }
+
+          // Missed
+          if (b.y - b.r > H) {
+            bananas.splice(i, 1);
+            lives -= 1;
+            if (lives <= 0) {
+              endGame();
+              return;
+            }
+          }
+        }
+
+        // Particles
+        for (let i = particles.length - 1; i >= 0; i--) {
+          const p = particles[i];
+          p.age += dt;
+          p.x += p.vx * dt;
+          p.y += p.vy * dt;
+          p.vy += 280 * dt;
+          if (p.age >= p.life) particles.splice(i, 1);
+        }
+      }
+
+      // --- Draw ---
+      function draw() {
+        // Background
+        const g = ctx.createLinearGradient(0, 0, 0, H);
+        g.addColorStop(0, "#061a10");
+        g.addColorStop(1, "#0c2a18");
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 0, W, H);
+
+        // Soft ground strip
+        ctx.fillStyle = "rgba(245, 208, 65, 0.06)";
+        ctx.fillRect(0, H - 70, W, 70);
+        ctx.strokeStyle = "rgba(245, 208, 65, 0.15)";
+        ctx.beginPath();
+        ctx.moveTo(0, H - 70);
+        ctx.lineTo(W, H - 70);
+        ctx.stroke();
+
+        // Particles
+        for (const p of particles) {
+          const a = 1 - p.age / p.life;
+          ctx.globalAlpha = a;
+          ctx.font = "16px serif";
+          ctx.fillText("✨", p.x - 8, p.y);
+        }
+        ctx.globalAlpha = 1;
+
+        // Bananas
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        for (const b of bananas) {
+          ctx.save();
+          ctx.translate(b.x, b.y);
+          ctx.rotate(b.rot);
+          ctx.font = "36px serif";
+          ctx.fillText("🍌", 0, 0);
+          ctx.restore();
+        }
+
+        // Player (monkey)
+        ctx.font = "52px serif";
+        ctx.fillText("🐒", player.x, player.y);
+
+        // HUD
+        ctx.textAlign = "left";
+        ctx.textBaseline = "alphabetic";
+        ctx.fillStyle = "rgba(3, 8, 6, 0.55)";
+        roundRect(ctx, 10, 10, 140, 36, 10);
+        ctx.fill();
+        ctx.fillStyle = "#f5d041";
+        ctx.font = "600 15px 'DM Sans', system-ui, sans-serif";
+        ctx.fillText("Score  " + score, 22, 33);
+
+        // Lives
+        ctx.textAlign = "right";
+        ctx.font = "22px serif";
+        let hearts = "";
+        for (let i = 0; i < lives; i++) hearts += "💛";
+        ctx.fillText(hearts || "—", W - 16, 34);
+
+        // Idle prompt on start screen still shows canvas behind — fine
+        if (!running && startEl.classList.contains("hidden") === false) {
+          // nothing extra
+        }
+      }
+
+      function roundRect(ctx, x, y, w, h, r) {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.arcTo(x + w, y, x + w, y + h, r);
+        ctx.arcTo(x + w, y + h, x, y + h, r);
+        ctx.arcTo(x, y + h, x, y, r);
+        ctx.arcTo(x, y, x + w, y, r);
+        ctx.closePath();
+      }
+
+      // --- Loop ---
+      function frame(ts) {
+        if (!lastTime) lastTime = ts;
+        let dt = (ts - lastTime) / 1000;
+        lastTime = ts;
+        // Cap huge frame skips (tab switch)
+        if (dt > 0.05) dt = 0.05;
+
+        if (running) update(dt);
+        draw();
+        requestAnimationFrame(frame);
+      }
+
+      // --- Input ---
+      function canvasX(clientX) {
+        const rect = canvas.getBoundingClientRect();
+        return ((clientX - rect.left) / rect.width) * W;
+      }
+
+      function onPointer(clientX) {
+        pointerX = canvasX(clientX);
+      }
+
+      canvas.addEventListener("mousemove", (e) => {
+        if (!running) return;
+        onPointer(e.clientX);
+      });
+
+      canvas.addEventListener("mouseleave", () => {
+        pointerX = null;
+      });
+
+      canvas.addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        if (!running) {
+          startGame();
+          return;
+        }
+        onPointer(e.changedTouches[0].clientX);
+      }, { passive: false });
+
+      canvas.addEventListener("touchmove", (e) => {
+        e.preventDefault();
+        if (!running) return;
+        onPointer(e.changedTouches[0].clientX);
+      }, { passive: false });
+
+      canvas.addEventListener("touchend", () => {
+        // keep last position — smoother on mobile
+      });
+
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") {
+          keys.left = true;
+          pointerX = null;
+          e.preventDefault();
+        }
+        if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") {
+          keys.right = true;
+          pointerX = null;
+          e.preventDefault();
+        }
+        if (e.code === "Space" || e.key === " ") {
+          e.preventDefault();
+          if (!running) startGame();
+        }
+      });
+
+      window.addEventListener("keyup", (e) => {
+        if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") keys.left = false;
+        if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") keys.right = false;
+      });
+
+      document.getElementById("btn-start").addEventListener("click", startGame);
+      document.getElementById("btn-retry").addEventListener("click", startGame);
+
+      // Click canvas to start
+      canvas.addEventListener("click", () => {
+        if (!running) startGame();
+      });
+
+      // Idle draw + loop always running so menu looks alive
+      requestAnimationFrame(frame);
+    })();
   </script>
 </body>
 </html>
