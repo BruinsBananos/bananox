@@ -1,93 +1,110 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Banano Jungle • Midnight Potassium 🍌🌙</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <style>
-    body { font-family: system-ui, sans-serif; background: linear-gradient(to bottom, #0a1f14, #000000); }
-    .glow { text-shadow: 0 0 30px #facc15, 0 0 60px #eab308; }
-    .falling { position: absolute; font-size: 2.2rem; animation: fall linear forwards; pointer-events: none; opacity: 0.9; }
-    @keyframes fall { to { transform: translateY(120vh) rotate(720deg); } }
-    .firefly { position: absolute; width: 6px; height: 6px; background: #bef575; border-radius: 50%; box-shadow: 0 0 12px #bef575; animation: firefly 4s infinite; }
-  </style>
+  <title>Banano X — Midnight Potassium</title>
+  <meta name="description" content="Feeless. Instant. Meme-fueled crypto. Explore Banano wallets, faucets, games, and community.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 </head>
-<body class="text-lime-100 min-h-screen overflow-x-hidden">
-  <!-- NAV -->
-  <nav class="fixed top-0 w-full bg-black/70 backdrop-blur-xl z-50 border-b border-yellow-400/20">
-    <div class="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
-      <a href="index.html" class="flex items-center gap-3 text-4xl font-black tracking-tighter glow">
-        🍌 BANANO X
+<body>
+  <header class="nav">
+    <div class="nav-inner">
+      <a href="index.html" class="logo">
+        <span class="logo-icon" aria-hidden="true">🍌</span>
+        <span>BANANO X</span>
       </a>
-      <div class="flex gap-9 text-lg font-medium">
-        <a href="play.html" class="hover:text-yellow-400 transition">Play</a>
-        <a href="facts.html" class="hover:text-yellow-400 transition">Facts</a>
-        <a href="ecosystem.html" class="hover:text-yellow-400 transition">Ecosystem</a>
-        <a href="faucets.html" class="hover:text-yellow-400 transition">Faucets</a>
-        <a href="community.html" class="hover:text-yellow-400 transition">Community</a>
-      </div>
+      <button class="nav-toggle" type="button" aria-label="Menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-links">
+        <li><a href="play.html">Play</a></li>
+        <li><a href="facts.html">Facts</a></li>
+        <li><a href="ecosystem.html">Ecosystem</a></li>
+        <li><a href="faucets.html">Faucets</a></li>
+        <li><a href="community.html">Community</a></li>
+      </ul>
     </div>
-  </nav>
+  </header>
 
-  <!-- HERO -->
-  <section class="min-h-screen relative flex items-center pt-20">
-    <div id="particles" class="absolute inset-0 pointer-events-none"></div>
-    <div class="max-w-5xl mx-auto text-center px-6 relative z-10">
-      <div class="inline-flex items-center gap-3 bg-black/60 px-8 py-3 rounded-full border border-yellow-400/30 mb-8">
-        <span class="text-yellow-400">🌙 NIGHT MODE</span>
+  <main>
+    <section class="hero">
+      <div class="hero-particles" id="particles" aria-hidden="true"></div>
+      <div class="hero-content">
+        <div class="badge">
+          <span class="badge-dot" aria-hidden="true"></span>
+          Midnight mode
+        </div>
+        <h1>MIDNIGHT<br>POTASSIUM</h1>
+        <p class="hero-sub">Feeless. Instant. Meme-fueled crypto thriving in the jungle shadows.</p>
+        <div class="hero-actions">
+          <a href="play.html" class="btn btn-primary btn-lg">Play Banana Tower</a>
+          <a href="faucets.html" class="btn btn-ghost btn-lg">Grab free BAN</a>
+        </div>
       </div>
-      <h1 class="text-7xl md:text-8xl font-black leading-none glow mb-6">MIDNIGHT<br>POTASSIUM</h1>
-      <p class="text-3xl md:text-4xl text-lime-300 mb-12 max-w-2xl mx-auto">Feeless. Instant. Meme-fueled crypto thriving in the shadows.</p>
-      <div class="flex flex-col sm:flex-row gap-6 justify-center">
-        <a href="play.html" class="px-14 py-7 bg-yellow-400 hover:bg-yellow-300 text-black font-bold text-3xl rounded-3xl flex items-center gap-4 transition hover:scale-105">
-          <i class="fas fa-gamepad"></i> PLAY NOW
-        </a>
-        <a href="faucets.html" class="px-14 py-7 border-4 border-yellow-400 hover:bg-yellow-400/10 font-bold text-3xl rounded-3xl transition">GRAB FREE BANANOS</a>
+      <div class="hero-scroll" aria-hidden="true">
+        Explore
+        <span></span>
       </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="section-header reveal">
+          <h2 class="glow-text">Why Banano?</h2>
+          <p>A fair-launched digital currency built for fun, folding, and feeless tips.</p>
+        </div>
+        <div class="grid-3">
+          <article class="card reveal">
+            <div class="card-icon" aria-hidden="true">⚡</div>
+            <h3>Instant & feeless</h3>
+            <p>DAG vines settle transfers in under a second — no gas wars, no miner tax, forever.</p>
+          </article>
+          <article class="card reveal">
+            <div class="card-icon" aria-hidden="true">🌱</div>
+            <h3>Eco night mode</h3>
+            <p>Almost no energy draw. Perfect for late-night potassium runs and guilt-free rains.</p>
+          </article>
+          <article class="card reveal">
+            <div class="card-icon" aria-hidden="true">😂</div>
+            <h3>Meme kingdom</h3>
+            <p>Fair launch, community rains, and the friendliest jokes in crypto since 2018.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" style="padding-top: 0;">
+      <div class="container">
+        <div class="section-header reveal">
+          <h2>Dive deeper</h2>
+          <p>Wallets, faucets, science folding, and the crew that keeps the jungle alive.</p>
+        </div>
+        <div class="grid-2">
+          <a href="ecosystem.html" class="card reveal" style="display:block;">
+            <div class="card-icon" aria-hidden="true">🗺️</div>
+            <h3>Ecosystem</h3>
+            <p>Kalium, JungleTV, Banano Miner, explorers, and the tools monkeys actually use.</p>
+          </a>
+          <a href="community.html" class="card reveal" style="display:block;">
+            <div class="card-icon" aria-hidden="true">🐵</div>
+            <h3>Community</h3>
+            <p>Discord, Reddit, X — rain BAN, share memes, run nodes, grow the canopy.</p>
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p>Built for billions · Fan site · Official: <a href="https://banano.cc" target="_blank" rel="noopener">banano.cc</a></p>
     </div>
-    <div class="absolute bottom-12 left-1/2 text-5xl animate-bounce">↓</div>
-  </section>
-
-  <!-- QUICK SECTIONS -->
-  <section class="py-24">
-    <div class="max-w-6xl mx-auto px-6 grid md:grid-cols-3 gap-8">
-      <div class="bg-black/60 border border-yellow-400/30 p-10 rounded-3xl hover:border-yellow-400 transition">
-        <div class="text-6xl mb-6">⚡</div>
-        <h3 class="text-3xl font-bold mb-4">Instant & Feeless</h3>
-        <p class="text-lime-300">DAG jungle vines — transactions in <1 second, zero fees forever.</p>
-      </div>
-      <div class="bg-black/60 border border-yellow-400/30 p-10 rounded-3xl hover:border-yellow-400 transition">
-        <div class="text-6xl mb-6">🌱</div>
-        <h3 class="text-3xl font-bold mb-4">Eco-Night Mode</h3>
-        <p class="text-lime-300">Uses almost no energy. Perfect for late-night potassium runs.</p>
-      </div>
-      <div class="bg-black/60 border border-yellow-400/30 p-10 rounded-3xl hover:border-yellow-400 transition">
-        <div class="text-6xl mb-6">😂</div>
-        <h3 class="text-3xl font-bold mb-4">Meme Kingdom</h3>
-        <p class="text-lime-300">Fair launch, community rains, and endless banana jokes.</p>
-      </div>
-    </div>
-  </section>
-
-  <footer class="bg-black py-12 text-center text-lime-400">
-    <p>Built for billions • Fan site • Official: <a href="https://banano.cc" class="underline">banano.cc</a></p>
   </footer>
 
-  <script>
-    // Falling bananas & fireflies
-    function createElement(type) {
-      const el = document.createElement('div');
-      el.className = type === 'banana' ? 'falling' : 'firefly';
-      el.textContent = type === 'banana' ? '🍌' : '';
-      el.style.left = Math.random() * 100 + 'vw';
-      el.style.animationDuration = (Math.random() * 8 + 8) + 's';
-      document.getElementById('particles').appendChild(el);
-      setTimeout(() => el.remove(), 20000);
-    }
-    setInterval(() => createElement('banana'), 280);
-    setInterval(() => createElement('firefly'), 120);
-  </script>
+  <script src="site.js"></script>
 </body>
 </html>

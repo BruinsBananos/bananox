@@ -3,82 +3,100 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Play • Banana Tower</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    body { font-family: system-ui, sans-serif; background: linear-gradient(#0a1f14, #000); overflow: hidden; }
-    .glow { text-shadow: 0 0 40px #facc15; }
-    canvas { border: 12px solid #facc15; border-radius: 24px; box-shadow: 0 0 80px #eab308; }
-  </style>
+  <title>Play · Banana Tower · Banano X</title>
+  <meta name="description" content="Climb the Banana Tower — midnight potassium platformer.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 </head>
-<body class="text-lime-100 min-h-screen">
-  <nav class="fixed top-0 w-full bg-black/70 backdrop-blur-xl z-50 border-b border-yellow-400/20">
-    <div class="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
-      <a href="index.html" class="flex items-center gap-3 text-4xl font-black tracking-tighter glow">🍌 BANANO JUNGLE</a>
-      <div class="flex gap-9 text-lg font-medium">
-        <a href="play.html" class="text-yellow-400">Play</a>
-        <a href="facts.html" class="hover:text-yellow-400 transition">Facts</a>
-        <a href="ecosystem.html" class="hover:text-yellow-400 transition">Ecosystem</a>
-        <a href="faucets.html" class="hover:text-yellow-400 transition">Faucets</a>
-        <a href="community.html" class="hover:text-yellow-400 transition">Community</a>
-      </div>
+<body>
+  <header class="nav">
+    <div class="nav-inner">
+      <a href="index.html" class="logo">
+        <span class="logo-icon" aria-hidden="true">🍌</span>
+        <span>BANANO X</span>
+      </a>
+      <button class="nav-toggle" type="button" aria-label="Menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-links">
+        <li><a href="play.html" class="active">Play</a></li>
+        <li><a href="facts.html">Facts</a></li>
+        <li><a href="ecosystem.html">Ecosystem</a></li>
+        <li><a href="faucets.html">Faucets</a></li>
+        <li><a href="community.html">Community</a></li>
+      </ul>
     </div>
-  </nav>
+  </header>
 
-  <div class="pt-24 flex items-center justify-center min-h-screen">
-    <div class="text-center relative">
-      <h1 class="text-7xl font-black glow mb-4">BANANA TOWER</h1>
-      <p class="text-2xl text-lime-300 mb-8">Midnight Potassium Climb 🐒🍌</p>
-      <canvas id="c" width="520" height="680" class="mx-auto"></canvas>
-      
-      <div id="start" class="absolute inset-0 flex items-center justify-center bg-black/80 rounded-[20px]">
-        <div class="text-center">
-          <p class="text-5xl font-black glow mb-6">TAP or SPACE to START</p>
-          <p class="text-xl">Perfect landings = combo ×2, ×3, ×4...</p>
+  <main class="play-wrap">
+    <div class="play-header">
+      <h1>Banana Tower</h1>
+      <p>Midnight potassium climb · perfect landings stack combos</p>
+    </div>
+
+    <div class="game-frame" id="frame">
+      <canvas id="c" width="520" height="680" aria-label="Banana Tower game"></canvas>
+
+      <div id="start" class="game-overlay">
+        <div>
+          <h2>Ready to climb?</h2>
+          <p style="margin-bottom: 1.25rem;">Tap, click, or press Space to start.<br>A/D or arrows to move · click to boost jump</p>
+          <button type="button" class="btn btn-primary" onclick="start()">Start climbing</button>
         </div>
       </div>
-      <div id="over" class="hidden absolute inset-0 flex items-center justify-center bg-black/90 rounded-[20px]">
-        <div class="text-center">
-          <p class="text-6xl font-black text-red-400 mb-4">YOU FELL!</p>
-          <p class="text-4xl">Height: <span id="fh" class="text-yellow-400">0</span>m</p>
-          <p class="text-3xl mb-8">Best: <span id="best" class="text-yellow-400">0</span>m</p>
-          <button onclick="start()" class="px-16 py-6 bg-yellow-400 text-black font-bold text-3xl rounded-3xl hover:scale-105">CLIMB AGAIN</button>
+
+      <div id="over" class="game-overlay hidden">
+        <div>
+          <h2 class="fail-title">You fell!</h2>
+          <p class="stat">Height: <em id="fh">0</em>m · Best: <em id="best">0</em>m</p>
+          <button type="button" class="btn btn-primary" onclick="start()">Climb again</button>
         </div>
       </div>
     </div>
-  </div>
 
+    <p class="play-hint">← → or A / D to move · click or tap to jump (left/right side steers)</p>
+  </main>
+
+  <script src="site.js"></script>
   <script>
-    const c = document.getElementById('c');
-    const ctx = c.getContext('2d');
-    let p = {x:240, y:400, vx:0, vy:0, w:48, h:52};
-    let plats = [], coins = [], peels = [], parts = [];
-    let cam = 0, score = 0, best = localStorage.getItem('bt')||0, combo = 1, running = false;
+    const c = document.getElementById("c");
+    const ctx = c.getContext("2d");
+    let p = { x: 240, y: 400, vx: 0, vy: 0, w: 48, h: 52 };
+    let plats = [], coins = [];
+    let cam = 0, score = 0, best = +localStorage.getItem("bt") || 0, combo = 1, running = false;
     let keys = {};
 
     function newPlat(y) {
-      let w = Math.max(120, 360 - Math.abs(y)/20);
-      return {x: 40 + Math.random()*(520-w-80), y, w};
+      const w = Math.max(120, 360 - Math.abs(y) / 20);
+      return { x: 40 + Math.random() * (520 - w - 80), y, w };
     }
 
     function reset() {
-      plats = []; coins = []; peels = []; parts = [];
-      for (let i = 0; i < 15; i++) plats.push(newPlat(620 - i*65));
-      p.x = 240; p.y = 380; p.vy = -18;
-      cam = 0; score = 0; combo = 1;
+      plats = [];
+      coins = [];
+      for (let i = 0; i < 15; i++) plats.push(newPlat(620 - i * 65));
+      p.x = 240;
+      p.y = 380;
+      p.vy = -18;
+      p.vx = 0;
+      cam = 0;
+      score = 0;
+      combo = 1;
     }
 
     function start() {
-      document.getElementById('start').style.display = 'none';
-      document.getElementById('over').classList.add('hidden');
+      document.getElementById("start").classList.add("hidden");
+      document.getElementById("over").classList.add("hidden");
       reset();
       running = true;
     }
 
     function update() {
       if (!running) return;
-      if (keys['ArrowLeft'] || keys['a']) p.vx -= 1.5;
-      if (keys['ArrowRight'] || keys['d']) p.vx += 1.5;
+      if (keys["ArrowLeft"] || keys["a"] || keys["A"]) p.vx -= 1.5;
+      if (keys["ArrowRight"] || keys["d"] || keys["D"]) p.vx += 1.5;
       p.vx *= 0.85;
       p.x += p.vx;
       p.vy += 0.75;
@@ -87,85 +105,122 @@
       if (p.x < 10) { p.x = 10; p.vx = 7; }
       if (p.x > 460) { p.x = 460; p.vx = -7; }
 
-      // landing
-      for (let pl of plats) {
-        if (p.vy > 0 && p.x + p.w > pl.x && p.x < pl.x + pl.w && p.y + p.h > pl.y && p.y + p.h - p.vy <= pl.y) {
-          const center = Math.abs((p.x + 24) - (pl.x + pl.w/2));
+      for (const pl of plats) {
+        if (
+          p.vy > 0 &&
+          p.x + p.w > pl.x &&
+          p.x < pl.x + pl.w &&
+          p.y + p.h > pl.y &&
+          p.y + p.h - p.vy <= pl.y
+        ) {
+          const center = Math.abs(p.x + 24 - (pl.x + pl.w / 2));
           p.y = pl.y - p.h;
           p.vy = -20 - (center < 40 ? 5 : 0);
-          combo = center < 40 ? Math.min(combo+1, 10) : 1;
+          combo = center < 40 ? Math.min(combo + 1, 10) : 1;
           break;
         }
       }
 
-      // coins
-      for (let i=coins.length-1; i>=0; i--) {
-        let co = coins[i];
-        if (Math.hypot(co.x - (p.x+24), co.y - (p.y+26)) < 35) {
+      for (let i = coins.length - 1; i >= 0; i--) {
+        const co = coins[i];
+        if (Math.hypot(co.x - (p.x + 24), co.y - (p.y + 26)) < 35) {
           score += 150 * combo;
-          coins.splice(i,1);
+          coins.splice(i, 1);
         }
       }
 
-      // camera
       if (p.y < 260) {
-        let d = 260 - p.y;
+        const d = 260 - p.y;
         cam += d;
         p.y = 260;
-        score += Math.floor(d*0.4);
+        score += Math.floor(d * 0.4);
       }
 
-      // spawn
-      while (plats[plats.length-1].y > cam - 900) {
-        let ny = plats[plats.length-1].y - 65;
+      while (plats[plats.length - 1].y > cam - 900) {
+        const ny = plats[plats.length - 1].y - 65;
         plats.push(newPlat(ny));
-        if (Math.random()<0.5) coins.push({x: plats[plats.length-1].x + 40 + Math.random()*(plats[plats.length-1].w-80), y:ny-40});
+        if (Math.random() < 0.5) {
+          const last = plats[plats.length - 1];
+          coins.push({ x: last.x + 40 + Math.random() * (last.w - 80), y: ny - 40 });
+        }
       }
 
       if (p.y > cam + 750) {
         running = false;
-        document.getElementById('over').classList.remove('hidden');
-        let h = Math.floor(cam / 7);
-        document.getElementById('fh').textContent = h;
-        let nb = Math.max(best, h);
-        document.getElementById('best').textContent = nb;
-        if (nb > best) { best = nb; localStorage.setItem('bt', best); }
+        document.getElementById("over").classList.remove("hidden");
+        const h = Math.floor(cam / 7);
+        document.getElementById("fh").textContent = h;
+        const nb = Math.max(best, h);
+        document.getElementById("best").textContent = nb;
+        if (nb > best) {
+          best = nb;
+          localStorage.setItem("bt", best);
+        }
       }
     }
 
     function draw() {
-      ctx.fillStyle = '#052e16';
-      ctx.fillRect(0,0,520,680);
+      // sky gradient
+      const g = ctx.createLinearGradient(0, 0, 0, 680);
+      g.addColorStop(0, "#041a10");
+      g.addColorStop(1, "#0a2e1a");
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, 520, 680);
 
-      // vines
-      ctx.font = '50px sans-serif';
-      ctx.fillStyle = '#166534';
-      for (let i=0; i<7; i++) ctx.fillText('🌿', 50 + i*70, ((cam*0.3)%250) + i*120 - 100);
+      // soft vignette dots
+      ctx.fillStyle = "rgba(190, 245, 116, 0.04)";
+      for (let i = 0; i < 8; i++) {
+        const x = ((i * 97 + cam * 0.05) % 520);
+        const y = ((i * 131 + cam * 0.08) % 680);
+        ctx.beginPath();
+        ctx.arc(x, y, 40 + (i % 3) * 20, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.font = "48px sans-serif";
+      ctx.globalAlpha = 0.35;
+      for (let i = 0; i < 7; i++) {
+        ctx.fillText("🌿", 40 + i * 72, ((cam * 0.25) % 220) + i * 110 - 80);
+      }
+      ctx.globalAlpha = 1;
 
       // platforms
-      ctx.font = '42px sans-serif';
-      for (let pl of plats) {
-        let sy = pl.y - cam;
-        ctx.fillStyle = '#facc15';
-        ctx.fillText('🍌🍌🍌', pl.x - 15, sy + 32);
+      ctx.font = "40px sans-serif";
+      for (const pl of plats) {
+        const sy = pl.y - cam;
+        if (sy < -60 || sy > 740) continue;
+        // platform glow bar
+        ctx.fillStyle = "rgba(245, 208, 65, 0.15)";
+        ctx.fillRect(pl.x - 4, sy + 18, pl.w + 8, 14);
+        ctx.fillStyle = "#f5d041";
+        const bananas = Math.max(2, Math.floor(pl.w / 36));
+        for (let b = 0; b < bananas; b++) {
+          ctx.fillText("🍌", pl.x + b * (pl.w / bananas) - 4, sy + 34);
+        }
       }
 
-      // coins
-      ctx.font = '30px sans-serif';
-      for (let co of coins) {
-        ctx.fillStyle = '#eab308';
-        ctx.fillText('🪙', co.x, co.y - cam);
+      ctx.font = "28px sans-serif";
+      for (const co of coins) {
+        const sy = co.y - cam;
+        if (sy < -40 || sy > 720) continue;
+        ctx.fillText("🪙", co.x, sy);
       }
 
-      // monkey
-      ctx.font = '65px sans-serif';
-      ctx.fillStyle = '#bef574';
-      ctx.fillText('🐒', p.x - 8, p.y + 48);
+      ctx.font = "60px sans-serif";
+      ctx.fillText("🐒", p.x - 6, p.y + 48);
 
-      // UI
-      ctx.fillStyle = '#facc15';
-      ctx.font = '20px monospace';
-      ctx.fillText('HEIGHT ' + Math.floor(cam/7) + 'm', 20, 40);
+      // HUD
+      ctx.fillStyle = "rgba(3, 8, 6, 0.55)";
+      ctx.beginPath();
+      ctx.roundRect(12, 12, 200, 44, 12);
+      ctx.fill();
+      ctx.fillStyle = "#f5d041";
+      ctx.font = "600 16px 'DM Sans', system-ui, sans-serif";
+      ctx.fillText("HEIGHT  " + Math.floor(cam / 7) + " m", 28, 40);
+      if (combo > 1) {
+        ctx.fillStyle = "#b8e86a";
+        ctx.fillText("×" + combo, 170, 40);
+      }
     }
 
     function loop() {
@@ -174,14 +229,52 @@
       requestAnimationFrame(loop);
     }
 
-    window.addEventListener('keydown', e => keys[e.key] = true);
-    window.addEventListener('keyup', e => keys[e.key] = false);
-    c.addEventListener('click', () => { if (running) p.vy = -19; else start(); });
-    c.addEventListener('touchstart', e => { e.preventDefault(); if (running) p.vy = -19; else start(); });
+    window.addEventListener("keydown", (e) => {
+      keys[e.key] = true;
+      if ((e.key === " " || e.code === "Space") && !running) {
+        e.preventDefault();
+        start();
+      }
+    });
+    window.addEventListener("keyup", (e) => { keys[e.key] = false; });
+
+    c.addEventListener("click", (e) => {
+      if (!running) { start(); return; }
+      p.vy = -19;
+      // side steer on click
+      const rect = c.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 520;
+      if (x < 200) p.vx -= 8;
+      if (x > 320) p.vx += 8;
+    });
+
+    c.addEventListener("touchstart", (e) => {
+      e.preventDefault();
+      if (!running) { start(); return; }
+      p.vy = -19;
+      const t = e.changedTouches[0];
+      const rect = c.getBoundingClientRect();
+      const x = ((t.clientX - rect.left) / rect.width) * 520;
+      if (x < 200) p.vx -= 8;
+      if (x > 320) p.vx += 8;
+    }, { passive: false });
+
+    // Polyfill roundRect if missing
+    if (!CanvasRenderingContext2D.prototype.roundRect) {
+      CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+        const radius = typeof r === "number" ? r : 8;
+        this.moveTo(x + radius, y);
+        this.arcTo(x + w, y, x + w, y + h, radius);
+        this.arcTo(x + w, y + h, x, y + h, radius);
+        this.arcTo(x, y + h, x, y, radius);
+        this.arcTo(x, y, x + w, y, radius);
+        this.closePath();
+      };
+    }
 
     reset();
     loop();
-    document.getElementById('start').style.display = 'flex';
+    document.getElementById("best").textContent = best;
   </script>
 </body>
 </html>

@@ -3,31 +3,82 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Faucets • Banano Jungle</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>body { font-family: system-ui, sans-serif; background: linear-gradient(#0a1f14, #000000); }</style>
+  <title>Faucets · Banano X</title>
+  <meta name="description" content="Claim free Banano from faucets and earn more by folding for science.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 </head>
-<body class="text-lime-100 min-h-screen">
-  <nav class="fixed top-0 w-full bg-black/70 backdrop-blur-xl z-50 border-b border-yellow-400/20">
-    <div class="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
-      <a href="index.html" class="flex items-center gap-3 text-4xl font-black tracking-tighter glow">🍌 BANANO JUNGLE</a>
-      <div class="flex gap-9 text-lg font-medium">
-        <a href="play.html" class="hover:text-yellow-400 transition">Play</a>
-        <a href="facts.html" class="hover:text-yellow-400 transition">Facts</a>
-        <a href="ecosystem.html" class="hover:text-yellow-400 transition">Ecosystem</a>
-        <a href="faucets.html" class="text-yellow-400">Faucets</a>
-        <a href="community.html" class="hover:text-yellow-400 transition">Community</a>
-      </div>
+<body>
+  <header class="nav">
+    <div class="nav-inner">
+      <a href="index.html" class="logo">
+        <span class="logo-icon" aria-hidden="true">🍌</span>
+        <span>BANANO X</span>
+      </a>
+      <button class="nav-toggle" type="button" aria-label="Menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-links">
+        <li><a href="play.html">Play</a></li>
+        <li><a href="facts.html">Facts</a></li>
+        <li><a href="ecosystem.html">Ecosystem</a></li>
+        <li><a href="faucets.html" class="active">Faucets</a></li>
+        <li><a href="community.html">Community</a></li>
+      </ul>
     </div>
-  </nav>
+  </header>
 
-  <div class="pt-32 px-6 max-w-4xl mx-auto">
-    <h1 class="text-7xl font-black glow text-center mb-16">Grab Free Bananos 🌧️</h1>
-    <div class="space-y-8">
-      <div class="bg-black/60 border border-yellow-400/30 p-10 rounded-3xl flex justify-between items-center"><div><strong class="text-2xl">IMalFect Faucet</strong><br>Daily 0.06–0.3 BAN</div><a href="https://banano.fandom.com/wiki/IMalFect_Faucet" target="_blank" class="px-8 py-4 bg-yellow-400 text-black font-bold rounded-2xl">Claim →</a></div>
-      <div class="bg-black/60 border border-yellow-400/30 p-10 rounded-3xl flex justify-between items-center"><div><strong class="text-2xl">Banano Miner (Folding)</strong><br>Earn while helping science</div><a href="https://bananominer.com" target="_blank" class="px-8 py-4 bg-yellow-400 text-black font-bold rounded-2xl">Start →</a></div>
-      <div class="bg-black/60 border border-yellow-400/30 p-10 rounded-3xl text-center"><a href="https://thefreebananofaucet.com/active-banano-faucet-list" target="_blank" class="text-3xl underline text-yellow-400">See ALL active faucets →</a></div>
+  <main class="page">
+    <div class="container">
+      <div class="section-header reveal">
+        <div class="badge" style="margin-bottom: 1rem;">Free potassium</div>
+        <h1 class="glow-text">Grab free bananos</h1>
+        <p>Start small with faucets, or earn more by folding for science. You’ll need a wallet first.</p>
+      </div>
+
+      <div class="list-stack">
+        <div class="list-item reveal">
+          <div>
+            <strong>IMalFect Faucet</strong>
+            <span>Daily drops · roughly 0.06–0.3 BAN</span>
+          </div>
+          <a href="https://banano.fandom.com/wiki/IMalFect_Faucet" target="_blank" rel="noopener" class="btn btn-primary btn-sm">Claim</a>
+        </div>
+
+        <div class="list-item reveal">
+          <div>
+            <strong>Banano Miner</strong>
+            <span>Earn while helping medical research</span>
+          </div>
+          <a href="https://bananominer.com" target="_blank" rel="noopener" class="btn btn-primary btn-sm">Start</a>
+        </div>
+
+        <div class="list-item reveal" style="justify-content: center; text-align: center;">
+          <div style="width: 100%;">
+            <strong style="margin-bottom: 0.5rem;">Full faucet list</strong>
+            <span style="display: block; margin-bottom: 1rem;">Community-maintained directory of active faucets</span>
+            <a href="https://thefreebananofaucet.com/active-banano-faucet-list" target="_blank" rel="noopener" class="btn btn-ghost btn-sm">See all active faucets</a>
+          </div>
+        </div>
+      </div>
+
+      <p class="muted reveal" style="text-align: center; margin-top: 2.5rem; max-width: 28rem; margin-inline: auto;">
+        Tip: grab <a href="https://kalium.banano.cc" target="_blank" rel="noopener" style="color: var(--banana); text-decoration: underline; text-underline-offset: 3px;">Kalium</a>
+        or
+        <a href="https://thebananostand.com" target="_blank" rel="noopener" style="color: var(--banana); text-decoration: underline; text-underline-offset: 3px;">The Banano Stand</a>
+        before you claim.
+      </p>
     </div>
-  </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p>Built for billions · Fan site · Official: <a href="https://banano.cc" target="_blank" rel="noopener">banano.cc</a></p>
+    </div>
+  </footer>
+
+  <script src="site.js"></script>
 </body>
 </html>

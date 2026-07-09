@@ -3,32 +3,76 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Community • Banano Jungle</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>body { font-family: system-ui, sans-serif; background: linear-gradient(#0a1f14, #000000); }</style>
+  <title>Community · Banano X</title>
+  <meta name="description" content="Join the Banano community on Discord, Reddit, and X.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 </head>
-<body class="text-lime-100 min-h-screen">
-  <nav class="fixed top-0 w-full bg-black/70 backdrop-blur-xl z-50 border-b border-yellow-400/20">
-    <div class="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
-      <a href="index.html" class="flex items-center gap-3 text-4xl font-black tracking-tighter glow">🍌 BANANO JUNGLE</a>
-      <div class="flex gap-9 text-lg font-medium">
-        <a href="play.html" class="hover:text-yellow-400 transition">Play</a>
-        <a href="facts.html" class="hover:text-yellow-400 transition">Facts</a>
-        <a href="ecosystem.html" class="hover:text-yellow-400 transition">Ecosystem</a>
-        <a href="faucets.html" class="hover:text-yellow-400 transition">Faucets</a>
-        <a href="community.html" class="text-yellow-400">Community</a>
+<body>
+  <header class="nav">
+    <div class="nav-inner">
+      <a href="index.html" class="logo">
+        <span class="logo-icon" aria-hidden="true">🍌</span>
+        <span>BANANO X</span>
+      </a>
+      <button class="nav-toggle" type="button" aria-label="Menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-links">
+        <li><a href="play.html">Play</a></li>
+        <li><a href="facts.html">Facts</a></li>
+        <li><a href="ecosystem.html">Ecosystem</a></li>
+        <li><a href="faucets.html">Faucets</a></li>
+        <li><a href="community.html" class="active">Community</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main class="page">
+    <div class="container">
+      <div class="section-header reveal">
+        <div class="badge" style="margin-bottom: 1rem;">The troop</div>
+        <h1 class="glow-text">Join the midnight jungle</h1>
+        <p>Rain Banano, share memes, run nodes, and help the canopy grow.</p>
+      </div>
+
+      <div class="social-grid">
+        <a href="https://discord.gg/banano" target="_blank" rel="noopener" class="social-card reveal">
+          <span class="social-icon" aria-hidden="true">💬</span>
+          <span class="social-name">Discord</span>
+          <span class="social-desc">Live chat, rains &amp; tips</span>
+        </a>
+        <a href="https://reddit.com/r/banano" target="_blank" rel="noopener" class="social-card reveal">
+          <span class="social-icon" aria-hidden="true">🤖</span>
+          <span class="social-name">Reddit</span>
+          <span class="social-desc">News, memes &amp; guides</span>
+        </a>
+        <a href="https://x.com/banano" target="_blank" rel="noopener" class="social-card reveal">
+          <span class="social-icon" aria-hidden="true">𝕏</span>
+          <span class="social-name">X / Twitter</span>
+          <span class="social-desc">Announcements &amp; vibes</span>
+        </a>
+      </div>
+
+      <div class="card reveal" style="max-width: 520px; margin: 0 auto; text-align: center;">
+        <h3 style="margin-bottom: 0.75rem;">How monkeys hang out</h3>
+        <p>Tip strangers. Celebrate folds. Build silly tools. The jungle is what you make it — and it never sleeps.</p>
+        <div class="card-action" style="display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center;">
+          <a href="ecosystem.html" class="btn btn-ghost btn-sm">Explore tools</a>
+          <a href="play.html" class="btn btn-primary btn-sm">Play a game</a>
+        </div>
       </div>
     </div>
-  </nav>
+  </main>
 
-  <div class="pt-32 px-6 max-w-4xl mx-auto text-center">
-    <h1 class="text-7xl font-black glow mb-12">Join the Midnight Jungle 🌙</h1>
-    <div class="grid grid-cols-3 gap-8 text-6xl">
-      <a href="https://discord.gg/banano" target="_blank" class="hover:scale-110 transition">Discord</a>
-      <a href="https://reddit.com/r/banano" target="_blank" class="hover:scale-110 transition">Reddit</a>
-      <a href="https://x.com/banano" target="_blank" class="hover:scale-110 transition">𝕏</a>
+  <footer class="footer">
+    <div class="container">
+      <p>Built for billions · Fan site · Official: <a href="https://banano.cc" target="_blank" rel="noopener">banano.cc</a></p>
     </div>
-    <p class="mt-16 text-2xl">Rain Banano, share memes, run nodes, and make the jungle grow.</p>
-  </div>
+  </footer>
+
+  <script src="site.js"></script>
 </body>
 </html>

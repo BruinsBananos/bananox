@@ -3,32 +3,72 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Facts • Banano Jungle</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>body { font-family: system-ui, sans-serif; background: linear-gradient(#0a1f14, #000000); }</style>
+  <title>Facts · Banano X</title>
+  <meta name="description" content="Feeless, eco-friendly, fair-launched — the core facts about Banano.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 </head>
-<body class="text-lime-100 min-h-screen">
-  <nav class="fixed top-0 w-full bg-black/70 backdrop-blur-xl z-50 border-b border-yellow-400/20">
-    <div class="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
-      <a href="index.html" class="flex items-center gap-3 text-4xl font-black tracking-tighter glow">🍌 BANANO JUNGLE</a>
-      <div class="flex gap-9 text-lg font-medium">
-        <a href="play.html" class="hover:text-yellow-400 transition">Play</a>
-        <a href="facts.html" class="text-yellow-400">Facts</a>
-        <a href="ecosystem.html" class="hover:text-yellow-400 transition">Ecosystem</a>
-        <a href="faucets.html" class="hover:text-yellow-400 transition">Faucets</a>
-        <a href="community.html" class="hover:text-yellow-400 transition">Community</a>
+<body>
+  <header class="nav">
+    <div class="nav-inner">
+      <a href="index.html" class="logo">
+        <span class="logo-icon" aria-hidden="true">🍌</span>
+        <span>BANANO X</span>
+      </a>
+      <button class="nav-toggle" type="button" aria-label="Menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-links">
+        <li><a href="play.html">Play</a></li>
+        <li><a href="facts.html" class="active">Facts</a></li>
+        <li><a href="ecosystem.html">Ecosystem</a></li>
+        <li><a href="faucets.html">Faucets</a></li>
+        <li><a href="community.html">Community</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main class="page">
+    <div class="container">
+      <div class="section-header reveal">
+        <div class="badge" style="margin-bottom: 1rem;">Jungle lore</div>
+        <h1 class="glow-text">Facts worth peeling</h1>
+        <p>The essentials that make Banano different from the rest of the crypto canopy.</p>
+      </div>
+
+      <div class="grid-2">
+        <article class="card reveal">
+          <div class="card-icon" aria-hidden="true">⚡</div>
+          <h3>Feeless &amp; instant</h3>
+          <p>DAG tech means transfers settle in under a second with zero fees. No miners, no gas wars — just potassium moving at jungle speed.</p>
+        </article>
+        <article class="card reveal">
+          <div class="card-icon" aria-hidden="true">🎯</div>
+          <h3>Fair launch</h3>
+          <p>No pre-mine, no ICO. BAN is earned through folding, gaming, faucets, and community rains — not dumped on day one.</p>
+        </article>
+        <article class="card reveal">
+          <div class="card-icon" aria-hidden="true">🌍</div>
+          <h3>Eco-friendly</h3>
+          <p>Uses almost no energy — greener than the vast majority of cryptos. Midnight jungle vibes without melting the planet.</p>
+        </article>
+        <article class="card reveal">
+          <div class="card-icon" aria-hidden="true">🍌</div>
+          <h3>Potassium meme king</h3>
+          <p>Bananas = potassium. The friendliest, funniest community in crypto since 2018 — and it still rains.</p>
+        </article>
       </div>
     </div>
-  </nav>
+  </main>
 
-  <div class="pt-32 px-6 max-w-6xl mx-auto">
-    <h1 class="text-7xl font-black glow text-center mb-16">Jungle Facts 🌙</h1>
-    <div class="grid md:grid-cols-2 gap-8">
-      <div class="bg-black/60 border border-yellow-400/30 p-10 rounded-3xl"><h3 class="text-4xl font-bold mb-4 text-yellow-400">Feeless & Instant</h3><p class="text-xl">DAG tech = transactions under 1 second, zero fees forever. No miners, no gas wars.</p></div>
-      <div class="bg-black/60 border border-yellow-400/30 p-10 rounded-3xl"><h3 class="text-4xl font-bold mb-4 text-yellow-400">Fair Launch</h3><p class="text-xl">No pre-mine, no ICO. Every BAN is earned through folding, gaming, faucets & community rains.</p></div>
-      <div class="bg-black/60 border border-yellow-400/30 p-10 rounded-3xl"><h3 class="text-4xl font-bold mb-4 text-yellow-400">Eco-Friendly</h3><p class="text-xl">Uses almost no energy — greener than 99% of cryptos. Perfect for the midnight jungle.</p></div>
-      <div class="bg-black/60 border border-yellow-400/30 p-10 rounded-3xl"><h3 class="text-4xl font-bold mb-4 text-yellow-400">Potassium Meme King</h3><p class="text-xl">Bananas = potassium. The friendliest, funniest community in crypto since 2018.</p></div>
+  <footer class="footer">
+    <div class="container">
+      <p>Built for billions · Fan site · Official: <a href="https://banano.cc" target="_blank" rel="noopener">banano.cc</a></p>
     </div>
-  </div>
+  </footer>
+
+  <script src="site.js"></script>
 </body>
 </html>

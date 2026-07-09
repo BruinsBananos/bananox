@@ -3,91 +3,110 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ecosystem • Banano Jungle</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    body { font-family: system-ui, sans-serif; background: linear-gradient(#0a1f14, #000000); }
-    .glow { text-shadow: 0 0 40px #facc15, 0 0 80px #eab308; }
-    .card { transition: all 0.3s ease; }
-    .card:hover { transform: translateY(-12px) scale(1.03); border-color: #facc15; box-shadow: 0 0 60px rgba(250, 204, 21, 0.3); }
-  </style>
+  <title>Ecosystem · Banano X</title>
+  <meta name="description" content="Wallets, entertainment, folding, and tools that power the Banano ecosystem.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 </head>
-<body class="text-lime-100 min-h-screen">
-  <!-- NAV (Play removed since we forgot the game) -->
-  <nav class="fixed top-0 w-full bg-black/70 backdrop-blur-xl z-50 border-b border-yellow-400/20">
-    <div class="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
-      <a href="index.html" class="flex items-center gap-3 text-4xl font-black tracking-tighter glow">🍌 BANANO JUNGLE</a>
-      <div class="flex gap-9 text-lg font-medium">
-        <a href="index.html" class="hover:text-yellow-400 transition">Home</a>
-        <a href="facts.html" class="hover:text-yellow-400 transition">Facts</a>
-        <a href="ecosystem.html" class="text-yellow-400">Ecosystem</a>
-        <a href="faucets.html" class="hover:text-yellow-400 transition">Faucets</a>
-        <a href="community.html" class="hover:text-yellow-400 transition">Community</a>
-      </div>
+<body>
+  <header class="nav">
+    <div class="nav-inner">
+      <a href="index.html" class="logo">
+        <span class="logo-icon" aria-hidden="true">🍌</span>
+        <span>BANANO X</span>
+      </a>
+      <button class="nav-toggle" type="button" aria-label="Menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-links">
+        <li><a href="play.html">Play</a></li>
+        <li><a href="facts.html">Facts</a></li>
+        <li><a href="ecosystem.html" class="active">Ecosystem</a></li>
+        <li><a href="faucets.html">Faucets</a></li>
+        <li><a href="community.html">Community</a></li>
+      </ul>
     </div>
-  </nav>
+  </header>
 
-  <div class="pt-32 px-6 max-w-6xl mx-auto">
-    <div class="text-center mb-16">
-      <h1 class="text-7xl font-black glow mb-4">ECOSYSTEM EXPLORER</h1>
-      <p class="text-3xl text-lime-300">The living jungle of tools, wallets, and apps that make Banano thrive</p>
+  <main class="page">
+    <div class="container">
+      <div class="section-header reveal">
+        <div class="badge" style="margin-bottom: 1rem;">Living jungle</div>
+        <h1 class="glow-text">Ecosystem explorer</h1>
+        <p>Wallets, apps, and science that keep Banano thriving under the canopy.</p>
+      </div>
+
+      <div class="grid-3">
+        <article class="card reveal">
+          <div class="card-icon" aria-hidden="true">📱</div>
+          <h3>Kalium Wallet</h3>
+          <p>Official mobile wallet. Send, receive, and manage BAN on iOS &amp; Android — beautiful, fast, secure.</p>
+          <div class="card-action">
+            <a href="https://kalium.banano.cc" target="_blank" rel="noopener" class="btn btn-primary btn-sm">Download</a>
+          </div>
+        </article>
+
+        <article class="card reveal">
+          <div class="card-icon" aria-hidden="true">🌐</div>
+          <h3>The Banano Stand</h3>
+          <p>Browser light wallet — no install. Perfect for desktop and quick access. Successor to the classic Vault.</p>
+          <div class="card-action">
+            <a href="https://thebananostand.com" target="_blank" rel="noopener" class="btn btn-primary btn-sm">Open in browser</a>
+          </div>
+        </article>
+
+        <article class="card reveal">
+          <div class="card-icon" aria-hidden="true">📺</div>
+          <h3>JungleTV</h3>
+          <p>Watch videos, request songs, and earn Banano while you chill. Community entertainment at its peak.</p>
+          <div class="card-action">
+            <a href="https://jungletv.live" target="_blank" rel="noopener" class="btn btn-primary btn-sm">Start watching</a>
+          </div>
+        </article>
+
+        <article class="card reveal">
+          <div class="card-icon" aria-hidden="true">🔬</div>
+          <h3>Banano Miner</h3>
+          <p>Fold for medical research with Folding@Home and earn BAN. Help science while farming potassium.</p>
+          <div class="card-action">
+            <a href="https://bananominer.com" target="_blank" rel="noopener" class="btn btn-primary btn-sm">Start folding</a>
+          </div>
+        </article>
+
+        <article class="card reveal">
+          <div class="card-icon" aria-hidden="true">🗺️</div>
+          <h3>Banano Hub</h3>
+          <p>Explore the ecosystem in one place — stats, projects, and everything growing in the jungle.</p>
+          <div class="card-action">
+            <a href="https://banano.how" target="_blank" rel="noopener" class="btn btn-primary btn-sm">Discover more</a>
+          </div>
+        </article>
+
+        <article class="card reveal">
+          <div class="card-icon" aria-hidden="true">🐵</div>
+          <h3>MonkeyTalks &amp; more</h3>
+          <p>Voice chat, tip bots, rain bots, NFT galleries, and whatever the community builds next.</p>
+          <div class="card-action">
+            <a href="https://monkeytalks.cc" target="_blank" rel="noopener" class="btn btn-primary btn-sm">Join the chat</a>
+          </div>
+        </article>
+      </div>
+
+      <p class="muted reveal" style="text-align:center; margin-top: 3rem; font-size: 1rem;">
+        100% community-driven and always growing.
+        Got a project? <a href="community.html" style="color: var(--banana); text-decoration: underline; text-underline-offset: 3px;">Tell the jungle</a>.
+      </p>
     </div>
+  </main>
 
-    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-      
-      <!-- Kalium Wallet -->
-      <div class="card bg-black/60 border border-yellow-400/30 p-10 rounded-3xl">
-        <div class="text-7xl mb-6">📱</div>
-        <h3 class="text-4xl font-bold mb-4 text-yellow-400">Kalium Wallet</h3>
-        <p class="text-lime-300 leading-relaxed mb-8">The official mobile wallet. Send, receive, and manage your Banano instantly on iOS & Android. Beautiful, fast, and secure.</p>
-        <a href="https://kalium.banano.cc" target="_blank" class="inline-block px-8 py-4 bg-yellow-400 text-black font-bold rounded-2xl hover:bg-yellow-300 transition">Download Now →</a>
-      </div>
-
-      <!-- The Banano Stand -->
-      <div class="card bg-black/60 border border-yellow-400/30 p-10 rounded-3xl">
-        <div class="text-7xl mb-6">🌐</div>
-        <h3 class="text-4xl font-bold mb-4 text-yellow-400">The Banano Stand</h3>
-        <p class="text-lime-300 leading-relaxed mb-8">Browser-based light wallet. No install needed. Perfect for desktop and quick access. Successor to the classic Vault.</p>
-        <a href="https://thebananostand.com" target="_blank" class="inline-block px-8 py-4 bg-yellow-400 text-black font-bold rounded-2xl hover:bg-yellow-300 transition">Open in Browser →</a>
-      </div>
-
-      <!-- JungleTV -->
-      <div class="card bg-black/60 border border-yellow-400/30 p-10 rounded-3xl">
-        <div class="text-7xl mb-6">📺</div>
-        <h3 class="text-4xl font-bold mb-4 text-yellow-400">JungleTV</h3>
-        <p class="text-lime-300 leading-relaxed mb-8">Watch videos, request songs, and earn Banano while you chill. The ultimate community entertainment platform.</p>
-        <a href="https://jungletv.live" target="_blank" class="inline-block px-8 py-4 bg-yellow-400 text-black font-bold rounded-2xl hover:bg-yellow-300 transition">Start Watching →</a>
-      </div>
-
-      <!-- Banano Miner -->
-      <div class="card bg-black/60 border border-yellow-400/30 p-10 rounded-3xl">
-        <div class="text-7xl mb-6">🔬</div>
-        <h3 class="text-4xl font-bold mb-4 text-yellow-400">Banano Miner</h3>
-        <p class="text-lime-300 leading-relaxed mb-8">Contribute your CPU/GPU to medical research (Folding@Home) and earn Banano. Help cure diseases while farming potassium.</p>
-        <a href="https://bananominer.com" target="_blank" class="inline-block px-8 py-4 bg-yellow-400 text-black font-bold rounded-2xl hover:bg-yellow-300 transition">Start Folding →</a>
-      </div>
-
-      <!-- Banano Hub / Explorer -->
-      <div class="card bg-black/60 border border-yellow-400/30 p-10 rounded-3xl">
-        <div class="text-7xl mb-6">🗺️</div>
-        <h3 class="text-4xl font-bold mb-4 text-yellow-400">Banano Hub</h3>
-        <p class="text-lime-300 leading-relaxed mb-8">Explore the entire ecosystem in one place. Track stats, find new projects, and see what's growing in the jungle.</p>
-        <a href="https://banano.how" target="_blank" class="inline-block px-8 py-4 bg-yellow-400 text-black font-bold rounded-2xl hover:bg-yellow-300 transition">Discover More →</a>
-      </div>
-
-      <!-- Community Tools -->
-      <div class="card bg-black/60 border border-yellow-400/30 p-10 rounded-3xl">
-        <div class="text-7xl mb-6">🐵</div>
-        <h3 class="text-4xl font-bold mb-4 text-yellow-400">MonkeyTalks & More</h3>
-        <p class="text-lime-300 leading-relaxed mb-8">Voice chat, tip bots, rain bots, NFT galleries, and everything else the community has built. The jungle never sleeps.</p>
-        <a href="https://monkeytalks.cc" target="_blank" class="inline-block px-8 py-4 bg-yellow-400 text-black font-bold rounded-2xl hover:bg-yellow-300 transition">Join the Conversation →</a>
-      </div>
+  <footer class="footer">
+    <div class="container">
+      <p>Built for billions · Fan site · Official: <a href="https://banano.cc" target="_blank" rel="noopener">banano.cc</a></p>
     </div>
+  </footer>
 
-    <div class="text-center mt-20 text-lime-400 text-xl">
-      The Banano ecosystem is 100% community-driven and always growing.<br>
-      Got a new project? <a href="community.html" class="underline hover:text-yellow-400">Tell the jungle</a>.
-    </div>
-  </div>
+  <script src="site.js"></script>
 </body>
 </html>
