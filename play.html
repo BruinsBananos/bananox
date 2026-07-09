@@ -3,27 +3,39 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Play · Catch Bananas · Banano X</title>
-  <meta name="description" content="Catch falling bananas. A simple Banano mini-game.">
+  <title>Play · Banana Tower · Banano X</title>
+  <meta name="description" content="Climb banana trees Icy Tower style — jump, grab power-ups, don't fall.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <style>
-    /* Game-only tweaks so the canvas controls stay rock solid */
     .game-frame {
-      width: min(100%, 340px);
-      aspect-ratio: 340 / 460;
+      width: min(100%, 380px);
+      aspect-ratio: 380 / 560;
       touch-action: none;
       user-select: none;
       -webkit-user-select: none;
-      cursor: none;
+      background: #0b1f12;
     }
     .game-frame canvas {
       display: block;
       width: 100%;
       height: 100%;
-      background: #071a11;
+      background: #0b1f12;
+    }
+    .power-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 0.85rem;
+      justify-content: center;
+      max-width: 380px;
+      margin: 0.85rem auto 0;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+    .power-legend span {
+      white-space: nowrap;
     }
   </style>
 </head>
@@ -49,34 +61,46 @@
 
   <main class="play-wrap">
     <div class="play-header">
-      <h1>Catch Bananas</h1>
-      <p>Move under them. Catch as many as you can.</p>
+      <h1>Banana Tower</h1>
+      <p>Icy Tower vibes — jump up the trees, snag power-ups, don’t fall.</p>
     </div>
 
     <div class="game-frame" id="frame">
-      <canvas id="c" width="340" height="460" aria-label="Catch Bananas game"></canvas>
+      <canvas id="c" width="380" height="560" aria-label="Banana Tower game"></canvas>
 
       <div id="start" class="game-overlay">
         <div>
-          <h2>Catch Bananas 🍌</h2>
+          <h2>Banana Tower 🍌</h2>
           <p style="margin-bottom: 1.25rem;">
-            Slide under falling bananas.<br>
-            Miss 3 times and you’re out.
+            Jump branch to branch.<br>
+            Perfect landings = higher bounce &amp; combos.<br>
+            Fall off the bottom and you’re toast.
           </p>
-          <button type="button" class="btn btn-primary" id="startBtn">Play</button>
+          <button type="button" class="btn btn-primary" id="startBtn">Climb</button>
         </div>
       </div>
 
       <div id="over" class="game-overlay hidden">
         <div>
-          <h2 class="fail-title">Game over</h2>
-          <p class="stat">Score: <em id="endScore">0</em> · Best: <em id="endBest">0</em></p>
-          <button type="button" class="btn btn-primary" id="retryBtn">Play again</button>
+          <h2 class="fail-title">You fell!</h2>
+          <p class="stat">
+            Height: <em id="endHeight">0</em>m
+            · Score: <em id="endScore">0</em><br>
+            Best: <em id="endBest">0</em>m
+          </p>
+          <button type="button" class="btn btn-primary" id="retryBtn">Climb again</button>
         </div>
       </div>
     </div>
 
-    <p class="play-hint">Mouse or finger to move · ← → or A D · Space to start</p>
+    <p class="play-hint">← → or A D · mouse / finger to steer · Space or click to start · tap = extra hop</p>
+    <div class="power-legend">
+      <span>⚡ Super jump</span>
+      <span>🛡️ Shield</span>
+      <span>⏰ Slow-mo</span>
+      <span>🔥 Fire feet</span>
+      <span>💎 Banana gem</span>
+    </div>
   </main>
 
   <script src="site.js"></script>
@@ -84,196 +108,658 @@
     (function () {
       "use strict";
 
+      // ═══════════════════════════════════════
+      // Banana Tower — Icy Tower style climber
+      // Solid graphics, reliable collisions
+      // ═══════════════════════════════════════
+
       var canvas = document.getElementById("c");
       var ctx = canvas.getContext("2d");
-      var W = 340;
-      var H = 460;
+      var W = 380;
+      var H = 560;
 
-      var startScreen = document.getElementById("start");
-      var overScreen = document.getElementById("over");
+      var startEl = document.getElementById("start");
+      var overEl = document.getElementById("over");
+      var endHeight = document.getElementById("endHeight");
       var endScore = document.getElementById("endScore");
       var endBest = document.getElementById("endBest");
-      var startBtn = document.getElementById("startBtn");
-      var retryBtn = document.getElementById("retryBtn");
 
-      var BEST_KEY = "bx-catch-best-v1";
+      var BEST_KEY = "bx-tower-best-v2";
       var best = parseInt(localStorage.getItem(BEST_KEY) || "0", 10) || 0;
 
-      // Player basket / monkey
-      var playerX = W / 2;
-      var playerY = H - 50;
-      var playerHalf = 36;
+      // --- Constants ---
+      var GRAVITY = 1600;
+      var JUMP = -620;
+      var JUMP_PERFECT = -780;
+      var MOVE_ACCEL = 2400;
+      var MOVE_MAX = 320;
+      var FRICTION = 0.86;
+      var PLAYER_W = 36;
+      var PLAYER_H = 42;
+      var PLAT_H = 16;
+      var GAP_Y = 78;
 
-      var bananas = [];
-      var score = 0;
-      var lives = 3;
+      // --- State ---
       var running = false;
-      var spawnIn = 0;
-      var timeAlive = 0;
+      var player = { x: 0, y: 0, vx: 0, vy: 0, w: PLAYER_W, h: PLAYER_H };
+      var plats = [];
+      var powers = [];
+      var particles = [];
+      var camY = 0;          // world Y at top of screen (increases as we go up... we'll use cam as "scroll offset")
+      // Convention: world y increases DOWNWARD (canvas style). Higher climb = smaller world y.
+      var maxClimb = 0;     // highest point reached (negative world y distance from start)
+      var score = 0;
+      var combo = 0;
       var lastTs = 0;
       var keyL = false;
       var keyR = false;
-      var aimX = null; // pointer aim in canvas coords
+      var aimX = null;
+      var shield = 0;       // hits remaining
+      var superJumps = 0;   // boosted jumps left
+      var slowTimer = 0;    // seconds of slow-mo
+      var fireTimer = 0;    // fire feet: bounce higher always
+      var flash = 0;        // screen flash alpha
+      var startWorldY = 0;
 
-      function show(el) { el.classList.remove("hidden"); }
       function hide(el) { el.classList.add("hidden"); }
+      function show(el) { el.classList.remove("hidden"); }
+      function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
+      function rand(a, b) { return a + Math.random() * (b - a); }
+      function pick(arr) { return arr[(Math.random() * arr.length) | 0]; }
 
       function toCanvasX(clientX) {
-        var rect = canvas.getBoundingClientRect();
-        return ((clientX - rect.left) / rect.width) * W;
+        var r = canvas.getBoundingClientRect();
+        return ((clientX - r.left) / r.width) * W;
       }
 
-      function clamp(v, a, b) {
-        return Math.max(a, Math.min(b, v));
+      // Platform types: normal | move | slip | break
+      function makePlat(x, y, w, type) {
+        return {
+          x: x,
+          y: y,
+          w: w,
+          type: type || "normal",
+          vx: type === "move" ? (Math.random() < 0.5 ? -70 : 70) : 0,
+          broken: false,
+          shake: 0,
+          breakIn: -1
+        };
+      }
+
+      function difficultyWidth(worldY) {
+        // Higher up (smaller y relative to start) → narrower
+        var climbed = startWorldY - worldY;
+        var w = 130 - climbed / 40;
+        return clamp(w, 58, 140);
+      }
+
+      function spawnRow(y) {
+        var w = difficultyWidth(y);
+        var x = rand(12, W - w - 12);
+        var type = "normal";
+        var r = Math.random();
+        var climbed = startWorldY - y;
+        if (climbed > 400) {
+          if (r < 0.12) type = "move";
+          else if (r < 0.2) type = "slip";
+          else if (r < 0.28) type = "break";
+        }
+        var p = makePlat(x, y, w, type);
+        plats.push(p);
+
+        // Power-up chance on platform
+        if (Math.random() < 0.18 && climbed > 100) {
+          powers.push({
+            x: x + w / 2,
+            y: y - 22,
+            kind: pick(["super", "shield", "slow", "fire", "gem"]),
+            taken: false,
+            bob: Math.random() * Math.PI * 2
+          });
+        }
       }
 
       function reset() {
-        bananas = [];
+        plats = [];
+        powers = [];
+        particles = [];
+        camY = 0;
+        maxClimb = 0;
         score = 0;
-        lives = 3;
-        playerX = W / 2;
-        spawnIn = 0.4;
-        timeAlive = 0;
+        combo = 0;
+        shield = 0;
+        superJumps = 0;
+        slowTimer = 0;
+        fireTimer = 0;
+        flash = 0;
         lastTs = 0;
         aimX = null;
+
+        // Ground + starter platforms
+        startWorldY = H - 80;
+        plats.push(makePlat(40, startWorldY, W - 80, "normal"));
+        for (var i = 1; i <= 12; i++) {
+          spawnRow(startWorldY - i * GAP_Y);
+        }
+
+        player.x = W / 2 - PLAYER_W / 2;
+        player.y = startWorldY - PLAYER_H;
+        player.vx = 0;
+        player.vy = 0;
       }
 
       function start() {
         reset();
-        hide(startScreen);
-        hide(overScreen);
+        hide(startEl);
+        hide(overEl);
         running = true;
+        // Small hop to begin
+        player.vy = JUMP * 0.7;
       }
 
-      function gameOver() {
+      function die() {
+        if (shield > 0) {
+          shield -= 1;
+          player.vy = JUMP;
+          player.y = camY + H * 0.55;
+          flash = 0.5;
+          burst(player.x + player.w / 2, player.y + player.h / 2, "#60a5fa", 14);
+          return;
+        }
         running = false;
-        if (score > best) {
-          best = score;
+        var heightM = Math.floor(maxClimb / 10);
+        if (heightM > best) {
+          best = heightM;
           localStorage.setItem(BEST_KEY, String(best));
         }
+        endHeight.textContent = String(heightM);
         endScore.textContent = String(score);
         endBest.textContent = String(best);
-        show(overScreen);
+        show(overEl);
       }
 
-      function spawn() {
-        bananas.push({
-          x: 24 + Math.random() * (W - 48),
-          y: -24,
-          speed: 120 + Math.random() * 40 + Math.min(timeAlive * 10, 160),
-          size: 28
+      function burst(x, y, color, n) {
+        for (var i = 0; i < n; i++) {
+          particles.push({
+            x: x,
+            y: y,
+            vx: rand(-160, 160),
+            vy: rand(-200, 40),
+            life: rand(0.3, 0.7),
+            age: 0,
+            color: color,
+            size: rand(3, 6)
+          });
+        }
+      }
+
+      function applyPower(kind) {
+        if (kind === "super") {
+          superJumps += 4;
+          flash = 0.25;
+        } else if (kind === "shield") {
+          shield = Math.min(shield + 1, 2);
+          flash = 0.25;
+        } else if (kind === "slow") {
+          slowTimer = 5;
+          flash = 0.2;
+        } else if (kind === "fire") {
+          fireTimer = 6;
+          flash = 0.3;
+        } else if (kind === "gem") {
+          score += 50 + combo * 10;
+          burst(player.x + player.w / 2, player.y, "#f5d041", 16);
+        }
+      }
+
+      function landOn(plat) {
+        // Snap to top of platform
+        player.y = plat.y - player.h;
+        player.vy = 0;
+
+        var center = player.x + player.w / 2;
+        var platCenter = plat.x + plat.w / 2;
+        var offset = Math.abs(center - platCenter);
+        var perfect = offset < plat.w * 0.22;
+
+        var jumpV = JUMP;
+        if (perfect) {
+          combo += 1;
+          jumpV = JUMP_PERFECT - Math.min(combo, 8) * 18;
+          score += 15 + combo * 5;
+          burst(center, plat.y, "#f5d041", 10);
+        } else {
+          combo = 0;
+          score += 5;
+        }
+
+        if (superJumps > 0) {
+          jumpV *= 1.35;
+          superJumps -= 1;
+          burst(center, plat.y, "#a78bfa", 8);
+        }
+        if (fireTimer > 0) {
+          jumpV *= 1.2;
+          burst(center, plat.y, "#fb923c", 6);
+        }
+
+        // Slip platforms add sideways kick
+        if (plat.type === "slip") {
+          player.vx += (center < platCenter ? -1 : 1) * 180;
+        }
+
+        // Break platforms crack after landing, then vanish
+        if (plat.type === "break") {
+          plat.shake = 0.35;
+          plat.breakIn = 0.2;
+        }
+
+        player.vy = jumpV;
+      }
+
+      function ensurePlatforms() {
+        // Keep generating above camera
+        var highest = Infinity;
+        for (var i = 0; i < plats.length; i++) {
+          if (plats[i].y < highest) highest = plats[i].y;
+        }
+        while (highest > camY - 200) {
+          highest -= GAP_Y + rand(-6, 10);
+          spawnRow(highest);
+        }
+        // Cull far below
+        plats = plats.filter(function (p) {
+          return p.y < camY + H + 120 && !p.broken;
+        });
+        powers = powers.filter(function (pw) {
+          return !pw.taken && pw.y < camY + H + 80;
         });
       }
 
       function update(dt) {
-        timeAlive += dt;
+        var timeScale = slowTimer > 0 ? 0.55 : 1;
+        var d = dt * timeScale;
 
-        // Move player
+        if (slowTimer > 0) slowTimer -= dt;
+        if (fireTimer > 0) fireTimer -= dt;
+        if (flash > 0) flash -= dt;
+
+        // Horizontal control
         if (aimX !== null) {
-          // Smooth follow pointer
-          playerX += (aimX - playerX) * Math.min(1, dt * 16);
+          var target = aimX - player.w / 2;
+          player.x += (target - player.x) * Math.min(1, d * 12);
+          player.vx = (target - player.x) / Math.max(d, 0.001) * 0.15;
         } else {
-          var speed = 320;
-          if (keyL) playerX -= speed * dt;
-          if (keyR) playerX += speed * dt;
+          if (keyL) player.vx -= MOVE_ACCEL * d;
+          if (keyR) player.vx += MOVE_ACCEL * d;
+          if (!keyL && !keyR) player.vx *= Math.pow(FRICTION, d * 60);
         }
-        playerX = clamp(playerX, playerHalf, W - playerHalf);
+        player.vx = clamp(player.vx, -MOVE_MAX, MOVE_MAX);
 
-        // Spawn
-        spawnIn -= dt;
-        if (spawnIn <= 0) {
-          spawn();
-          // Faster spawns as you play longer, floor at 0.35s
-          spawnIn = Math.max(0.35, 0.95 - timeAlive * 0.025);
+        player.x += player.vx * d;
+        // Wrap horizontally (Icy Tower style walls bounce)
+        if (player.x < 0) {
+          player.x = 0;
+          player.vx = Math.abs(player.vx) * 0.85;
+        }
+        if (player.x + player.w > W) {
+          player.x = W - player.w;
+          player.vx = -Math.abs(player.vx) * 0.85;
         }
 
-        // Bananas
-        for (var i = bananas.length - 1; i >= 0; i--) {
-          var b = bananas[i];
-          b.y += b.speed * dt;
+        // Gravity + vertical
+        player.vy += GRAVITY * d;
+        var prevBottom = player.y + player.h;
+        player.y += player.vy * d;
+        var bottom = player.y + player.h;
 
-          // Catch zone: wide rectangle around monkey hands
-          var dx = Math.abs(b.x - playerX);
-          var dy = Math.abs(b.y - playerY);
-          var caught = dx < playerHalf + 8 && dy < 34 && b.y > playerY - 40;
-
-          if (caught) {
-            score += 1;
-            bananas.splice(i, 1);
-            continue;
+        // Moving platforms
+        for (var i = 0; i < plats.length; i++) {
+          var pl = plats[i];
+          if (pl.type === "move" && !pl.broken) {
+            pl.x += pl.vx * d;
+            if (pl.x < 8) { pl.x = 8; pl.vx *= -1; }
+            if (pl.x + pl.w > W - 8) { pl.x = W - 8 - pl.w; pl.vx *= -1; }
           }
+          if (pl.shake > 0) pl.shake -= dt;
+          if (pl.breakIn >= 0) {
+            pl.breakIn -= dt;
+            if (pl.breakIn <= 0) pl.broken = true;
+          }
+        }
 
-          if (b.y > H + 20) {
-            bananas.splice(i, 1);
-            lives -= 1;
-            if (lives <= 0) {
-              gameOver();
-              return;
+        // Landing (only when falling)
+        if (player.vy > 0) {
+          for (var j = 0; j < plats.length; j++) {
+            var p = plats[j];
+            if (p.broken) continue;
+            var withinX = player.x + player.w > p.x + 4 && player.x < p.x + p.w - 4;
+            var crossed = prevBottom <= p.y + 2 && bottom >= p.y && bottom <= p.y + PLAT_H + 14;
+            if (withinX && crossed) {
+              landOn(p);
+              break;
             }
           }
+        }
+
+        // Power pickups
+        var pcx = player.x + player.w / 2;
+        var pcy = player.y + player.h / 2;
+        for (var k = 0; k < powers.length; k++) {
+          var pw = powers[k];
+          if (pw.taken) continue;
+          pw.bob += d * 4;
+          if (Math.hypot(pw.x - pcx, pw.y - pcy) < 28) {
+            pw.taken = true;
+            applyPower(pw.kind);
+            burst(pw.x, pw.y, "#fff", 12);
+          }
+        }
+
+        // Camera follows player upward
+        var focus = player.y - H * 0.4;
+        if (focus < camY) {
+          camY = focus;
+        }
+
+        // Climb stats (startWorldY - player feet)
+        var climb = startWorldY - (player.y + player.h);
+        if (climb > maxClimb) {
+          var gain = climb - maxClimb;
+          maxClimb = climb;
+          score += Math.floor(gain * 0.3);
+        }
+
+        // Death: below screen
+        if (player.y > camY + H + 20) {
+          die();
+          return;
+        }
+
+        ensurePlatforms();
+
+        // Particles
+        for (var n = particles.length - 1; n >= 0; n--) {
+          var pt = particles[n];
+          pt.age += dt;
+          pt.x += pt.vx * dt;
+          pt.y += pt.vy * dt;
+          pt.vy += 500 * dt;
+          if (pt.age >= pt.life) particles.splice(n, 1);
+        }
+      }
+
+      // ── Drawing (high contrast) ──
+
+      function worldToScreen(y) {
+        return y - camY;
+      }
+
+      function drawBackground() {
+        var g = ctx.createLinearGradient(0, 0, 0, H);
+        g.addColorStop(0, "#06140c");
+        g.addColorStop(0.5, "#0c2416");
+        g.addColorStop(1, "#102a1a");
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 0, W, H);
+
+        // Tree trunk sides for readability / theme
+        ctx.fillStyle = "#3d2914";
+        ctx.fillRect(0, 0, 14, H);
+        ctx.fillRect(W - 14, 0, 14, H);
+        ctx.fillStyle = "#5c3d1e";
+        ctx.fillRect(0, 0, 6, H);
+        ctx.fillRect(W - 6, 0, 6, H);
+
+        // Leaf dabs (parallax-ish)
+        ctx.globalAlpha = 0.15;
+        ctx.font = "28px serif";
+        for (var i = 0; i < 8; i++) {
+          var ly = ((i * 90 - camY * 0.3) % (H + 40)) ;
+          if (ly < 0) ly += H + 40;
+          ctx.fillText("🌿", 18 + (i % 2) * (W - 50), ly);
+        }
+        ctx.globalAlpha = 1;
+      }
+
+      function drawPlatform(p) {
+        var sy = worldToScreen(p.y);
+        if (sy < -40 || sy > H + 40) return;
+
+        var shakeX = p.shake > 0 ? Math.sin(p.shake * 50) * 3 : 0;
+        var x = p.x + shakeX;
+        var y = sy;
+        var w = p.w;
+        var h = PLAT_H;
+
+        // Shadow
+        ctx.fillStyle = "rgba(0,0,0,0.45)";
+        ctx.fillRect(x + 3, y + 5, w, h);
+
+        // Fill by type
+        if (p.type === "move") {
+          ctx.fillStyle = "#34d399";
+        } else if (p.type === "slip") {
+          ctx.fillStyle = "#67e8f9";
+        } else if (p.type === "break") {
+          ctx.fillStyle = "#fb923c";
+        } else {
+          ctx.fillStyle = "#f5d041";
+        }
+
+        roundRectFill(x, y, w, h, 6);
+
+        // Dark outline for visibility
+        ctx.strokeStyle = "#1a1400";
+        ctx.lineWidth = 3;
+        roundRectStroke(x, y, w, h, 6);
+
+        // Banana wood grain highlight
+        ctx.fillStyle = "rgba(255,255,255,0.35)";
+        ctx.fillRect(x + 6, y + 3, w - 12, 3);
+
+        // Mini banana icons on wider platforms
+        if (w > 70) {
+          ctx.font = "14px serif";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText("🍌", x + w / 2, y + h / 2 + 1);
+        }
+      }
+
+      function roundRectFill(x, y, w, h, r) {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.arcTo(x + w, y, x + w, y + h, r);
+        ctx.arcTo(x + w, y + h, x, y + h, r);
+        ctx.arcTo(x, y + h, x, y, r);
+        ctx.arcTo(x, y, x + w, y, r);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      function roundRectStroke(x, y, w, h, r) {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.arcTo(x + w, y, x + w, y + h, r);
+        ctx.arcTo(x + w, y + h, x, y + h, r);
+        ctx.arcTo(x, y + h, x, y, r);
+        ctx.arcTo(x, y, x + w, y, r);
+        ctx.closePath();
+        ctx.stroke();
+      }
+
+      function drawPower(pw) {
+        if (pw.taken) return;
+        var sy = worldToScreen(pw.y + Math.sin(pw.bob) * 4);
+        if (sy < -30 || sy > H + 30) return;
+
+        var icon = "💎";
+        if (pw.kind === "super") icon = "⚡";
+        else if (pw.kind === "shield") icon = "🛡️";
+        else if (pw.kind === "slow") icon = "⏰";
+        else if (pw.kind === "fire") icon = "🔥";
+        else if (pw.kind === "gem") icon = "💎";
+
+        // Dark disc behind so emoji is readable
+        ctx.beginPath();
+        ctx.arc(pw.x, sy, 16, 0, Math.PI * 2);
+        ctx.fillStyle = "#0a0a0a";
+        ctx.fill();
+        ctx.strokeStyle = "#f5d041";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.font = "18px serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(icon, pw.x, sy + 1);
+      }
+
+      function drawPlayer() {
+        var sx = player.x;
+        var sy = worldToScreen(player.y);
+        var w = player.w;
+        var h = player.h;
+
+        // Drop shadow
+        ctx.fillStyle = "rgba(0,0,0,0.4)";
+        ctx.beginPath();
+        ctx.ellipse(sx + w / 2, sy + h + 4, w * 0.4, 5, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Body capsule (high contrast)
+        var bodyColor = fireTimer > 0 ? "#fb923c" : "#5b8c3e";
+        ctx.fillStyle = bodyColor;
+        ctx.strokeStyle = "#0a0a0a";
+        ctx.lineWidth = 3;
+        roundRectFill(sx + 4, sy + 10, w - 8, h - 12, 10);
+        roundRectStroke(sx + 4, sy + 10, w - 8, h - 12, 10);
+
+        // Head
+        ctx.beginPath();
+        ctx.arc(sx + w / 2, sy + 14, 14, 0, Math.PI * 2);
+        ctx.fillStyle = "#c4a574";
+        ctx.fill();
+        ctx.strokeStyle = "#0a0a0a";
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        // Face
+        ctx.fillStyle = "#1a1a1a";
+        ctx.beginPath();
+        ctx.arc(sx + w / 2 - 5, sy + 12, 2.2, 0, Math.PI * 2);
+        ctx.arc(sx + w / 2 + 5, sy + 12, 2.2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(sx + w / 2, sy + 18, 4, 0, Math.PI);
+        ctx.strokeStyle = "#1a1a1a";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Ears
+        ctx.fillStyle = "#c4a574";
+        ctx.strokeStyle = "#0a0a0a";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(sx + 4, sy + 12, 6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(sx + w - 4, sy + 12, 6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        // Shield ring
+        if (shield > 0) {
+          ctx.beginPath();
+          ctx.arc(sx + w / 2, sy + h / 2, 28, 0, Math.PI * 2);
+          ctx.strokeStyle = "rgba(96, 165, 250, 0.85)";
+          ctx.lineWidth = 3;
+          ctx.stroke();
+        }
+
+        // Super glow
+        if (superJumps > 0) {
+          ctx.beginPath();
+          ctx.arc(sx + w / 2, sy + h / 2, 32, 0, Math.PI * 2);
+          ctx.strokeStyle = "rgba(167, 139, 250, 0.7)";
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
+      }
+
+      function drawHUD() {
+        var heightM = Math.floor(maxClimb / 10);
+
+        // Panel
+        ctx.fillStyle = "rgba(0,0,0,0.65)";
+        roundRectFill(10, 10, W - 20, 44, 12);
+        ctx.strokeStyle = "rgba(245, 208, 65, 0.45)";
+        ctx.lineWidth = 2;
+        roundRectStroke(10, 10, W - 20, 44, 12);
+
+        ctx.fillStyle = "#f5d041";
+        ctx.font = "700 16px 'DM Sans', system-ui, sans-serif";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+        ctx.fillText(heightM + " m", 24, 32);
+
+        ctx.fillStyle = "#e8f5d8";
+        ctx.font = "600 14px 'DM Sans', system-ui, sans-serif";
+        ctx.fillText("Score " + score, 100, 32);
+
+        if (combo > 1) {
+          ctx.fillStyle = "#fbbf24";
+          ctx.fillText("×" + combo, 210, 32);
+        }
+
+        // Active power icons
+        var icons = "";
+        if (shield > 0) icons += "🛡️";
+        if (superJumps > 0) icons += "⚡";
+        if (slowTimer > 0) icons += "⏰";
+        if (fireTimer > 0) icons += "🔥";
+        if (icons) {
+          ctx.textAlign = "right";
+          ctx.font = "16px serif";
+          ctx.fillText(icons, W - 24, 32);
+        }
+
+        // Flash
+        if (flash > 0) {
+          ctx.fillStyle = "rgba(255,255,255," + clamp(flash, 0, 0.4) + ")";
+          ctx.fillRect(0, 0, W, H);
         }
       }
 
       function draw() {
-        // Background
-        var g = ctx.createLinearGradient(0, 0, 0, H);
-        g.addColorStop(0, "#052012");
-        g.addColorStop(1, "#0a2a18");
-        ctx.fillStyle = g;
-        ctx.fillRect(0, 0, W, H);
+        drawBackground();
 
-        // Ground
-        ctx.fillStyle = "rgba(245, 208, 65, 0.07)";
-        ctx.fillRect(0, H - 64, W, 64);
-        ctx.strokeStyle = "rgba(245, 208, 65, 0.2)";
-        ctx.beginPath();
-        ctx.moveTo(0, H - 64);
-        ctx.lineTo(W, H - 64);
-        ctx.stroke();
+        for (var i = 0; i < plats.length; i++) drawPlatform(plats[i]);
+        for (var j = 0; j < powers.length; j++) drawPower(powers[j]);
 
-        // Bananas
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.font = "32px serif";
-        for (var i = 0; i < bananas.length; i++) {
-          var b = bananas[i];
-          ctx.fillText("🍌", b.x, b.y);
+        // Particles
+        for (var n = 0; n < particles.length; n++) {
+          var pt = particles[n];
+          var a = 1 - pt.age / pt.life;
+          ctx.globalAlpha = a;
+          ctx.fillStyle = pt.color;
+          ctx.beginPath();
+          ctx.arc(pt.x, worldToScreen(pt.y), pt.size, 0, Math.PI * 2);
+          ctx.fill();
         }
+        ctx.globalAlpha = 1;
 
-        // Monkey (only while playing — overlays cover the menu)
-        if (running) {
-          ctx.font = "48px serif";
-          ctx.fillText("🐒", playerX, playerY);
-        }
-
-        // HUD bar
-        ctx.fillStyle = "rgba(0, 0, 0, 0.45)";
-        ctx.beginPath();
-        if (ctx.roundRect) {
-          ctx.roundRect(8, 8, W - 16, 40, 10);
-        } else {
-          ctx.rect(8, 8, W - 16, 40);
-        }
-        ctx.fill();
-
-        ctx.fillStyle = "#f5d041";
-        ctx.font = "600 15px 'DM Sans', system-ui, sans-serif";
-        ctx.textAlign = "left";
-        ctx.textBaseline = "middle";
-        ctx.fillText("Score  " + score, 20, 28);
-
-        ctx.textAlign = "right";
-        var hearts = "";
-        for (var h = 0; h < lives; h++) hearts += "💛";
-        ctx.font = "18px serif";
-        ctx.fillText(hearts || "", W - 18, 28);
+        if (running) drawPlayer();
+        drawHUD();
       }
 
       function loop(ts) {
         if (!lastTs) lastTs = ts;
         var dt = (ts - lastTs) / 1000;
         lastTs = ts;
-        if (dt > 0.05) dt = 0.05; // tab-switch safety
+        if (dt > 0.05) dt = 0.05;
 
         if (running) update(dt);
         draw();
@@ -281,77 +767,74 @@
       }
 
       // --- Input ---
-      function setAimFromEvent(e) {
+      function setAim(e) {
         var x = e.clientX;
         if (e.touches && e.touches[0]) x = e.touches[0].clientX;
-        if (e.changedTouches && e.changedTouches[0]) x = e.changedTouches[0].clientX;
+        else if (e.changedTouches && e.changedTouches[0]) x = e.changedTouches[0].clientX;
         aimX = toCanvasX(x);
+      }
+
+      function boostHop() {
+        // Small mid-air hop if not too fast upward (fun twist, limited)
+        if (!running) return;
+        if (player.vy > -200) {
+          player.vy = Math.min(player.vy, 0) - 280;
+          if (fireTimer > 0) player.vy -= 80;
+        }
       }
 
       canvas.addEventListener("mousemove", function (e) {
         if (!running) return;
-        setAimFromEvent(e);
+        setAim(e);
       });
-
       canvas.addEventListener("mousedown", function (e) {
-        if (!running) {
-          start();
-          return;
-        }
-        setAimFromEvent(e);
+        if (!running) { start(); return; }
+        setAim(e);
+        boostHop();
       });
-
-      canvas.addEventListener("mouseleave", function () {
-        aimX = null;
-      });
+      canvas.addEventListener("mouseleave", function () { aimX = null; });
 
       canvas.addEventListener("touchstart", function (e) {
         e.preventDefault();
-        if (!running) {
-          start();
-          return;
-        }
-        setAimFromEvent(e);
+        if (!running) { start(); return; }
+        setAim(e);
+        boostHop();
       }, { passive: false });
-
       canvas.addEventListener("touchmove", function (e) {
         e.preventDefault();
         if (!running) return;
-        setAimFromEvent(e);
+        setAim(e);
       }, { passive: false });
 
       window.addEventListener("keydown", function (e) {
         if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") {
-          keyL = true;
-          aimX = null;
-          e.preventDefault();
+          keyL = true; aimX = null; e.preventDefault();
         }
         if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") {
-          keyR = true;
-          aimX = null;
-          e.preventDefault();
+          keyR = true; aimX = null; e.preventDefault();
         }
         if (e.code === "Space" || e.key === " ") {
           e.preventDefault();
           if (!running) start();
+          else boostHop();
         }
       });
-
       window.addEventListener("keyup", function (e) {
         if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") keyL = false;
         if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") keyR = false;
       });
 
-      startBtn.addEventListener("click", function (e) {
+      document.getElementById("startBtn").addEventListener("click", function (e) {
         e.stopPropagation();
         start();
       });
-      retryBtn.addEventListener("click", function (e) {
+      document.getElementById("retryBtn").addEventListener("click", function (e) {
         e.stopPropagation();
         start();
       });
 
-      // Kick off render loop (menu + game share one loop)
+      // Idle preview platforms
+      reset();
       requestAnimationFrame(loop);
     })();
   </script>
