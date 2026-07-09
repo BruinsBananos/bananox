@@ -108,7 +108,7 @@
   <main class="play-wrap">
     <div class="play-header">
       <h1>Banana Tower</h1>
-      <p>Level 11 — pick your jump style, stack combos, go bananas.</p>
+      <p>Peel platforms · Banano power-ups · climb the potassium canopy.</p>
     </div>
 
     <div class="game-frame" id="frame">
@@ -118,7 +118,7 @@
         <div>
           <h2>BANANA TOWER 🍌</h2>
           <p class="mode-desc" style="margin-top:0.6rem;">
-            Nail landings. Stack combos. Trigger <strong style="color:#f5d041">BANANA RUSH</strong>.
+            Bounce peel to peel. Stack combos. Trigger <strong style="color:#f5d041">BANANA RUSH</strong>.
           </p>
           <div class="mode-row" role="group" aria-label="Jump mode">
             <button type="button" class="mode-btn active" id="modeAuto" data-mode="auto">AUTO BOUNCE</button>
@@ -152,16 +152,14 @@
 
     <p class="play-hint" id="hintText">A D / ← → move · Auto bounce on land · M swaps mode · tap/Space air-hop</p>
     <div class="power-legend">
-      <span>⚡ Super</span>
-      <span>🛡️ Shield</span>
-      <span>⏰ Slow</span>
-      <span>🔥 Fire</span>
-      <span>🧲 Magnet</span>
-      <span>🌪️ Mega</span>
-      <span>💎 Gem</span>
-      <span>🚀 Spring</span>
-      <span>👻 Ghost pad</span>
-      <span>⭐ Star branch</span>
+      <span>💪 Potassium boost</span>
+      <span>🛡️ Peel armor</span>
+      <span>🧊 Jungle chill</span>
+      <span>🔥 Spicy BAN</span>
+      <span>🌧️ Rain magnet</span>
+      <span>🚀 Banano burst</span>
+      <span>🍌 BAN tip</span>
+      <span>🙈 Sneaky monkey</span>
     </div>
   </main>
 
@@ -588,36 +586,42 @@
       function applyPower(kind, x, y) {
         sfxPower();
         camShake = 7;
-        ringFX(x, y, "#fff");
+        ringFX(x, y, "#f5d041");
         if (kind === "super") {
           superJumps += 5;
-          floatText(x, y, "SUPER JUMP!", "#a78bfa", 15);
-          announce("SUPER JUMPS", 1);
+          floatText(x, y, "POTASSIUM BOOST!", "#a78bfa", 14);
+          announce("POTASSIUM BOOST", 1);
         } else if (kind === "shield") {
           shield = Math.min(shield + 1, 3);
-          floatText(x, y, "SHIELD +1", "#60a5fa", 15);
+          floatText(x, y, "PEEL ARMOR!", "#60a5fa", 15);
+          announce("PEEL ARMOR", 0.9);
         } else if (kind === "slow") {
           slowTimer = 6;
-          floatText(x, y, "SLOW-MO", "#67e8f9", 15);
+          floatText(x, y, "JUNGLE CHILL", "#67e8f9", 15);
+          announce("JUNGLE CHILL", 0.9);
         } else if (kind === "fire") {
           fireTimer = 7.5;
-          floatText(x, y, "FIRE FEET!", "#fb923c", 15);
+          floatText(x, y, "SPICY BAN!", "#fb923c", 15);
+          announce("SPICY BAN", 0.9);
         } else if (kind === "magnet") {
           magnetTimer = 8.5;
-          floatText(x, y, "MAGNET!", "#f472b6", 15);
+          floatText(x, y, "BANANO RAIN!", "#f472b6", 15);
+          announce("IT'S RAINING BAN", 1.1);
         } else if (kind === "mega") {
           megaTimer = 5.5;
-          floatText(x, y, "MEGA BOUNCE!", "#fbbf24", 16);
-          announce("MEGA BOUNCE", 1.15);
+          floatText(x, y, "BANANO BURST!", "#fbbf24", 16);
+          announce("BANANO BURST", 1.15);
         } else if (kind === "ghost") {
           ghostTimer = 7;
-          floatText(x, y, "PHASE!", "#c4b5fd", 15);
+          floatText(x, y, "SNEAKY MONKEY!", "#c4b5fd", 14);
+          announce("SNEAKY MONKEY", 1);
         } else if (kind === "gem") {
           var bonus = 90 + combo * 18 + (feverMode > 0 ? 60 : 0);
           score += bonus;
-          floatText(x, y, "+" + bonus, "#f5d041", 18);
+          floatText(x, y, "+" + bonus + " BAN", "#f5d041", 18);
           confetti(x, y);
           addFever(14);
+          announce("BAN TIP!", 0.85);
         }
         flash = 0.3; flashColor = "255,255,200";
       }
@@ -649,10 +653,10 @@
         if (fromSpring || (plat && plat.type === "spring")) {
           jumpV = JUMP * 1.58;
           perfect = true;
-          floatText(center, player.y, "🚀 SPRING!", "#86efac", 16);
+          floatText(center, player.y, "🍌 RIPE LAUNCH!", "#86efac", 16);
           camShake = 9;
-          announce("SPRING!", 0.75);
-          ringFX(center, player.y + player.h, "#86efac");
+          announce("RIPE LAUNCH!", 0.75);
+          ringFX(center, player.y + player.h, "#f5d041");
         } else if (perfect) {
           combo += 1;
           bestCombo = Math.max(bestCombo, combo);
@@ -707,14 +711,14 @@
         if (plat && plat.type === "star") {
           jumpV *= 1.08;
           score += 25;
-          floatText(center, player.y - 16, "⭐ STAR!", "#fde68a", 14);
+          floatText(center, player.y - 16, "⭐ GOLDEN BAN!", "#fde68a", 14);
         }
 
         jumpV *= mult;
 
         if (plat && plat.type === "slip") {
           player.vx += (center < info.platCenter ? -1 : 1) * 240;
-          floatText(center, player.y, "SLIP!", "#67e8f9", 13);
+          floatText(center, player.y, "SLIPPERY PEEL!", "#67e8f9", 13);
         }
         if (plat && plat.type === "break") {
           plat.shake = 0.4;
@@ -727,7 +731,7 @@
         if (plat && plat.type === "ghost") {
           // fade after use
           plat.breakIn = 0.35;
-          floatText(center, player.y, "BOO!", "#c4b5fd", 12);
+          floatText(center, player.y, "GHOST PEEL!", "#c4b5fd", 12);
         }
         if (plat && plat.type === "move") player.vx += plat.vx * 0.18;
 
@@ -1171,83 +1175,176 @@
         }
       }
 
-      function platColor(type) {
-        if (type === "move") return ["#10b981", "#065f46"];
-        if (type === "slip") return ["#22d3ee", "#0e7490"];
-        if (type === "break") return ["#fb923c", "#9a3412"];
-        if (type === "spring") return ["#a3e635", "#3f6212"];
-        if (type === "cloud") return ["#e0f2fe", "#7dd3fc"];
-        if (type === "ghost") return ["#c4b5fd", "#6d28d9"];
-        if (type === "star") return ["#fde68a", "#d97706"];
-        if (feverMode > 0) return ["#f472b6", "#9d174d"];
-        return ["#facc15", "#a16207"];
+      // Peel palette — always banana-y, tinted by type
+      function peelColors(type) {
+        // [outer light, outer dark, inner flesh, stem, accent]
+        if (type === "move") return ["#c8e86a", "#7aad28", "#f4f0c8", "#5c3d1e", "#4d7c0f"];
+        if (type === "slip") return ["#fde68a", "#eab308", "#fffbeb", "#78716c", "#67e8f9"];
+        if (type === "break") return ["#e8a54b", "#a65c12", "#f5e6c8", "#44403c", "#fb923c"];
+        if (type === "spring") return ["#86efac", "#16a34a", "#ecfccb", "#365314", "#f5d041"];
+        if (type === "cloud") return ["#fef9c3", "#fde047", "#fffef5", "#a8a29e", "#e0f2fe"];
+        if (type === "ghost") return ["#e9d5ff", "#a78bfa", "#faf5ff", "#6b21a8", "#c4b5fd"];
+        if (type === "star") return ["#fef08a", "#f59e0b", "#fffbeb", "#92400e", "#fbbf24"];
+        if (feverMode > 0) return ["#f9a8d4", "#db2777", "#fce7f3", "#9d174d", "#f5d041"];
+        return ["#f5d041", "#c9a227", "#fff4c4", "#6b4423", "#ffe566"];
       }
 
       function drawPlatform(p) {
         var sy = worldToScreen(p.y);
-        if (sy < -50 || sy > H + 50) return;
+        if (sy < -60 || sy > H + 60) return;
         var shakeX = p.shake > 0 ? Math.sin(p.shake * 55) * 4 : 0;
         var x = p.x + shakeX;
         var y = sy;
         var w = p.w;
-        var h = PLAT_H;
-        var cols = platColor(p.type);
-        var alpha = p.type === "ghost" ? 0.7 + 0.15 * Math.sin(p.pulse * 2) : 1;
+        var h = PLAT_H + 4;
+        var cols = peelColors(p.type);
+        var alpha = p.type === "ghost" ? 0.72 + 0.16 * Math.sin(p.pulse * 2) : 1;
 
         ctx.globalAlpha = alpha;
         ctx.shadowColor = cols[0];
-        ctx.shadowBlur = feverMode > 0 || p.type === "star" ? 18 : 9;
+        ctx.shadowBlur = feverMode > 0 || p.type === "star" ? 16 : 10;
 
-        ctx.fillStyle = "rgba(0,0,0,0.5)";
-        fillRound(x + 3, y + 6, w, h, 7);
+        // Drop shadow
+        ctx.fillStyle = "rgba(0,0,0,0.45)";
+        ctx.beginPath();
+        ctx.ellipse(x + w / 2 + 2, y + h + 4, w * 0.48, 5, 0, 0, Math.PI * 2);
+        ctx.fill();
 
-        var grd = ctx.createLinearGradient(x, y, x, y + h);
+        // ── Banana peel body (top-down open peel) ──
+        // Outer peel hull
+        ctx.beginPath();
+        ctx.moveTo(x + 8, y + h * 0.55);
+        ctx.quadraticCurveTo(x + w * 0.15, y - 4, x + w * 0.5, y + 1);
+        ctx.quadraticCurveTo(x + w * 0.85, y - 4, x + w - 8, y + h * 0.55);
+        ctx.quadraticCurveTo(x + w - 4, y + h + 2, x + w * 0.5, y + h + 3);
+        ctx.quadraticCurveTo(x + 4, y + h + 2, x + 8, y + h * 0.55);
+        ctx.closePath();
+        var grd = ctx.createLinearGradient(x, y, x, y + h + 4);
         grd.addColorStop(0, cols[0]);
+        grd.addColorStop(0.55, cols[1]);
         grd.addColorStop(1, cols[1]);
         ctx.fillStyle = grd;
-        fillRound(x, y, w, h, 7);
+        ctx.fill();
         ctx.shadowBlur = 0;
+        ctx.strokeStyle = "#1a1400";
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
 
-        ctx.strokeStyle = "#0a0a0a";
-        ctx.lineWidth = 3;
-        strokeRound(x, y, w, h, 7);
+        // Inner flesh (pale) — landing strip
+        ctx.beginPath();
+        ctx.moveTo(x + 14, y + h * 0.5);
+        ctx.quadraticCurveTo(x + w * 0.5, y + 5, x + w - 14, y + h * 0.5);
+        ctx.quadraticCurveTo(x + w * 0.5, y + h - 1, x + 14, y + h * 0.5);
+        ctx.closePath();
+        ctx.fillStyle = cols[2];
+        ctx.fill();
+        ctx.strokeStyle = "rgba(90,60,20,0.25)";
+        ctx.lineWidth = 1;
+        ctx.stroke();
 
-        ctx.fillStyle = "rgba(255,255,255,0.42)";
-        fillRound(x + 5, y + 3, w - 10, 4, 2);
+        // Peel ridges (3 strips of open peel)
+        ctx.strokeStyle = "rgba(90,60,20,0.35)";
+        ctx.lineWidth = 1.5;
+        for (var ri = 1; ri <= 2; ri++) {
+          var rx = x + w * (ri / 3);
+          ctx.beginPath();
+          ctx.moveTo(rx, y + 6);
+          ctx.quadraticCurveTo(rx + (ri === 1 ? -4 : 4), y + h * 0.55, rx, y + h);
+          ctx.stroke();
+        }
 
-        // Perfect zone hint when player nearby above
+        // Curled peel tips at both ends
+        ctx.fillStyle = cols[0];
+        ctx.strokeStyle = "#1a1400";
+        ctx.lineWidth = 2;
+        // Left tip curl
+        ctx.beginPath();
+        ctx.moveTo(x + 6, y + h * 0.45);
+        ctx.quadraticCurveTo(x - 6, y - 2, x + 10, y + 2);
+        ctx.quadraticCurveTo(x + 4, y + h * 0.35, x + 8, y + h * 0.55);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        // Right tip curl
+        ctx.beginPath();
+        ctx.moveTo(x + w - 6, y + h * 0.45);
+        ctx.quadraticCurveTo(x + w + 6, y - 2, x + w - 10, y + 2);
+        ctx.quadraticCurveTo(x + w - 4, y + h * 0.35, x + w - 8, y + h * 0.55);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // Brown stem nub (leftish)
+        ctx.fillStyle = cols[3];
+        ctx.beginPath();
+        ctx.ellipse(x + 11, y + h * 0.42, 4, 3.5, -0.4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "#1a1400";
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        // Type flair on peel
+        if (p.type === "break") {
+          // Brown bruise spots
+          ctx.fillStyle = "rgba(90,50,20,0.45)";
+          ctx.beginPath();
+          ctx.ellipse(x + w * 0.35, y + h * 0.55, 5, 3, 0.2, 0, Math.PI * 2);
+          ctx.ellipse(x + w * 0.62, y + h * 0.48, 4, 2.5, -0.3, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        if (p.type === "slip") {
+          // Wet sheen
+          ctx.strokeStyle = "rgba(103,232,249,0.7)";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(x + w * 0.25, y + 8);
+          ctx.quadraticCurveTo(x + w * 0.5, y + 4, x + w * 0.75, y + 9);
+          ctx.stroke();
+        }
+        if (p.type === "spring") {
+          // Bouncy green stripes
+          ctx.strokeStyle = cols[4];
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(x + w * 0.3, y + h);
+          ctx.lineTo(x + w * 0.35, y + h + 7);
+          ctx.moveTo(x + w * 0.5, y + h);
+          ctx.lineTo(x + w * 0.5, y + h + 9);
+          ctx.moveTo(x + w * 0.7, y + h);
+          ctx.lineTo(x + w * 0.65, y + h + 7);
+          ctx.stroke();
+        }
+        if (p.type === "move") {
+          ctx.fillStyle = cols[4];
+          ctx.font = "11px serif";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText("↔", x + w / 2, y + h * 0.55);
+        }
+        if (p.type === "star") {
+          ctx.font = "12px serif";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText("⭐", x + w / 2, y + h * 0.5);
+        }
+        if (p.type === "ghost") {
+          ctx.font = "11px serif";
+          ctx.textAlign = "center";
+          ctx.fillText("🙈", x + w / 2, y + h * 0.5);
+        }
+
+        // Perfect-zone hint (center of peel)
         if (running && player.vy > 0) {
           var py = worldToScreen(player.y + player.h);
           if (Math.abs(py - y) < 70 && player.y + player.h < p.y + 5) {
-            var zw = w * 0.5;
-            ctx.fillStyle = "rgba(255,255,255,0.25)";
-            fillRound(x + (w - zw) / 2, y + 2, zw, h - 4, 4);
-          }
-        }
-
-        ctx.font = "13px serif";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        var icon = "🍌";
-        if (p.type === "spring") icon = "🚀";
-        else if (p.type === "move") icon = "↔️";
-        else if (p.type === "slip") icon = "💦";
-        else if (p.type === "break") icon = "💥";
-        else if (p.type === "cloud") icon = "☁️";
-        else if (p.type === "ghost") icon = "👻";
-        else if (p.type === "star") icon = "⭐";
-        if (w > 60) ctx.fillText(icon, x + w / 2, y + h / 2 + 1);
-
-        if (p.type === "spring") {
-          ctx.strokeStyle = "#14532d";
-          ctx.lineWidth = 2;
-          for (var i = 0; i < 3; i++) {
+            var zw = w * 0.42;
+            ctx.fillStyle = "rgba(255,255,255,0.28)";
             ctx.beginPath();
-            ctx.moveTo(x + 10 + i * 8, y + h);
-            ctx.lineTo(x + 14 + i * 8, y + h + 8);
-            ctx.stroke();
+            ctx.ellipse(x + w / 2, y + h * 0.55, zw / 2, 4, 0, 0, Math.PI * 2);
+            ctx.fill();
           }
         }
+
         ctx.globalAlpha = 1;
       }
 
@@ -1255,38 +1352,63 @@
         if (pw.taken) return;
         var sy = worldToScreen(pw.y + Math.sin(pw.bob) * 5);
         if (sy < -40 || sy > H + 40) return;
+
+        // Banano-themed orbs
         var map = {
-          super: "⚡", shield: "🛡️", slow: "⏰", fire: "🔥",
-          magnet: "🧲", mega: "🌪️", gem: "💎", ghost: "👻"
+          super: { icon: "💪", ring: "#a78bfa", bg: "#2e1065" },
+          shield: { icon: "🛡️", ring: "#60a5fa", bg: "#0c4a6e" },
+          slow: { icon: "🧊", ring: "#67e8f9", bg: "#164e63" },
+          fire: { icon: "🌶️", ring: "#fb923c", bg: "#7c2d12" },
+          magnet: { icon: "🌧️", ring: "#f472b6", bg: "#831843" },
+          mega: { icon: "🚀", ring: "#fbbf24", bg: "#78350f" },
+          gem: { icon: "🍌", ring: "#f5d041", bg: "#422006" },
+          ghost: { icon: "🙈", ring: "#c4b5fd", bg: "#4c1d95" }
         };
+        var m = map[pw.kind] || map.gem;
+
+        // Banana-coin style disc
         ctx.beginPath();
-        ctx.arc(pw.x, sy, 17, 0, Math.PI * 2);
-        ctx.fillStyle = "#0a0a0a";
+        ctx.arc(pw.x, sy, 18, 0, Math.PI * 2);
+        ctx.fillStyle = m.bg;
         ctx.fill();
-        ctx.shadowColor = "#f5d041";
+        ctx.shadowColor = m.ring;
         ctx.shadowBlur = 14;
-        ctx.strokeStyle = "#f5d041";
+        ctx.strokeStyle = m.ring;
         ctx.lineWidth = 2.5;
         ctx.stroke();
         ctx.shadowBlur = 0;
-        ctx.font = "18px serif";
+
+        // Tiny banana arc decoration
+        ctx.strokeStyle = "rgba(245,208,65,0.45)";
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(pw.x, sy, 14, 0.3, Math.PI - 0.3);
+        ctx.stroke();
+
+        ctx.font = "17px serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText(map[pw.kind] || "💎", pw.x, sy + 1);
+        ctx.fillText(m.icon, pw.x, sy + 1);
       }
 
       function drawCoin(coin) {
         if (coin.taken) return;
         var sy = worldToScreen(coin.y + Math.sin(coin.bob) * 3);
         if (sy < -30 || sy > H + 30) return;
+        // Mini BAN coin
         ctx.beginPath();
-        ctx.arc(coin.x, sy, 12, 0, Math.PI * 2);
-        ctx.fillStyle = "#fbbf24";
+        ctx.arc(coin.x, sy, 13, 0, Math.PI * 2);
+        ctx.fillStyle = "#f5d041";
         ctx.fill();
         ctx.strokeStyle = "#78350f";
         ctx.lineWidth = 2.5;
         ctx.stroke();
-        ctx.font = "14px serif";
+        ctx.beginPath();
+        ctx.arc(coin.x, sy, 9, 0, Math.PI * 2);
+        ctx.strokeStyle = "rgba(120,53,15,0.35)";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.font = "13px serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText("🍌", coin.x, sy + 1);
@@ -1487,12 +1609,12 @@
         ctx.font = "15px serif";
         var icons = "";
         if (shield > 0) icons += "🛡️".repeat(Math.min(shield, 3));
-        if (superJumps > 0) icons += "⚡";
-        if (slowTimer > 0) icons += "⏰";
-        if (fireTimer > 0) icons += "🔥";
-        if (magnetTimer > 0) icons += "🧲";
-        if (megaTimer > 0) icons += "🌪️";
-        if (ghostTimer > 0) icons += "👻";
+        if (superJumps > 0) icons += "💪";
+        if (slowTimer > 0) icons += "🧊";
+        if (fireTimer > 0) icons += "🌶️";
+        if (magnetTimer > 0) icons += "🌧️";
+        if (megaTimer > 0) icons += "🚀";
+        if (ghostTimer > 0) icons += "🙈";
         ctx.fillText(icons, W - 22, 42);
 
         // Fever bar
