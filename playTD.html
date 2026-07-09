@@ -1,0 +1,1389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Play · Banano Defense · Banano X</title>
+  <meta name="description" content="Banano tower defense — place peelers, rain bots, and cannons. Defend the vault.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .td-wrap {
+      padding: calc(var(--nav-h) + 1.25rem) 1rem 2.5rem;
+      max-width: 920px;
+      margin: 0 auto;
+    }
+    .td-header {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    .td-header h1 {
+      font-size: clamp(1.75rem, 4vw, 2.4rem);
+      background: linear-gradient(90deg, #ffe566, #f5d041, #86efac, #f5d041);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: shine 3s linear infinite;
+    }
+    @keyframes shine { to { background-position: 200% center; } }
+    .td-header p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-top: 0.35rem;
+    }
+    .td-shell {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.85rem;
+    }
+    @media (min-width: 820px) {
+      .td-shell {
+        grid-template-columns: 1fr 200px;
+        align-items: start;
+      }
+    }
+    .td-stage {
+      position: relative;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 2px solid rgba(245, 208, 65, 0.35);
+      box-shadow:
+        0 0 60px rgba(245, 208, 65, 0.12),
+        0 20px 40px rgba(0, 0, 0, 0.45);
+      background: #0a1810;
+      touch-action: none;
+      user-select: none;
+    }
+    .td-stage canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      vertical-align: middle;
+    }
+    .td-hud {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.65rem 0.85rem;
+      background: rgba(0, 0, 0, 0.55);
+      border-bottom: 1px solid rgba(245, 208, 65, 0.2);
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .td-hud .stat {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      color: var(--text);
+      padding: 0.25rem 0.55rem;
+      border-radius: 999px;
+      background: rgba(245, 208, 65, 0.08);
+      border: 1px solid rgba(245, 208, 65, 0.15);
+    }
+    .td-hud .stat em {
+      color: var(--banana);
+      font-style: normal;
+      font-family: Syne, system-ui, sans-serif;
+    }
+    .td-side {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+    .td-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 0.85rem;
+      backdrop-filter: blur(12px);
+    }
+    .td-panel h3 {
+      font-size: 0.8rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--banana);
+      margin-bottom: 0.65rem;
+    }
+    .tower-btns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.45rem;
+    }
+    @media (min-width: 820px) {
+      .tower-btns { grid-template-columns: 1fr; }
+    }
+    .tower-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-align: left;
+      padding: 0.55rem 0.6rem;
+      border-radius: 12px;
+      border: 1.5px solid rgba(245, 208, 65, 0.2);
+      background: rgba(0, 0, 0, 0.35);
+      color: var(--text);
+      cursor: pointer;
+      transition: 0.15s ease;
+      font-family: inherit;
+    }
+    .tower-btn:hover:not(:disabled) {
+      border-color: rgba(245, 208, 65, 0.55);
+      background: rgba(245, 208, 65, 0.08);
+    }
+    .tower-btn.active {
+      border-color: var(--banana);
+      background: rgba(245, 208, 65, 0.14);
+      box-shadow: 0 0 20px rgba(245, 208, 65, 0.15);
+    }
+    .tower-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .tower-btn .ico { font-size: 1.25rem; line-height: 1; }
+    .tower-btn .meta { flex: 1; min-width: 0; }
+    .tower-btn .name {
+      font-family: Syne, system-ui, sans-serif;
+      font-weight: 700;
+      font-size: 0.82rem;
+      color: var(--banana);
+    }
+    .tower-btn .cost {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+    .td-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+    .td-actions .btn { width: 100%; }
+    .td-tip {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+    .td-tip strong { color: var(--banana); }
+    .selected-info {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      min-height: 3.2rem;
+    }
+    .selected-info strong { color: var(--text); }
+    .overlay-msg {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(3, 8, 6, 0.88);
+      backdrop-filter: blur(8px);
+      z-index: 5;
+      padding: 1.5rem;
+      text-align: center;
+    }
+    .overlay-msg.hidden { display: none; }
+    .overlay-msg h2 {
+      font-size: 1.75rem;
+      color: var(--banana);
+      margin-bottom: 0.6rem;
+      text-shadow: 0 0 24px rgba(245, 208, 65, 0.4);
+    }
+    .overlay-msg.lose h2 { color: #f87171; text-shadow: 0 0 24px rgba(248, 113, 113, 0.4); }
+    .overlay-msg p {
+      color: var(--text-muted);
+      margin-bottom: 1.1rem;
+      font-size: 0.95rem;
+    }
+    .wave-banner {
+      position: absolute;
+      left: 50%;
+      top: 18%;
+      transform: translateX(-50%);
+      pointer-events: none;
+      font-family: Syne, system-ui, sans-serif;
+      font-weight: 800;
+      font-size: 1.4rem;
+      color: #f5d041;
+      text-shadow: 0 2px 12px rgba(0,0,0,0.8), 0 0 20px rgba(245,208,65,0.5);
+      opacity: 0;
+      transition: opacity 0.25s;
+      z-index: 4;
+      white-space: nowrap;
+    }
+    .wave-banner.show { opacity: 1; }
+  </style>
+</head>
+<body>
+  <header class="nav">
+    <div class="nav-inner">
+      <a href="index.html" class="logo">
+        <span class="logo-icon" aria-hidden="true">🍌</span>
+        <span>BANANO X</span>
+      </a>
+      <button class="nav-toggle" type="button" aria-label="Menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-links">
+        <li><a href="play.html">Climb</a></li>
+        <li><a href="playTD.html" class="active">Defend</a></li>
+        <li><a href="facts.html">Facts</a></li>
+        <li><a href="ecosystem.html">Ecosystem</a></li>
+        <li><a href="faucets.html">Faucets</a></li>
+        <li><a href="community.html">Community</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main class="td-wrap">
+    <div class="td-header">
+      <h1>Banano Defense</h1>
+      <p>Stop the scam swarm before they drain the vault. Place peelers. Rain BAN. Win.</p>
+    </div>
+
+    <div class="td-shell">
+      <div class="td-stage" id="stage">
+        <div class="td-hud">
+          <span class="stat">🍌 BAN <em id="hudBan">120</em></span>
+          <span class="stat">❤️ Vault <em id="hudLives">20</em></span>
+          <span class="stat">🌊 Wave <em id="hudWave">0</em>/<em id="hudMaxWave">20</em></span>
+          <span class="stat">☠️ Kills <em id="hudKills">0</em></span>
+        </div>
+        <canvas id="c" width="720" height="480" aria-label="Banano Defense game"></canvas>
+        <div class="wave-banner" id="waveBanner">WAVE 1</div>
+
+        <div class="overlay-msg" id="startOverlay">
+          <div>
+            <h2>Defend the Vault 🍌</h2>
+            <p>
+              Enemies march the jungle path.<br>
+              Build towers on the grass · upgrade by clicking them.<br>
+              Don’t let scammers reach the vault.
+            </p>
+            <button type="button" class="btn btn-primary" id="btnStart">START DEFENSE</button>
+          </div>
+        </div>
+        <div class="overlay-msg hidden" id="winOverlay">
+          <div>
+            <h2>VAULT SECURE 👑</h2>
+            <p id="winText">You held the potassium line!</p>
+            <button type="button" class="btn btn-primary" id="btnWin">PLAY AGAIN</button>
+          </div>
+        </div>
+        <div class="overlay-msg lose hidden" id="loseOverlay">
+          <div>
+            <h2>VAULT DRAINED 💀</h2>
+            <p id="loseText">The swarm got through…</p>
+            <button type="button" class="btn btn-primary" id="btnLose">TRY AGAIN</button>
+          </div>
+        </div>
+      </div>
+
+      <aside class="td-side">
+        <div class="td-panel">
+          <h3>Towers</h3>
+          <div class="tower-btns" id="towerBtns"></div>
+        </div>
+        <div class="td-panel">
+          <h3>Selected</h3>
+          <div class="selected-info" id="selectedInfo">Pick a tower type, then click grass to build.</div>
+          <div class="td-actions" style="margin-top:0.65rem;">
+            <button type="button" class="btn btn-primary btn-sm" id="btnUpgrade" disabled>Upgrade</button>
+            <button type="button" class="btn btn-ghost btn-sm" id="btnSell" disabled>Sell</button>
+          </div>
+        </div>
+        <div class="td-panel">
+          <h3>Battle</h3>
+          <div class="td-actions">
+            <button type="button" class="btn btn-primary btn-sm" id="btnWave">Send next wave</button>
+            <button type="button" class="btn btn-ghost btn-sm" id="btnCancel">Cancel place</button>
+          </div>
+          <p class="td-tip" style="margin-top:0.65rem;">
+            <strong>Tip:</strong> Rain bots splash. Snipers snipe. Chill towers slow the pack. Mix them.
+          </p>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <script src="site.js"></script>
+  <script>
+    (function () {
+      "use strict";
+
+      // ═══════════════════════════════════════════════════
+      // BANANO DEFENSE — polished tower defense
+      // ═══════════════════════════════════════════════════
+
+      var canvas = document.getElementById("c");
+      var ctx = canvas.getContext("2d");
+      var COLS = 18;
+      var ROWS = 12;
+      var CW = canvas.width / COLS;   // 40
+      var CH = canvas.height / ROWS; // 40
+
+      // HUD / UI
+      var elBan = document.getElementById("hudBan");
+      var elLives = document.getElementById("hudLives");
+      var elWave = document.getElementById("hudWave");
+      var elMaxWave = document.getElementById("hudMaxWave");
+      var elKills = document.getElementById("hudKills");
+      var elSelected = document.getElementById("selectedInfo");
+      var btnUpgrade = document.getElementById("btnUpgrade");
+      var btnSell = document.getElementById("btnSell");
+      var btnWave = document.getElementById("btnWave");
+      var btnCancel = document.getElementById("btnCancel");
+      var waveBanner = document.getElementById("waveBanner");
+      var startOverlay = document.getElementById("startOverlay");
+      var winOverlay = document.getElementById("winOverlay");
+      var loseOverlay = document.getElementById("loseOverlay");
+      var towerBtnsEl = document.getElementById("towerBtns");
+
+      // Path as grid cells (col, row) — snaking jungle trail
+      var PATH = [
+        [0, 5], [1, 5], [2, 5], [3, 5], [4, 5], [5, 5],
+        [5, 4], [5, 3], [5, 2], [6, 2], [7, 2], [8, 2], [9, 2],
+        [9, 3], [9, 4], [9, 5], [9, 6], [9, 7], [9, 8],
+        [10, 8], [11, 8], [12, 8], [13, 8],
+        [13, 7], [13, 6], [13, 5], [13, 4], [13, 3],
+        [14, 3], [15, 3], [16, 3], [17, 3]
+      ];
+
+      var pathSet = {};
+      var waypoints = [];
+      for (var pi = 0; pi < PATH.length; pi++) {
+        var pc = PATH[pi][0], pr = PATH[pi][1];
+        pathSet[pc + "," + pr] = true;
+        waypoints.push({
+          x: pc * CW + CW / 2,
+          y: pr * CH + CH / 2
+        });
+      }
+
+      // Tower definitions
+      var TOWER_DEFS = {
+        peeler: {
+          id: "peeler",
+          name: "Peeler",
+          icon: "🍌",
+          desc: "Fast single-target banana flinger.",
+          cost: 50,
+          range: 110,
+          damage: 12,
+          fireRate: 0.45,
+          color: "#f5d041",
+          projectile: "banana",
+          splash: 0,
+          slow: 0
+        },
+        rain: {
+          id: "rain",
+          name: "Rain Bot",
+          icon: "🌧️",
+          desc: "Splash damage — great for packs.",
+          cost: 90,
+          range: 95,
+          damage: 10,
+          fireRate: 0.85,
+          color: "#60a5fa",
+          projectile: "drop",
+          splash: 48,
+          slow: 0
+        },
+        chill: {
+          id: "chill",
+          name: "Jungle Chill",
+          icon: "🧊",
+          desc: "Slows enemies in range on hit.",
+          cost: 80,
+          range: 100,
+          damage: 6,
+          fireRate: 0.7,
+          color: "#67e8f9",
+          projectile: "frost",
+          splash: 0,
+          slow: 0.45
+        },
+        cannon: {
+          id: "cannon",
+          name: "Kalium Cannon",
+          icon: "💥",
+          desc: "Heavy hits. Slow reload.",
+          cost: 140,
+          range: 120,
+          damage: 55,
+          fireRate: 1.4,
+          color: "#fb923c",
+          projectile: "shell",
+          splash: 28,
+          slow: 0
+        },
+        sniper: {
+          id: "sniper",
+          name: "Leaf Sniper",
+          icon: "🎯",
+          desc: "Long range, prioritizes strong foes.",
+          cost: 160,
+          range: 190,
+          damage: 40,
+          fireRate: 1.15,
+          color: "#a3e635",
+          projectile: "dart",
+          splash: 0,
+          slow: 0,
+          preferTank: true
+        }
+      };
+
+      var TOWER_ORDER = ["peeler", "rain", "chill", "cannon", "sniper"];
+
+      // Enemy templates by wave scaling
+      function enemyStats(type, wave) {
+        var w = Math.max(1, wave);
+        if (type === "rat") {
+          return { hp: 28 + w * 8, speed: 52 + w * 1.2, reward: 6 + Math.floor(w / 2), color: "#fbbf24", r: 11, icon: "🐀", name: "Peel Rat" };
+        }
+        if (type === "bot") {
+          return { hp: 55 + w * 14, speed: 40 + w * 0.8, reward: 10 + Math.floor(w / 2), color: "#f87171", r: 13, icon: "🤖", name: "Scam Bot" };
+        }
+        if (type === "whale") {
+          return { hp: 160 + w * 28, speed: 28 + w * 0.4, reward: 22 + w, color: "#60a5fa", r: 17, icon: "🐋", name: "Paper Whale" };
+        }
+        if (type === "boss") {
+          return { hp: 500 + w * 80, speed: 24, reward: 80 + w * 5, color: "#c084fc", r: 22, icon: "👾", name: "Rug Boss" };
+        }
+        return enemyStats("rat", w);
+      }
+
+      // State
+      var ban = 120;
+      var lives = 20;
+      var wave = 0;
+      var maxWaves = 20;
+      var kills = 0;
+      var running = false;
+      var gameOver = false;
+      var won = false;
+      var selectedType = "peeler";
+      var selectedTower = null;
+      var towers = [];
+      var enemies = [];
+      var projectiles = [];
+      var particles = [];
+      var floats = [];
+      var spawnQueue = [];
+      var spawnTimer = 0;
+      var waveActive = false;
+      var hoverCell = null;
+      var lastTs = 0;
+      var animT = 0;
+      var bannerT = 0;
+
+      elMaxWave.textContent = String(maxWaves);
+
+      // Audio (light)
+      var audioCtx = null;
+      function ensureAudio() {
+        if (!audioCtx) {
+          try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+          catch (e) { audioCtx = null; }
+        }
+        if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+      }
+      function beep(freq, dur, type, vol) {
+        if (!audioCtx) return;
+        var t0 = audioCtx.currentTime;
+        var o = audioCtx.createOscillator();
+        var g = audioCtx.createGain();
+        o.type = type || "square";
+        o.frequency.value = freq;
+        g.gain.setValueAtTime(vol || 0.05, t0);
+        g.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
+        o.connect(g); g.connect(audioCtx.destination);
+        o.start(t0); o.stop(t0 + dur + 0.02);
+      }
+
+      function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
+      function dist(ax, ay, bx, by) {
+        var dx = ax - bx, dy = ay - by;
+        return Math.sqrt(dx * dx + dy * dy);
+      }
+      function cellKey(c, r) { return c + "," + r; }
+      function isPath(c, r) { return !!pathSet[cellKey(c, r)]; }
+      function inBounds(c, r) { return c >= 0 && r >= 0 && c < COLS && r < ROWS; }
+
+      function towerAt(c, r) {
+        for (var i = 0; i < towers.length; i++) {
+          if (towers[i].c === c && towers[i].r === r) return towers[i];
+        }
+        return null;
+      }
+
+      function upgradeCost(t) {
+        return Math.floor(t.def.cost * (0.65 + t.level * 0.45));
+      }
+      function sellValue(t) {
+        var spent = t.def.cost;
+        for (var i = 1; i < t.level; i++) spent += Math.floor(t.def.cost * (0.65 + i * 0.45));
+        return Math.floor(spent * 0.65);
+      }
+
+      function refreshHud() {
+        elBan.textContent = String(ban);
+        elLives.textContent = String(lives);
+        elWave.textContent = String(wave);
+        elKills.textContent = String(kills);
+        // tower buttons affordance
+        var buttons = towerBtnsEl.querySelectorAll(".tower-btn");
+        for (var i = 0; i < buttons.length; i++) {
+          var id = buttons[i].getAttribute("data-id");
+          var def = TOWER_DEFS[id];
+          buttons[i].disabled = !running || gameOver || ban < def.cost;
+          buttons[i].classList.toggle("active", selectedType === id && !selectedTower);
+        }
+        if (selectedTower) {
+          var t = selectedTower;
+          var dmg = Math.floor(t.def.damage * (1 + (t.level - 1) * 0.4));
+          var rng = Math.floor(t.def.range * (1 + (t.level - 1) * 0.08));
+          elSelected.innerHTML =
+            "<strong>" + t.def.icon + " " + t.def.name + "</strong> · Lv " + t.level + "<br>" +
+            "DMG " + dmg + " · RNG " + rng + " · Sell " + sellValue(t) + " BAN";
+          btnUpgrade.disabled = gameOver || t.level >= 3 || ban < upgradeCost(t);
+          btnUpgrade.textContent = t.level >= 3 ? "Max level" : "Upgrade (" + upgradeCost(t) + " BAN)";
+          btnSell.disabled = gameOver;
+          btnSell.textContent = "Sell (+" + sellValue(t) + " BAN)";
+        } else if (selectedType) {
+          var def = TOWER_DEFS[selectedType];
+          elSelected.innerHTML =
+            "<strong>" + def.icon + " " + def.name + "</strong> · " + def.cost + " BAN<br>" + def.desc;
+          btnUpgrade.disabled = true;
+          btnUpgrade.textContent = "Upgrade";
+          btnSell.disabled = true;
+          btnSell.textContent = "Sell";
+        } else {
+          elSelected.textContent = "Pick a tower type, then click grass to build.";
+          btnUpgrade.disabled = true;
+          btnSell.disabled = true;
+        }
+        btnWave.disabled = !running || gameOver || waveActive || wave >= maxWaves;
+        if (wave >= maxWaves && !waveActive && enemies.length === 0 && running && !gameOver) {
+          // win handled in update
+        }
+      }
+
+      function buildTowerButtons() {
+        towerBtnsEl.innerHTML = "";
+        for (var i = 0; i < TOWER_ORDER.length; i++) {
+          var def = TOWER_DEFS[TOWER_ORDER[i]];
+          var btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "tower-btn" + (selectedType === def.id ? " active" : "");
+          btn.setAttribute("data-id", def.id);
+          btn.innerHTML =
+            '<span class="ico">' + def.icon + '</span>' +
+            '<span class="meta"><span class="name">' + def.name + '</span>' +
+            '<span class="cost">' + def.cost + ' BAN</span></span>';
+          btn.addEventListener("click", (function (id) {
+            return function () {
+              selectedType = id;
+              selectedTower = null;
+              refreshHud();
+            };
+          })(def.id));
+          towerBtnsEl.appendChild(btn);
+        }
+      }
+
+      function burst(x, y, color, n) {
+        for (var i = 0; i < n; i++) {
+          var a = Math.random() * Math.PI * 2;
+          var s = 40 + Math.random() * 120;
+          particles.push({
+            x: x, y: y,
+            vx: Math.cos(a) * s,
+            vy: Math.sin(a) * s,
+            life: 0.35 + Math.random() * 0.35,
+            age: 0,
+            color: color,
+            size: 2 + Math.random() * 3
+          });
+        }
+      }
+
+      function floatText(x, y, text, color) {
+        floats.push({ x: x, y: y, text: text, color: color || "#f5d041", life: 0.8, age: 0 });
+      }
+
+      function showBanner(text) {
+        waveBanner.textContent = text;
+        waveBanner.classList.add("show");
+        bannerT = 1.6;
+      }
+
+      function resetGame() {
+        ban = 120;
+        lives = 20;
+        wave = 0;
+        kills = 0;
+        running = true;
+        gameOver = false;
+        won = false;
+        selectedTower = null;
+        selectedType = "peeler";
+        towers = [];
+        enemies = [];
+        projectiles = [];
+        particles = [];
+        floats = [];
+        spawnQueue = [];
+        spawnTimer = 0;
+        waveActive = false;
+        startOverlay.classList.add("hidden");
+        winOverlay.classList.add("hidden");
+        loseOverlay.classList.add("hidden");
+        refreshHud();
+        showBanner("BUILD YOUR DEFENSE");
+        beep(400, 0.08, "square", 0.05);
+        beep(520, 0.1, "square", 0.04);
+      }
+
+      function endLose() {
+        gameOver = true;
+        running = false;
+        waveActive = false;
+        document.getElementById("loseText").textContent =
+          "Survived " + wave + " waves · " + kills + " kills · " + ban + " BAN left";
+        loseOverlay.classList.remove("hidden");
+        beep(120, 0.3, "sawtooth", 0.06);
+      }
+
+      function endWin() {
+        gameOver = true;
+        won = true;
+        running = false;
+        document.getElementById("winText").textContent =
+          "All " + maxWaves + " waves cleared · " + kills + " kills · " + ban + " BAN remaining";
+        winOverlay.classList.remove("hidden");
+        beep(520, 0.1, "square", 0.05);
+        beep(660, 0.12, "square", 0.05);
+        beep(880, 0.18, "triangle", 0.05);
+      }
+
+      // Wave composition
+      function buildWave(n) {
+        var list = [];
+        var count = 6 + n * 2;
+        for (var i = 0; i < count; i++) {
+          var type = "rat";
+          if (n >= 3 && i % 4 === 0) type = "bot";
+          if (n >= 6 && i % 5 === 0) type = "whale";
+          if (n >= 10 && i % 3 === 0) type = "bot";
+          if (n >= 12 && i % 6 === 0) type = "whale";
+          list.push(type);
+        }
+        if (n % 5 === 0) list.push("boss");
+        if (n >= 15) {
+          for (var j = 0; j < 3; j++) list.push("whale");
+        }
+        return list;
+      }
+
+      function startWave() {
+        if (!running || gameOver || waveActive || wave >= maxWaves) return;
+        wave += 1;
+        spawnQueue = buildWave(wave);
+        spawnTimer = 0.3;
+        waveActive = true;
+        selectedTower = null;
+        showBanner(wave % 5 === 0 ? "BOSS WAVE " + wave : "WAVE " + wave);
+        refreshHud();
+        beep(300 + wave * 10, 0.1, "square", 0.05);
+      }
+
+      function spawnEnemy(type) {
+        var st = enemyStats(type, wave);
+        enemies.push({
+          type: type,
+          hp: st.hp,
+          maxHp: st.hp,
+          speed: st.speed,
+          baseSpeed: st.speed,
+          reward: st.reward,
+          color: st.color,
+          r: st.r,
+          icon: st.icon,
+          name: st.name,
+          pathIndex: 0,
+          x: waypoints[0].x,
+          y: waypoints[0].y,
+          slowT: 0,
+          slowMul: 1,
+          alive: true,
+          progress: 0 // for targeting furthest
+        });
+      }
+
+      function placeTower(c, r) {
+        if (!running || gameOver) return false;
+        if (!inBounds(c, r) || isPath(c, r) || towerAt(c, r)) return false;
+        var def = TOWER_DEFS[selectedType];
+        if (!def || ban < def.cost) return false;
+        ban -= def.cost;
+        var t = {
+          c: c, r: r,
+          x: c * CW + CW / 2,
+          y: r * CH + CH / 2,
+          def: def,
+          level: 1,
+          cooldown: 0,
+          angle: 0
+        };
+        towers.push(t);
+        selectedTower = t;
+        burst(t.x, t.y, def.color, 10);
+        floatText(t.x, t.y - 16, "-" + def.cost, "#f5d041");
+        beep(480, 0.06, "triangle", 0.04);
+        refreshHud();
+        return true;
+      }
+
+      function upgradeSelected() {
+        if (!selectedTower || gameOver) return;
+        var t = selectedTower;
+        if (t.level >= 3) return;
+        var cost = upgradeCost(t);
+        if (ban < cost) return;
+        ban -= cost;
+        t.level += 1;
+        burst(t.x, t.y, t.def.color, 14);
+        floatText(t.x, t.y - 18, "LV " + t.level + "!", "#a3e635");
+        beep(600, 0.08, "square", 0.045);
+        refreshHud();
+      }
+
+      function sellSelected() {
+        if (!selectedTower || gameOver) return;
+        var t = selectedTower;
+        var val = sellValue(t);
+        ban += val;
+        burst(t.x, t.y, "#f87171", 12);
+        floatText(t.x, t.y - 16, "+" + val, "#86efac");
+        towers = towers.filter(function (x) { return x !== t; });
+        selectedTower = null;
+        beep(220, 0.08, "triangle", 0.04);
+        refreshHud();
+      }
+
+      function damageEnemy(e, dmg, slowAmt) {
+        if (!e.alive) return;
+        e.hp -= dmg;
+        if (slowAmt > 0) {
+          e.slowT = Math.max(e.slowT, 1.6);
+          e.slowMul = Math.min(e.slowMul, 1 - slowAmt);
+        }
+        if (e.hp <= 0) {
+          e.alive = false;
+          e.hp = 0;
+          kills += 1;
+          ban += e.reward;
+          burst(e.x, e.y, e.color, 14);
+          floatText(e.x, e.y - 10, "+" + e.reward, "#f5d041");
+          beep(700, 0.04, "square", 0.03);
+          refreshHud();
+        }
+      }
+
+      function findTarget(tower) {
+        var range = tower.def.range * (1 + (tower.level - 1) * 0.08);
+        var best = null;
+        var bestScore = -1;
+        for (var i = 0; i < enemies.length; i++) {
+          var e = enemies[i];
+          if (!e.alive) continue;
+          var d = dist(tower.x, tower.y, e.x, e.y);
+          if (d > range) continue;
+          // Prefer furthest along path; snipers prefer high HP
+          var score = e.progress * 10;
+          if (tower.def.preferTank) score += e.hp * 0.05;
+          if (score > bestScore) {
+            bestScore = score;
+            best = e;
+          }
+        }
+        return best;
+      }
+
+      function fireTower(tower, target) {
+        var dmg = tower.def.damage * (1 + (tower.level - 1) * 0.4);
+        var ang = Math.atan2(target.y - tower.y, target.x - tower.x);
+        tower.angle = ang;
+        projectiles.push({
+          x: tower.x,
+          y: tower.y,
+          tx: target.x,
+          ty: target.y,
+          target: target,
+          speed: tower.def.projectile === "dart" ? 420 : 320,
+          damage: dmg,
+          splash: tower.def.splash * (1 + (tower.level - 1) * 0.15),
+          slow: tower.def.slow,
+          color: tower.def.color,
+          kind: tower.def.projectile,
+          dead: false
+        });
+        beep(tower.def.projectile === "shell" ? 160 : 380, 0.03, "square", 0.025);
+      }
+
+      function update(dt) {
+        animT += dt;
+        if (bannerT > 0) {
+          bannerT -= dt;
+          if (bannerT <= 0) waveBanner.classList.remove("show");
+        }
+        if (!running || gameOver) return;
+
+        // Spawning
+        if (waveActive && spawnQueue.length > 0) {
+          spawnTimer -= dt;
+          if (spawnTimer <= 0) {
+            spawnEnemy(spawnQueue.shift());
+            spawnTimer = Math.max(0.28, 0.7 - wave * 0.015);
+          }
+        }
+
+        // Enemies move
+        for (var i = enemies.length - 1; i >= 0; i--) {
+          var e = enemies[i];
+          if (!e.alive) {
+            enemies.splice(i, 1);
+            continue;
+          }
+          if (e.slowT > 0) {
+            e.slowT -= dt;
+            if (e.slowT <= 0) e.slowMul = 1;
+          }
+          var spd = e.baseSpeed * e.slowMul;
+          var wp = waypoints[e.pathIndex];
+          if (!wp) {
+            // reached end
+            e.alive = false;
+            enemies.splice(i, 1);
+            lives -= e.type === "boss" ? 5 : e.type === "whale" ? 2 : 1;
+            burst(e.x, e.y, "#f87171", 10);
+            floatText(e.x, e.y, "💥", "#f87171");
+            beep(100, 0.12, "sawtooth", 0.05);
+            refreshHud();
+            if (lives <= 0) {
+              lives = 0;
+              endLose();
+              return;
+            }
+            continue;
+          }
+          var dx = wp.x - e.x;
+          var dy = wp.y - e.y;
+          var d = Math.sqrt(dx * dx + dy * dy) || 1;
+          var step = spd * dt;
+          if (step >= d) {
+            e.x = wp.x;
+            e.y = wp.y;
+            e.pathIndex += 1;
+            e.progress = e.pathIndex;
+          } else {
+            e.x += (dx / d) * step;
+            e.y += (dy / d) * step;
+            e.progress = e.pathIndex + (1 - d / (d + step));
+          }
+        }
+
+        // Towers fire
+        for (var t = 0; t < towers.length; t++) {
+          var tower = towers[t];
+          if (tower.cooldown > 0) tower.cooldown -= dt;
+          var rate = tower.def.fireRate * (1 - (tower.level - 1) * 0.08);
+          if (tower.cooldown <= 0) {
+            var target = findTarget(tower);
+            if (target) {
+              fireTower(tower, target);
+              tower.cooldown = rate;
+            }
+          }
+        }
+
+        // Projectiles
+        for (var p = projectiles.length - 1; p >= 0; p--) {
+          var pr = projectiles[p];
+          if (pr.dead) {
+            projectiles.splice(p, 1);
+            continue;
+          }
+          // Homing lightly if target alive
+          var aimX = pr.tx, aimY = pr.ty;
+          if (pr.target && pr.target.alive) {
+            aimX = pr.target.x;
+            aimY = pr.target.y;
+          }
+          var pdx = aimX - pr.x;
+          var pdy = aimY - pr.y;
+          var pd = Math.sqrt(pdx * pdx + pdy * pdy) || 1;
+          var pstep = pr.speed * dt;
+          if (pstep >= pd) {
+            // Hit
+            pr.x = aimX;
+            pr.y = aimY;
+            if (pr.splash > 0) {
+              for (var ei = 0; ei < enemies.length; ei++) {
+                var en = enemies[ei];
+                if (!en.alive) continue;
+                if (dist(pr.x, pr.y, en.x, en.y) <= pr.splash) {
+                  var falloff = 1 - dist(pr.x, pr.y, en.x, en.y) / pr.splash * 0.4;
+                  damageEnemy(en, pr.damage * falloff, pr.slow);
+                }
+              }
+              burst(pr.x, pr.y, pr.color, 16);
+            } else {
+              if (pr.target && pr.target.alive) {
+                damageEnemy(pr.target, pr.damage, pr.slow);
+              } else {
+                // splash-less miss nearby
+                for (var ej = 0; ej < enemies.length; ej++) {
+                  if (enemies[ej].alive && dist(pr.x, pr.y, enemies[ej].x, enemies[ej].y) < 16) {
+                    damageEnemy(enemies[ej], pr.damage, pr.slow);
+                    break;
+                  }
+                }
+              }
+              burst(pr.x, pr.y, pr.color, 8);
+            }
+            pr.dead = true;
+            projectiles.splice(p, 1);
+          } else {
+            pr.x += (pdx / pd) * pstep;
+            pr.y += (pdy / pd) * pstep;
+          }
+        }
+
+        // Particles / floats
+        for (var n = particles.length - 1; n >= 0; n--) {
+          var pt = particles[n];
+          pt.age += dt;
+          pt.x += pt.vx * dt;
+          pt.y += pt.vy * dt;
+          pt.vy += 180 * dt;
+          if (pt.age >= pt.life) particles.splice(n, 1);
+        }
+        for (var f = floats.length - 1; f >= 0; f--) {
+          var fl = floats[f];
+          fl.age += dt;
+          fl.y -= 28 * dt;
+          if (fl.age >= fl.life) floats.splice(f, 1);
+        }
+
+        // Wave complete?
+        if (waveActive && spawnQueue.length === 0 && enemies.length === 0) {
+          waveActive = false;
+          ban += 15 + wave * 3;
+          floatText(canvas.width / 2, 80, "WAVE CLEAR +" + (15 + wave * 3), "#86efac");
+          showBanner("WAVE CLEAR");
+          refreshHud();
+          if (wave >= maxWaves) {
+            endWin();
+          }
+        }
+      }
+
+      // ─── Drawing ───
+      function drawGrid() {
+        for (var r = 0; r < ROWS; r++) {
+          for (var c = 0; c < COLS; c++) {
+            var x = c * CW;
+            var y = r * CH;
+            var path = isPath(c, r);
+            if (path) {
+              // Dirt path
+              var g = ctx.createLinearGradient(x, y, x + CW, y + CH);
+              g.addColorStop(0, "#3d2a14");
+              g.addColorStop(1, "#5c3d1e");
+              ctx.fillStyle = g;
+              ctx.fillRect(x, y, CW + 0.5, CH + 0.5);
+              // path stones
+              ctx.fillStyle = "rgba(0,0,0,0.15)";
+              ctx.beginPath();
+              ctx.arc(x + CW * 0.3, y + CH * 0.4, 2.5, 0, Math.PI * 2);
+              ctx.arc(x + CW * 0.7, y + CH * 0.65, 2, 0, Math.PI * 2);
+              ctx.fill();
+            } else {
+              // Jungle grass
+              var shade = ((c + r) % 2 === 0) ? "#0f2a18" : "#0c2214";
+              ctx.fillStyle = shade;
+              ctx.fillRect(x, y, CW + 0.5, CH + 0.5);
+              // tiny leaves
+              if ((c * 7 + r * 3) % 5 === 0) {
+                ctx.globalAlpha = 0.25;
+                ctx.font = "12px serif";
+                ctx.fillText("🌿", x + 8, y + 22);
+                ctx.globalAlpha = 1;
+              }
+            }
+          }
+        }
+
+        // Path edge glow
+        ctx.strokeStyle = "rgba(245, 208, 65, 0.12)";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        for (var i = 0; i < waypoints.length; i++) {
+          if (i === 0) ctx.moveTo(waypoints[i].x, waypoints[i].y);
+          else ctx.lineTo(waypoints[i].x, waypoints[i].y);
+        }
+        ctx.stroke();
+
+        // Spawn & vault markers
+        var start = waypoints[0];
+        var end = waypoints[waypoints.length - 1];
+        ctx.font = "20px serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("🚪", start.x - 6, start.y);
+        ctx.fillText("🏦", end.x, end.y);
+      }
+
+      function drawHover() {
+        if (!hoverCell || !running || gameOver) return;
+        var c = hoverCell.c, r = hoverCell.r;
+        var x = c * CW, y = r * CH;
+        var valid = !isPath(c, r) && !towerAt(c, r) && selectedType && !selectedTower;
+        var def = TOWER_DEFS[selectedType];
+        if (selectedTower) {
+          // show selected tower range
+          return;
+        }
+        if (!def) return;
+        ctx.fillStyle = valid ? "rgba(245, 208, 65, 0.2)" : "rgba(248, 113, 113, 0.25)";
+        ctx.fillRect(x + 2, y + 2, CW - 4, CH - 4);
+        if (valid) {
+          var cx = x + CW / 2, cy = y + CH / 2;
+          var range = def.range;
+          ctx.beginPath();
+          ctx.arc(cx, cy, range, 0, Math.PI * 2);
+          ctx.strokeStyle = "rgba(245, 208, 65, 0.35)";
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+          ctx.fillStyle = "rgba(245, 208, 65, 0.05)";
+          ctx.fill();
+        }
+      }
+
+      function drawTowers() {
+        for (var i = 0; i < towers.length; i++) {
+          var t = towers[i];
+          var sel = t === selectedTower;
+
+          // Range when selected
+          if (sel) {
+            var range = t.def.range * (1 + (t.level - 1) * 0.08);
+            ctx.beginPath();
+            ctx.arc(t.x, t.y, range, 0, Math.PI * 2);
+            ctx.fillStyle = "rgba(245, 208, 65, 0.07)";
+            ctx.fill();
+            ctx.strokeStyle = "rgba(245, 208, 65, 0.4)";
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+          }
+
+          // Base pad (peel-ish)
+          ctx.beginPath();
+          ctx.ellipse(t.x, t.y + 6, 16, 8, 0, 0, Math.PI * 2);
+          ctx.fillStyle = "rgba(0,0,0,0.35)";
+          ctx.fill();
+
+          ctx.beginPath();
+          ctx.arc(t.x, t.y, 15 + t.level, 0, Math.PI * 2);
+          ctx.fillStyle = "#1a1408";
+          ctx.fill();
+          ctx.strokeStyle = t.def.color;
+          ctx.lineWidth = sel ? 3 : 2;
+          ctx.stroke();
+
+          // Level pips
+          for (var lv = 0; lv < t.level; lv++) {
+            ctx.beginPath();
+            ctx.arc(t.x - 8 + lv * 8, t.y + 12, 2.5, 0, Math.PI * 2);
+            ctx.fillStyle = t.def.color;
+            ctx.fill();
+          }
+
+          // Turret direction
+          ctx.save();
+          ctx.translate(t.x, t.y);
+          ctx.rotate(t.angle);
+          ctx.fillStyle = t.def.color;
+          ctx.fillRect(4, -3, 14, 6);
+          ctx.restore();
+
+          ctx.font = (16 + t.level) + "px serif";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(t.def.icon, t.x, t.y - 1);
+        }
+      }
+
+      function drawEnemies() {
+        for (var i = 0; i < enemies.length; i++) {
+          var e = enemies[i];
+          if (!e.alive) continue;
+
+          // Shadow
+          ctx.beginPath();
+          ctx.ellipse(e.x, e.y + e.r * 0.7, e.r * 0.7, 4, 0, 0, Math.PI * 2);
+          ctx.fillStyle = "rgba(0,0,0,0.35)";
+          ctx.fill();
+
+          // Body
+          ctx.beginPath();
+          ctx.arc(e.x, e.y, e.r, 0, Math.PI * 2);
+          ctx.fillStyle = e.color;
+          ctx.fill();
+          ctx.strokeStyle = "#0a0a0a";
+          ctx.lineWidth = 2;
+          ctx.stroke();
+
+          if (e.slowT > 0) {
+            ctx.beginPath();
+            ctx.arc(e.x, e.y, e.r + 3, 0, Math.PI * 2);
+            ctx.strokeStyle = "rgba(103,232,249,0.7)";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+          }
+
+          ctx.font = e.r + 4 + "px serif";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(e.icon, e.x, e.y + 1);
+
+          // HP bar
+          var bw = e.r * 2.2;
+          var bh = 4;
+          var pct = clamp(e.hp / e.maxHp, 0, 1);
+          ctx.fillStyle = "rgba(0,0,0,0.55)";
+          ctx.fillRect(e.x - bw / 2, e.y - e.r - 10, bw, bh);
+          ctx.fillStyle = pct > 0.4 ? "#86efac" : "#f87171";
+          ctx.fillRect(e.x - bw / 2, e.y - e.r - 10, bw * pct, bh);
+        }
+      }
+
+      function drawProjectiles() {
+        for (var i = 0; i < projectiles.length; i++) {
+          var pr = projectiles[i];
+          ctx.beginPath();
+          if (pr.kind === "banana") {
+            ctx.font = "14px serif";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText("🍌", pr.x, pr.y);
+          } else if (pr.kind === "drop") {
+            ctx.fillStyle = pr.color;
+            ctx.beginPath();
+            ctx.arc(pr.x, pr.y, 5, 0, Math.PI * 2);
+            ctx.fill();
+          } else if (pr.kind === "frost") {
+            ctx.fillStyle = pr.color;
+            ctx.beginPath();
+            ctx.arc(pr.x, pr.y, 5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = "#fff";
+            ctx.lineWidth = 1;
+            ctx.stroke();
+          } else if (pr.kind === "shell") {
+            ctx.fillStyle = pr.color;
+            ctx.beginPath();
+            ctx.arc(pr.x, pr.y, 6, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = "#0a0a0a";
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+          } else {
+            ctx.fillStyle = pr.color;
+            ctx.beginPath();
+            ctx.arc(pr.x, pr.y, 3.5, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      }
+
+      function drawFX() {
+        for (var i = 0; i < particles.length; i++) {
+          var pt = particles[i];
+          var a = 1 - pt.age / pt.life;
+          ctx.globalAlpha = a;
+          ctx.fillStyle = pt.color;
+          ctx.beginPath();
+          ctx.arc(pt.x, pt.y, pt.size * a, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+        for (var f = 0; f < floats.length; f++) {
+          var fl = floats[f];
+          var fa = 1 - fl.age / fl.life;
+          ctx.globalAlpha = fa;
+          ctx.font = "700 13px Syne, system-ui, sans-serif";
+          ctx.textAlign = "center";
+          ctx.strokeStyle = "rgba(0,0,0,0.7)";
+          ctx.lineWidth = 3;
+          ctx.strokeText(fl.text, fl.x, fl.y);
+          ctx.fillStyle = fl.color;
+          ctx.fillText(fl.text, fl.x, fl.y);
+        }
+        ctx.globalAlpha = 1;
+      }
+
+      function draw() {
+        // Background vignette base
+        ctx.fillStyle = "#07140e";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        drawGrid();
+        drawHover();
+        drawTowers();
+        drawEnemies();
+        drawProjectiles();
+        drawFX();
+
+        // Subtle border inside canvas
+        ctx.strokeStyle = "rgba(245,208,65,0.15)";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(1, 1, canvas.width - 2, canvas.height - 2);
+      }
+
+      function loop(ts) {
+        if (!lastTs) lastTs = ts;
+        var dt = (ts - lastTs) / 1000;
+        lastTs = ts;
+        if (dt > 0.05) dt = 0.05;
+        update(dt);
+        draw();
+        requestAnimationFrame(loop);
+      }
+
+      // Input
+      function canvasPos(evt) {
+        var rect = canvas.getBoundingClientRect();
+        var clientX, clientY;
+        if (evt.touches && evt.touches[0]) {
+          clientX = evt.touches[0].clientX;
+          clientY = evt.touches[0].clientY;
+        } else if (evt.changedTouches && evt.changedTouches[0]) {
+          clientX = evt.changedTouches[0].clientX;
+          clientY = evt.changedTouches[0].clientY;
+        } else {
+          clientX = evt.clientX;
+          clientY = evt.clientY;
+        }
+        var x = ((clientX - rect.left) / rect.width) * canvas.width;
+        var y = ((clientY - rect.top) / rect.height) * canvas.height;
+        return { x: x, y: y, c: Math.floor(x / CW), r: Math.floor(y / CH) };
+      }
+
+      function onPointerMove(e) {
+        var p = canvasPos(e);
+        if (inBounds(p.c, p.r)) hoverCell = { c: p.c, r: p.r };
+        else hoverCell = null;
+      }
+
+      function onPointerDown(e) {
+        e.preventDefault();
+        ensureAudio();
+        if (!running || gameOver) return;
+        var p = canvasPos(e);
+        if (!inBounds(p.c, p.r)) return;
+
+        // Click existing tower?
+        var existing = towerAt(p.c, p.r);
+        if (existing) {
+          selectedTower = existing;
+          refreshHud();
+          return;
+        }
+
+        // Place new
+        if (selectedType && !isPath(p.c, p.r)) {
+          selectedTower = null;
+          placeTower(p.c, p.r);
+        } else {
+          selectedTower = null;
+          refreshHud();
+        }
+      }
+
+      canvas.addEventListener("mousemove", onPointerMove);
+      canvas.addEventListener("mousedown", onPointerDown);
+      canvas.addEventListener("touchstart", onPointerDown, { passive: false });
+      canvas.addEventListener("touchmove", function (e) {
+        e.preventDefault();
+        onPointerMove(e);
+      }, { passive: false });
+      canvas.addEventListener("mouseleave", function () { hoverCell = null; });
+
+      document.getElementById("btnStart").addEventListener("click", function () {
+        ensureAudio();
+        resetGame();
+      });
+      document.getElementById("btnWin").addEventListener("click", function () {
+        ensureAudio();
+        resetGame();
+      });
+      document.getElementById("btnLose").addEventListener("click", function () {
+        ensureAudio();
+        resetGame();
+      });
+      btnWave.addEventListener("click", function () {
+        ensureAudio();
+        startWave();
+      });
+      btnCancel.addEventListener("click", function () {
+        selectedTower = null;
+        refreshHud();
+      });
+      btnUpgrade.addEventListener("click", function () {
+        ensureAudio();
+        upgradeSelected();
+      });
+      btnSell.addEventListener("click", function () {
+        ensureAudio();
+        sellSelected();
+      });
+
+      window.addEventListener("keydown", function (e) {
+        if (e.key === " " || e.code === "Space") {
+          e.preventDefault();
+          if (!running && !gameOver) {
+            ensureAudio();
+            resetGame();
+          } else {
+            ensureAudio();
+            startWave();
+          }
+        }
+        if (e.key === "1") { selectedType = "peeler"; selectedTower = null; refreshHud(); }
+        if (e.key === "2") { selectedType = "rain"; selectedTower = null; refreshHud(); }
+        if (e.key === "3") { selectedType = "chill"; selectedTower = null; refreshHud(); }
+        if (e.key === "4") { selectedType = "cannon"; selectedTower = null; refreshHud(); }
+        if (e.key === "5") { selectedType = "sniper"; selectedTower = null; refreshHud(); }
+        if (e.key === "u" || e.key === "U") upgradeSelected();
+        if (e.key === "s" || e.key === "S") sellSelected();
+        if (e.key === "Escape") { selectedTower = null; refreshHud(); }
+      });
+
+      buildTowerButtons();
+      refreshHud();
+      // Idle draw before start
+      requestAnimationFrame(loop);
+    })();
+  </script>
+</body>
+</html>
