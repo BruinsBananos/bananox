@@ -536,11 +536,11 @@
     muted = !muted;
     var btn = document.getElementById("btnMute");
     if (btn) {
-      btn.textContent = muted ? "🔇" : "🔊";
+      btn.textContent = muted ? "Muted" : "Sound";
       btn.classList.toggle("on", muted);
       btn.title = muted ? "Unmute (M)" : "Mute (M)";
     }
-    showToast(muted ? "MUTED" : "SOUND ON");
+    showToast(muted ? "Muted" : "Sound on");
   }
   loadRecords();
   function sfxPop() { beep(520 + Math.random() * 380, 0.03, "square", 0.022); }
@@ -848,8 +848,8 @@
     }
     if (hudRoundEarn) hudRoundEarn.textContent = "Round +" + Math.floor(roundKillBan);
     if (hudStreak) {
-      hudStreak.textContent = killStreak >= 5 ? "🔥 x" + killStreak : "🔥 —";
-      hudStreak.style.opacity = killStreak >= 5 ? "1" : "0.55";
+      hudStreak.textContent = killStreak >= 5 ? "Streak x" + killStreak : "Streak —";
+      hudStreak.style.opacity = killStreak >= 5 ? "1" : "0.45";
     }
     if (hudBan) hudBan.textContent = String(Math.floor(ban));
     return n;
@@ -966,11 +966,11 @@
   function updateEventHud() {
     if (!hudEvent) return;
     if (eventT > 0 && eventKind) {
-      var names = { double: "2× BAN", slowmo: "SLOW-MO", rain: "BAN RAIN", frenzy: "FRENZY" };
-      hudEvent.textContent = "⚡ " + (names[eventKind] || "EVENT") + " " + Math.ceil(eventT) + "s";
+      var names = { double: "2× BAN", slowmo: "Slow-mo", rain: "BAN rain", frenzy: "Frenzy" };
+      hudEvent.textContent = (names[eventKind] || "Event") + " " + Math.ceil(eventT) + "s";
       hudEvent.classList.add("on");
     } else {
-      hudEvent.textContent = "⚡ —";
+      hudEvent.textContent = "Event";
       hudEvent.classList.remove("on");
     }
   }
@@ -2246,54 +2246,42 @@
   function upgradePathHtml(tOrDef, isPlaced) {
     var def = isPlaced ? tOrDef.def : tOrDef;
     var paths = isPlaced ? tOrDef.paths : [0, 0];
-    var names = def.pathNames || ["Top Path", "Bottom Path"];
+    var names = def.pathNames || ["Top", "Bottom"];
     var html = '<div class="dual-paths">';
     for (var p = 0; p < 2; p++) {
-      var lockedDeep = paths[1 - p] > 2; // other path took the deep route
-      html += '<div class="path-col' + (lockedDeep && paths[p] >= 2 ? " capped" : "") + '">';
-      html += '<div class="path-title">' + (p === 0 ? "▲ " : "▼ ") + names[p] +
-        ' <span class="path-rank">' + paths[p] + "/" + MAX_PATH + "</span></div>";
-      html += '<div class="path-nodes">';
-      for (var i = 0; i < MAX_PATH; i++) {
-        var cls = "pn";
-        var deepLocked = i >= 2 && lockedDeep;
-        if (i < paths[p]) cls += " done";
-        else if (i === paths[p] && !deepLocked) cls += " next";
-        else cls += " locked";
-        if (i >= 2) cls += " deep";
-        if (deepLocked && i >= paths[p]) cls += " cross-lock";
-        var u = def.paths[p][i];
-        html += '<div class="' + cls + '" title="' + (u ? u.name + ": " + u.desc : "") + (deepLocked && i >= paths[p] ? " (other path specialized)" : "") + '">' + (i + 1) + "</div>";
-        if (i < MAX_PATH - 1) html += '<div class="pn-line' + (i < paths[p] ? " on" : "") + '"></div>';
-      }
-      html += "</div>";
-      // list
-      for (var j = 0; j < MAX_PATH; j++) {
-        var uu = def.paths[p][j];
-        if (!uu) continue;
-        var state = j < paths[p] ? "done" : (j === paths[p] ? "next" : "locked");
-        if (j >= 2 && paths[1 - p] > 2) state = j < paths[p] ? "done" : "locked";
-        html += '<div class="path-up ' + state + '"><b>' + (j + 1) + "</b> " + uu.name +
-          "<span>" + uu.cost + "</span><small>" + uu.desc + "</small></div>";
-      }
-      if (isPlaced) {
-        var nu = nextUpgrade(tOrDef, p);
-        var can = canBuyPath(tOrDef, p) && nu && ban >= nu.cost && !gameOver;
-        var label = !nu ? "MAX" : (!canBuyPath(tOrDef, p) ? "LOCKED" : ("Buy " + nu.cost));
-        html += '<button type="button" class="btn btn-sm path-buy' + (can ? " btn-primary" : " btn-ghost") +
-          '" data-path="' + p + '"' + (can ? "" : " disabled") + ">" + label + "</button>";
+      var lockedDeep = paths[1 - p] > 2;
+      var rank = paths[p];
+      var nu = def.paths[p] && def.paths[p][rank] ? def.paths[p][rank] : null;
+      var canBuy = isPlaced && canBuyPath(tOrDef, p) && !!nu;
+      var canAfford = canBuy && ban >= nu.cost && !gameOver;
+      var capped = (lockedDeep && rank >= 2) || !nu;
+      html += '<div class="path-col' + (capped ? " capped" : "") + '">';
+      html += '<div class="path-title"><span>' + names[p] + '</span>' +
+        '<span class="path-rank">' + rank + "/" + MAX_PATH + "</span></div>";
+      if (!nu) {
+        html += '<div class="path-next maxed"><strong>Maxed</strong><small>Path complete</small></div>';
+      } else if (lockedDeep && rank >= 2) {
+        html += '<div class="path-next locked"><strong>' + nu.name + "</strong><small>Other path specialized</small></div>";
+      } else {
+        html += '<div class="path-next"><strong>' + nu.name + "</strong><small>" + nu.desc + "</small></div>";
+        if (isPlaced) {
+          html += '<button type="button" class="path-buy' + (canAfford ? " can" : "") +
+            '" data-path="' + p + '"' + (canBuy && !gameOver ? "" : " disabled") + ">" +
+            (canBuy ? (nu.cost + " BAN") : "Locked") + "</button>";
+        } else {
+          html += '<div class="path-rank" style="text-align:right">' + nu.cost + " BAN</div>";
+        }
       }
       html += "</div>";
     }
     html += "</div>";
-    if (isPlaced && paths[0] >= 3) {
-      html += '<p class="path-spec top">★ Specialized: ' + names[0] + "</p>";
-    } else if (isPlaced && paths[1] >= 3) {
-      html += '<p class="path-spec bot">★ Specialized: ' + names[1] + "</p>";
-    } else {
-      html += '<p class="path-rule">Tiers 1–2 free on both paths. Tiers 3–4: <em>one path only</em>. <kbd>Z</kbd>/<kbd>X</kbd> buy · <kbd>Tab</kbd> target.</p>';
-    }
     return html;
+  }
+
+  function setPlayingUI(on) {
+    document.body.classList.toggle("td-playing", !!on);
+    var side = document.getElementById("tdSide");
+    if (side) side.setAttribute("aria-hidden", on ? "false" : "true");
   }
 
   function buildShop(force) {
@@ -2318,12 +2306,11 @@
       b.type = "button";
       b.className = "shop-btn" + (selectedShop === d.id ? " on" : "");
       b.setAttribute("data-id", d.id);
-      var img = towerPortrait(d, 64);
       b.innerHTML =
-        '<img class="shop-art" src="' + img + '" alt="" width="48" height="48">' +
+        '<span class="shop-ico" aria-hidden="true">' + d.icon + "</span>" +
         '<span class="shop-meta"><span class="nm">' + d.name + "</span>" +
-        '<span class="role">' + d.role + "</span>" +
-        '<span class="cs">' + d.cost + " BAN</span></span>";
+        '<span class="role">' + d.role + "</span></span>" +
+        '<span class="cs">' + d.cost + "</span>";
       b.disabled = !running || gameOver || ban < d.cost;
       b.title = d.desc + " · [" + (i + 1) + "]";
       b.addEventListener("click", (function (id) {
@@ -2344,65 +2331,69 @@
       btn.classList.toggle("ready", ready);
       btn.textContent = ready ? name : name.split(" ")[0] + " " + Math.ceil(a.cd) + "s";
     }
-    label(btnAbilityStorm, "storm", "⚡ Storm");
-    label(btnAbilityFreeze, "freeze", "🧊 Cryo");
-    label(btnAbilityCash, "cash", "🪂 Drop");
-    label(btnAbilityRage, "rage", "🐵 Rage");
+    label(btnAbilityStorm, "storm", "Storm");
+    label(btnAbilityFreeze, "freeze", "Cryo");
+    label(btnAbilityCash, "cash", "Drop");
+    label(btnAbilityRage, "rage", "Rage");
     if (btnAutoWave) {
       btnAutoWave.classList.toggle("on", autoWave);
-      btnAutoWave.textContent = autoWave ? "AUTO ON" : "AUTO OFF";
+      btnAutoWave.textContent = autoWave ? "Auto on" : "Auto";
     }
     if (hudFever) {
       if (feverT > 0) {
-        hudFever.textContent = "FEVER " + Math.ceil(feverT) + "s";
+        hudFever.textContent = "Fever " + Math.ceil(feverT) + "s";
         hudFever.classList.add("on");
       } else {
-        hudFever.textContent = "FEVER";
+        hudFever.textContent = "Fever";
         hudFever.classList.remove("on");
       }
     }
   }
 
   function refreshUI() {
+    setPlayingUI(running && !gameOver);
     hudBan.textContent = String(Math.floor(ban));
     hudLives.textContent = String(Math.max(0, lives));
     hudWave.textContent = String(wave);
     if (hudWaveMax) hudWaveMax.textContent = String(MAX_WAVE);
     hudPops.textContent = String(pops);
-    if (hudInterest) hudInterest.textContent = "💰 EoR +" + interestPreview();
+    if (hudInterest) hudInterest.textContent = "Interest +" + interestPreview();
     if (hudRoundEarn) hudRoundEarn.textContent = "Round +" + Math.floor(roundKillBan);
     if (hudStreak) {
-      hudStreak.textContent = killStreak >= 5 ? "🔥 x" + killStreak : "🔥 —";
-      hudStreak.style.opacity = killStreak >= 5 ? "1" : "0.55";
+      hudStreak.textContent = killStreak >= 5 ? "Streak x" + killStreak : "Streak —";
+      hudStreak.style.opacity = killStreak >= 5 ? "1" : "0.45";
     }
     if (hudMapName) {
       var modeTag = playMode === "campaign" ? "Campaign" : DIFFS[difficulty].name;
       hudMapName.textContent = MAPS[currentMap].short + " · " + modeTag;
     }
-    buildShop();
-    refreshAbilities();
-    updateMissionUI();
+    if (running && !gameOver) {
+      buildShop();
+      refreshAbilities();
+      updateMissionUI();
+    }
+
+    if (!running || gameOver) {
+      if (btnSell) { btnSell.disabled = true; btnSell.textContent = "Sell"; }
+      if (btnWave) btnWave.disabled = true;
+      return;
+    }
 
     if (selectedTower) {
       var t = selectedTower, st = getStats(t);
-      var art = towerPortrait(t.def, 80);
       var tgt = t.target || "first";
-      var html = '<div class="sel-head"><img src="' + art + '" alt="" width="56" height="56">' +
-        "<div><strong>" + t.def.name + "</strong><br><span class='role-tag'>" + t.def.role +
-        " · " + t.paths[0] + "-" + t.paths[1] + "</span></div></div>";
-      html += '<p class="sel-desc">' + t.def.desc + "</p>";
-      if (t.def.farm) html += "<div class='sel-stats'>Income <b>" + st.income + "</b> BAN / round</div>";
+      var html = '<div class="sel-head"><span class="sel-ico" aria-hidden="true">' + t.def.icon + "</span>" +
+        "<div><strong>" + t.def.name + "</strong><br><span class='role-tag'>" +
+        t.paths[0] + "–" + t.paths[1] + " · " + t.def.role + "</span></div></div>";
+      if (t.def.farm) html += "<div class='sel-stats'>Income <b>" + st.income + "</b> / round</div>";
       else if (!t.def.support || t.def.freezePulse) {
-        html += "<div class='sel-stats'>Range <b>" + Math.floor(st.range) + "</b> · Pop <b>" + st.pop +
-          "</b> · Pierce <b>" + st.pierce + "</b>";
-        if (st.splash) html += " · Splash <b>" + Math.floor(st.splash) + "</b>";
-        if (st.multishot) html += " · Multi <b>+" + st.multishot + "</b>";
-        if (st.camo) html += " · Camo";
-        if (st.lead) html += " · Lead";
+        html += "<div class='sel-stats'><b>" + Math.floor(st.range) + "</b> range · <b>" + st.pop +
+          "</b> pop · <b>" + st.pierce + "</b> pierce";
+        if (st.camo) html += " · camo";
+        if (st.lead) html += " · lead";
         html += "</div>";
       } else html += "<div class='sel-stats'>Aura <b>" + Math.floor(st.range) + "</b>" +
         (st.income ? " · Income <b>+" + st.income + "</b>" : "") + "</div>";
-      // Targeting (BTD-style)
       if (!t.def.farm && !(t.def.support && !t.def.freezePulse)) {
         html += '<div class="target-row" role="group" aria-label="Target priority">';
         for (var tm = 0; tm < TARGET_MODES.length; tm++) {
@@ -2432,19 +2423,18 @@
       });
       if (btnUp) { btnUp.style.display = "none"; }
       btnSell.disabled = gameOver;
-      btnSell.textContent = "Sell (+" + Math.floor(spentOn(t) * 0.72) + ")";
+      btnSell.textContent = "Sell +" + Math.floor(spentOn(t) * 0.72);
     } else {
       var def = TOWER_BY_ID[selectedShop];
       if (def) {
-        var art2 = towerPortrait(def, 80);
-        selBox.innerHTML = '<div class="sel-head"><img src="' + art2 + '" alt="" width="56" height="56">' +
+        selBox.innerHTML = '<div class="sel-head"><span class="sel-ico" aria-hidden="true">' + def.icon + "</span>" +
           "<div><strong>" + def.name + "</strong><br><span class='role-tag'>" + def.role +
           " · " + def.cost + " BAN</span></div></div>" +
           '<p class="sel-desc">' + def.desc + "</p>" +
           upgradePathHtml(def, false) +
-          '<p class="sel-hint">Click grass to place · then pick Top or Bottom upgrades</p>';
+          '<p class="sel-hint">Click grass to place</p>';
       } else {
-        selBox.innerHTML = "Pick a MonKey from the shop.";
+        selBox.innerHTML = "Choose a tower from the shop.";
       }
       if (btnUp) { btnUp.style.display = "none"; btnUp.disabled = true; }
       btnSell.disabled = true; btnSell.textContent = "Sell";
@@ -2464,6 +2454,7 @@
     }
     ban = d.ban; lives = d.lives; wave = 0; pops = 0; banEarned = 0;
     running = true; paused = false; gameOver = false;
+    setPlayingUI(true);
     selectedShop = "dart"; selectedTower = null;
     towers = []; threats = []; projectiles = []; particles = []; floats = [];
     spawnQueue = []; spawnTimer = 0; waveActive = false; totalBuilt = 0; shake = 0;
@@ -2487,6 +2478,7 @@
 
   function endWin() {
     gameOver = true; running = false; paused = false;
+    setPlayingUI(false);
     if (roundOv) roundOv.classList.add("hidden");
     document.getElementById("winMsg").textContent =
       MAX_WAVE + " waves" + (playMode === "campaign" ? " campaign" : " on " + MAPS[currentMap].name) +
@@ -2514,6 +2506,7 @@
   }
   function endLose() {
     gameOver = true; running = false; waveActive = false; paused = false;
+    setPlayingUI(false);
     if (roundOv) roundOv.classList.add("hidden");
     document.getElementById("loseMsg").textContent =
       "Wave " + wave + "/" + MAX_WAVE + " on " + MAPS[currentMap].short + " · Pops " + pops +
@@ -2620,10 +2613,10 @@
   });
   document.getElementById("btnStart").addEventListener("click", function () { ensureAudio(); resetGame(); });
   document.getElementById("btnWin").addEventListener("click", function () {
-    ensureAudio(); startOv.classList.remove("hidden"); winOv.classList.add("hidden"); running = false; gameOver = false; refreshUI();
+    ensureAudio(); startOv.classList.remove("hidden"); winOv.classList.add("hidden"); running = false; gameOver = false; setPlayingUI(false); refreshUI();
   });
   document.getElementById("btnLose").addEventListener("click", function () {
-    ensureAudio(); startOv.classList.remove("hidden"); loseOv.classList.add("hidden"); running = false; gameOver = false; refreshUI();
+    ensureAudio(); startOv.classList.remove("hidden"); loseOv.classList.add("hidden"); running = false; gameOver = false; setPlayingUI(false); refreshUI();
   });
 
   if (btnAbilityStorm) btnAbilityStorm.addEventListener("click", function () { ensureAudio(); useStorm(); });
