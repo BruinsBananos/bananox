@@ -145,6 +145,29 @@
       border-color: rgba(134, 239, 172, 0.55);
       box-shadow: 0 0 12px rgba(134, 239, 172, 0.2);
     }
+    .ability-btn.on {
+      background: linear-gradient(135deg, #ffe566, #f5d041);
+      color: #1a1400;
+      border-color: transparent;
+    }
+    .fever-pill { opacity: 0.45; }
+    .fever-pill.on {
+      opacity: 1;
+      background: linear-gradient(135deg, rgba(245,208,65,0.45), rgba(251,146,60,0.35));
+      border-color: rgba(245,208,65,0.7);
+      box-shadow: 0 0 14px rgba(245,208,65,0.35);
+      animation: fever-pulse 0.6s ease-in-out infinite alternate;
+    }
+    .event-pill.on {
+      opacity: 1;
+      border-color: rgba(192,132,252,0.65);
+      color: #e9d5ff;
+      box-shadow: 0 0 12px rgba(192,132,252,0.25);
+    }
+    @keyframes fever-pulse {
+      from { transform: scale(1); }
+      to { transform: scale(1.06); }
+    }
     canvas#game {
       display: block;
       width: 100%;
@@ -412,7 +435,7 @@
   <main id="main" class="td-app">
     <div class="td-title">
       <h1>Banano TD · Epic</h1>
-      <p>Full-window battlefield · 6 maps · 150 waves · live kill bounties · end-of-round bonuses</p>
+      <p>Fever mode · random events · jackpots · auto-wave · 10× chaos · 150 waves of pure juice</p>
     </div>
 
     <div class="td-layout">
@@ -425,6 +448,8 @@
             <span class="pill">💥 <b id="hudPops">0</b></span>
             <span class="pill" id="hudRoundEarn" title="BAN earned from kills this round">Round +0</span>
             <span class="pill" id="hudStreak" title="Kill streak" style="opacity:0.55">🔥 —</span>
+            <span class="pill fever-pill" id="hudFever" title="Banana Fever — 2× bounties">FEVER</span>
+            <span class="pill event-pill" id="hudEvent" title="Active event">⚡ —</span>
             <span class="pill" id="hudInterest" title="Bank interest on round clear">💰 EoR +0</span>
             <span class="pill" id="hudMapName">Canyon</span>
           </div>
@@ -432,11 +457,14 @@
             <button type="button" class="ability-btn" id="btnAbilityStorm" title="Q — Peel Storm">⚡ Storm</button>
             <button type="button" class="ability-btn" id="btnAbilityFreeze" title="E — Cryo Rain">🧊 Cryo</button>
             <button type="button" class="ability-btn" id="btnAbilityCash" title="R — Emergency Airdrop">🪂 Drop</button>
+            <button type="button" class="ability-btn" id="btnAbilityRage" title="F — Monkey Rage">🐵 Rage</button>
+            <button type="button" class="ability-btn" id="btnAutoWave" title="Toggle auto-send waves">AUTO OFF</button>
             <span class="speed-btns">
               <button type="button" class="spd on" data-spd="1">1×</button>
               <button type="button" class="spd" data-spd="2">2×</button>
               <button type="button" class="spd" data-spd="3">3×</button>
               <button type="button" class="spd" data-spd="5">5×</button>
+              <button type="button" class="spd" data-spd="10">10×</button>
             </span>
           </div>
         </div>
@@ -457,8 +485,8 @@
           <div class="overlay-card">
             <h2>Epic Banana Defense 🍌🚀</h2>
             <p>
-              Earn BAN <strong>live</strong> from every peel, then cash a fat end-of-round bonus.
-              Six maps, 150 waves, campaign chapters, kill streaks, farms, and Starship bosses.
+              Stack kill streaks into <strong>Banana Fever</strong>, pop jackpot bananas, ride random events,
+              and nuke swarms with abilities. Live BAN on every kill + huge round bonuses.
             </p>
             <div class="setup-block">
               <div class="setup-row" style="margin-bottom:0.75rem;">
@@ -495,7 +523,10 @@
           <div class="overlay-card">
             <h2>Campaign Complete! 🚀</h2>
             <p id="winMsg">You kept the potassium flowing.</p>
-            <button type="button" class="btn btn-primary" id="btnWin">PLAY AGAIN</button>
+            <div class="climb-actions" style="display:flex;flex-wrap:wrap;gap:0.5rem;justify-content:center;">
+              <button type="button" class="btn btn-primary" id="btnEndless">ENDLESS MODE ∞</button>
+              <button type="button" class="btn btn-ghost" id="btnWin">MAIN MENU</button>
+            </div>
           </div>
         </div>
         <div class="overlay lose hidden" id="loseOv">
@@ -533,10 +564,9 @@
             <button type="button" class="btn btn-ghost btn-sm" id="btnPause">Pause (P)</button>
           </div>
           <p class="hint" style="margin-top:0.5rem;">
-            Abilities: <strong>Q</strong> Storm · <strong>E</strong> Cryo · <strong>R</strong> Drop<br>
-            Camo → Sniper / Super / Village radar / Battery<br>
-            Armor → Bomb / late Sniper / max Ice / Battery<br>
-            Hotkeys <strong>1–9</strong> shop · <strong>U</strong> up · <strong>S</strong> sell
+            <strong>Q</strong> Storm · <strong>E</strong> Cryo · <strong>R</strong> Drop · <strong>F</strong> Rage<br>
+            Streaks → Fever (2× BAN) · Jackpot bananas · Random events<br>
+            <strong>1–9</strong> shop · <strong>U</strong> up · <strong>S</strong> sell · <strong>0</strong> = 10× speed · Auto-wave
           </p>
         </div>
       </aside>

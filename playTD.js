@@ -2,8 +2,8 @@
   "use strict";
 
   // ═══════════════════════════════════════════════════════════
-  // BANANO TD — EPIC EDITION
-  // Huge map · 6 battlefields · 150 waves · live bounties · round bonuses
+  // BANANO TD — EPIC FUN EDITION
+  // Fever mode · events · auto-wave · rage · golden bananas · juice
   // ═══════════════════════════════════════════════════════════
 
   var canvas = document.getElementById("game");
@@ -26,6 +26,8 @@
   var hudMapName = document.getElementById("hudMapName");
   var hudRoundEarn = document.getElementById("hudRoundEarn");
   var hudStreak = document.getElementById("hudStreak");
+  var hudFever = document.getElementById("hudFever");
+  var hudEvent = document.getElementById("hudEvent");
   var roundOv = document.getElementById("roundOv");
   var roundSummaryEl = document.getElementById("roundSummary");
   var btnRoundContinue = document.getElementById("btnRoundContinue");
@@ -39,6 +41,8 @@
   var btnAbilityStorm = document.getElementById("btnAbilityStorm");
   var btnAbilityFreeze = document.getElementById("btnAbilityFreeze");
   var btnAbilityCash = document.getElementById("btnAbilityCash");
+  var btnAbilityRage = document.getElementById("btnAbilityRage");
+  var btnAutoWave = document.getElementById("btnAutoWave");
   var toast = document.getElementById("toast");
   var startOv = document.getElementById("startOv");
   var winOv = document.getElementById("winOv");
@@ -219,9 +223,11 @@
     gold:   { id: "gold",   name: "Golden",  next: "ripe",   r: 15, color: "#f59e0b", stroke: "#92400e", tip: "#fde68a", value: 5, speed: 72 },
     purple: { id: "purple", name: "Meme",    next: "gold",   r: 16, color: "#c084fc", stroke: "#6b21a8", tip: "#e9d5ff", value: 7, speed: 88 },
     star:   { id: "star",   name: "Cosmic",  next: "purple", r: 17, color: "#f472b6", stroke: "#9d174d", tip: "#fbcfe8", value: 9, speed: 105 },
-    zebra:  { id: "zebra",  name: "Zebra",   next: "star",   r: 18, color: "#f8fafc", stroke: "#0f172a", tip: "#e2e8f0", value: 12, speed: 96 }
+    zebra:  { id: "zebra",  name: "Zebra",   next: "star",   r: 18, color: "#f8fafc", stroke: "#0f172a", tip: "#e2e8f0", value: 12, speed: 96 },
+    // Rare jackpot banana — peels into zebra, pays absurd BAN
+    golden: { id: "golden", name: "JACKPOT", next: "zebra",  r: 20, color: "#fef08a", stroke: "#ca8a04", tip: "#fffbeb", value: 40, speed: 70 }
   };
-  var LAYER_ORDER = ["green", "ripe", "gold", "purple", "star", "zebra"];
+  var LAYER_ORDER = ["green", "ripe", "gold", "purple", "star", "zebra", "golden"];
 
   // 9 towers · 5 tiers · ranges tuned for large map
   var TOWER_DEFS = [
@@ -388,11 +394,27 @@
   var lastRoundSummary = null;
   var chapterPending = false;
 
-  // Abilities (cooldowns in seconds, charge via waves)
+  // Fun systems
+  var feverT = 0;           // double bounty + faster towers
+  var rageT = 0;            // Monkey Rage ability — attack speed
+  var eventT = 0;           // active random event timer
+  var eventKind = null;     // "double" | "slowmo" | "rain" | "frenzy"
+  var eventCd = 12;         // seconds until next event can roll
+  var autoWave = false;
+  var autoWaveDelay = 0;
+  var hitFlash = 0;         // yellow screen juice
+  var comboAnnouncer = "";
+  var comboAnnouncerT = 0;
+  var bestStreakRun = 0;
+  var goldensPopped = 0;
+  var endless = false;      // continues past MAX_WAVE
+
+  // Abilities (cooldowns in seconds)
   var abilities = {
-    storm:  { cd: 0, maxCd: 28, cost: 0, charges: 1 },
-    freeze: { cd: 0, maxCd: 24, cost: 0, charges: 1 },
-    cash:   { cd: 0, maxCd: 35, cost: 0, charges: 1 }
+    storm:  { cd: 0, maxCd: 22, cost: 0 },
+    freeze: { cd: 0, maxCd: 18, cost: 0 },
+    cash:   { cd: 0, maxCd: 28, cost: 0 },
+    rage:   { cd: 0, maxCd: 32, cost: 0 }
   };
 
   // Missions
@@ -418,11 +440,14 @@
   function sfxPop() { beep(520 + Math.random() * 380, 0.03, "square", 0.022); }
   function sfxPlace() { beep(320, 0.06, "triangle", 0.035); beep(480, 0.08, "triangle", 0.025); }
   function sfxUp() { beep(520, 0.05, "square", 0.03); beep(780, 0.1, "sine", 0.028); }
-  function sfxWave() { beep(240, 0.1, "sawtooth", 0.028); }
+  function sfxWave() { beep(240, 0.1, "sawtooth", 0.028); beep(360, 0.12, "triangle", 0.022); }
   function sfxLeak() { beep(110, 0.18, "sawtooth", 0.04); }
   function sfxWin() { beep(523, 0.1, "square", 0.03); beep(659, 0.12, "square", 0.03); beep(784, 0.22, "triangle", 0.035); }
-  function sfxBoss() { beep(80, 0.25, "sawtooth", 0.045); }
+  function sfxBoss() { beep(70, 0.3, "sawtooth", 0.05); beep(140, 0.25, "square", 0.035); beep(280, 0.2, "triangle", 0.03); }
   function sfxAbility() { beep(600, 0.08, "sine", 0.04); beep(900, 0.12, "triangle", 0.03); }
+  function sfxFever() { beep(400, 0.08, "sawtooth", 0.04); beep(600, 0.1, "square", 0.035); beep(900, 0.14, "sine", 0.03); }
+  function sfxJackpot() { beep(660, 0.08, "square", 0.05); beep(880, 0.1, "square", 0.04); beep(1320, 0.16, "triangle", 0.045); }
+  function sfxStreak(n) { beep(300 + n * 12, 0.05, "square", 0.03); if (n % 10 === 0) beep(800, 0.1, "sine", 0.035); }
 
   function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
   function dist(ax, ay, bx, by) { var dx = ax - bx, dy = ay - by; return Math.sqrt(dx * dx + dy * dy); }
@@ -542,6 +567,11 @@
       }
     }
     rof = Math.max(0.04, rof / rofMul);
+    // Epic juice: fever + rage crank attack speed
+    if (feverT > 0) rof = Math.max(0.035, rof * 0.72);
+    if (rageT > 0) rof = Math.max(0.03, rof * 0.55);
+    if (eventKind === "frenzy") rof = Math.max(0.03, rof * 0.65);
+    // Crit chance later applied in fire()
     return {
       range: range, rof: rof, pierce: pierce, pop: Math.max(0, pop),
       splash: splash, slow: Math.min(0.92, slow), camo: camo, lead: lead,
@@ -562,10 +592,13 @@
   }
 
   function killBounty(base) {
-    // Live kill payout scales with wave + streak
-    var streakMul = 1 + Math.min(0.5, killStreak * 0.02);
+    // Live kill payout scales with wave + streak + fever/events
+    var streakMul = 1 + Math.min(0.75, killStreak * 0.025);
     var waveMul = 1 + wave * 0.012;
     var mult = DIFFS[difficulty].reward * streakMul * waveMul;
+    if (feverT > 0) mult *= 2;
+    if (eventKind === "double") mult *= 2;
+    if (eventKind === "frenzy") mult *= 1.5;
     return Math.max(1, Math.floor(base * mult));
   }
 
@@ -644,9 +677,19 @@
       roundKillBan += n;
       roundKills++;
       killStreak++;
-      killStreakT = 2.8;
+      killStreakT = 3.2;
+      if (killStreak > bestStreakRun) bestStreakRun = killStreak;
       if (mission && mission.type === "streak" && waveActive) {
         missionProgress = Math.max(missionProgress, killStreak);
+      }
+      // Streak milestones → FEVER
+      if (killStreak === 15 || killStreak === 30 || killStreak === 50 || (killStreak > 0 && killStreak % 25 === 0)) {
+        triggerFever(4 + Math.min(6, Math.floor(killStreak / 15)));
+        sfxStreak(killStreak);
+        announce("STREAK x" + killStreak + "!", 1.4);
+      } else if (killStreak > 0 && killStreak % 10 === 0) {
+        sfxStreak(killStreak);
+        hitFlash = 0.12;
       }
     }
     // Always show float for kills / bonuses when position given
@@ -687,8 +730,10 @@
           else child = makeLayerThreat(childKind || "zebra", Math.max(0, th.dist - i * 6), {});
           syncThreatPos(child); threats.push(child);
         }
-        burst(th.x, th.y, th.kind === "superstarship" ? "#38bdf8" : "#fb923c", 24);
+        burst(th.x, th.y, th.kind === "superstarship" ? "#38bdf8" : "#fb923c", 28);
         floatTxt(th.x, th.y + 6, th.kind === "superstarship" ? "MEGA POP!" : "POP!", "#fff", 14);
+        hitFlash = 0.18;
+        confettiBurst();
       }
       return 0;
     }
@@ -696,11 +741,19 @@
     while (popsLeft > 0 && th.alive) {
       var L = LAYERS[th.layer];
       if (!L) { th.alive = false; break; }
+      var wasGolden = th.layer === "golden";
       var bounty = killBounty(L.value);
-      addBan(bounty, th.x, th.y - 10, { kill: true, color: L.color });
+      addBan(bounty, th.x, th.y - 10, { kill: true, color: wasGolden ? "#fef08a" : L.color, forceFloat: wasGolden, size: wasGolden ? 18 : 12 });
       pops += 1; popsLeft -= 1; sfxPop();
-      burst(th.x, th.y, L.color, 5);
+      burst(th.x, th.y, L.color, wasGolden ? 16 : 5);
       trackMission("pop", th.layer);
+      if (wasGolden) {
+        goldensPopped++;
+        sfxJackpot();
+        announce("JACKPOT BANANA!", 1.2);
+        confettiBurst();
+        hitFlash = 0.25;
+      }
       if (L.next) {
         th.layer = L.next;
         var N = LAYERS[th.layer];
@@ -711,6 +764,68 @@
       }
     }
     return popsLeft;
+  }
+
+  function triggerFever(sec) {
+    feverT = Math.max(feverT, sec);
+    sfxFever();
+    showToast("🍌 BANANA FEVER · 2× BOUNTIES");
+    hitFlash = 0.3;
+    confettiBurst();
+    if (hudFever) {
+      hudFever.classList.add("on");
+      hudFever.textContent = "FEVER!";
+    }
+  }
+
+  function announce(msg, t) {
+    comboAnnouncer = msg;
+    comboAnnouncerT = t || 1.2;
+  }
+
+  function startEvent(kind, duration) {
+    eventKind = kind;
+    eventT = duration;
+    eventCd = 18 + Math.random() * 14;
+    var labels = {
+      double: "💸 DOUBLE BOUNTY!",
+      slowmo: "🧊 SLOW-MO SWARM!",
+      rain: "🌧️ BAN RAIN!",
+      frenzy: "🐵 MONKEY FRENZY!"
+    };
+    showToast(labels[kind] || "EVENT!");
+    sfxAbility();
+    if (kind === "rain") {
+      var rain = 80 + wave * 3 + ((Math.random() * 60) | 0);
+      addBan(rain, W / 2, 100, { forceFloat: true, size: 17, color: "#86efac" });
+    }
+    if (kind === "slowmo") {
+      for (var i = 0; i < threats.length; i++) {
+        if (!threats[i].alive) continue;
+        threats[i].slowMul = Math.min(threats[i].slowMul, 0.4);
+        threats[i].freezeT = Math.max(threats[i].freezeT, duration);
+      }
+    }
+    updateEventHud();
+  }
+
+  function rollEvent() {
+    if (!waveActive || eventT > 0 || eventCd > 0) return;
+    if (Math.random() > 0.35) { eventCd = 8; return; }
+    var kinds = ["double", "slowmo", "rain", "frenzy"];
+    startEvent(kinds[(Math.random() * kinds.length) | 0], 6 + Math.random() * 4);
+  }
+
+  function updateEventHud() {
+    if (!hudEvent) return;
+    if (eventT > 0 && eventKind) {
+      var names = { double: "2× BAN", slowmo: "SLOW-MO", rain: "BAN RAIN", frenzy: "FRENZY" };
+      hudEvent.textContent = "⚡ " + (names[eventKind] || "EVENT") + " " + Math.ceil(eventT) + "s";
+      hudEvent.classList.add("on");
+    } else {
+      hudEvent.textContent = "⚡ —";
+      hudEvent.classList.remove("on");
+    }
   }
 
   function damageAt(x, y, popPower, pierce, splash, slow, canCamo, canLead) {
@@ -867,37 +982,51 @@
     if (n >= 18 && n < 70 && n % 4 === 0) {
       for (var li = 0; li < 8; li++) q.push({ t: "gold", gap: 0.38, flags: { lead: true } });
     }
+    // Jackpot bananas — rare, juicy
+    if (n >= 8 && Math.random() < 0.22 + Math.min(0.25, n * 0.002)) {
+      add("golden", 1 + (n > 40 && Math.random() < 0.35 ? 1 : 0), 1.1);
+    }
+    if (n % 15 === 0) add("golden", 2, 0.8);
     return q;
   }
 
   function startWave() {
-    if (!running || gameOver || paused || waveActive || wave >= MAX_WAVE) return;
+    if (!running || gameOver || paused || waveActive) return;
+    if (!endless && wave >= MAX_WAVE) return;
     if (chapterPending || (roundOv && !roundOv.classList.contains("hidden"))) return;
     wave += 1;
     spawnQueue = buildWave(wave);
-    spawnTimer = 0.3;
+    spawnTimer = 0.25;
     waveActive = true;
-    airdropT = 6 + Math.random() * 12;
+    airdropT = 5 + Math.random() * 10;
+    eventCd = 6 + Math.random() * 8;
     roundKillBan = 0;
     roundKills = 0;
     roundLeak = false;
-    killStreak = 0;
+    // Keep a bit of streak momentum between waves if fever
+    if (feverT <= 0) killStreak = Math.floor(killStreak * 0.35);
     if (wave % 5 === 1) rollMission();
     else if (!mission) rollMission();
 
-    var label = "WAVE " + wave + " / " + MAX_WAVE;
+    var label = "WAVE " + wave + (endless && wave > MAX_WAVE ? " ∞" : " / " + MAX_WAVE);
     if (wave === 25) label = "BOSS · MEGA BUNCH";
-    if (wave === 50) label = "STARSHIP INBOUND";
-    if (wave === 75) label = "FULL STACK ASSAULT";
-    if (wave === 100) label = "ORBITAL SIEGE";
-    if (wave === 125) label = "GAUNTLET PROTOCOL";
-    if (wave === 150) label = "FINAL · RAPTOR PROTOCOL";
-    if (playMode === "campaign") {
+    if (wave === 50) label = "🚀 STARSHIP INBOUND";
+    if (wave === 75) label = "💥 FULL STACK ASSAULT";
+    if (wave === 100) label = "☢️ ORBITAL SIEGE";
+    if (wave === 125) label = "🔥 GAUNTLET PROTOCOL";
+    if (wave === 150) label = "🚀 FINAL · RAPTOR PROTOCOL";
+    if (wave > 150) label = "ENDLESS · WAVE " + wave;
+    if (playMode === "campaign" && wave <= MAX_WAVE) {
       var ch = getChapterForWave(wave);
       if (ch) label = ch.title + " · W" + waveInChapter(wave);
     }
     showToast(label);
-    if (wave === 50 || wave === 100 || wave === 150) sfxBoss(); else sfxWave();
+    if (wave === 25 || wave === 50 || wave === 100 || wave === 150 || (wave > 0 && wave % 25 === 0)) {
+      sfxBoss();
+      shake = 0.4;
+      hitFlash = 0.2;
+      announce(wave >= 150 ? "FINAL BOSS WAVE!" : "BOSS WAVE!", 1.6);
+    } else sfxWave();
     refreshUI();
   }
 
@@ -1005,16 +1134,27 @@
     roundSummaryEl.innerHTML = html;
     roundOv.classList.remove("hidden");
     paused = true; // hold the game until continue
+    // Auto-advance for flow — still skippable with Space / button
+    setTimeout(function () {
+      if (roundOv && !roundOv.classList.contains("hidden") && running && !gameOver) {
+        dismissRoundSummary();
+      }
+    }, 2800);
   }
 
   function afterRoundSummary() {
-    if (wave >= MAX_WAVE) {
+    if (!endless && wave >= MAX_WAVE) {
+      // Offer endless feel: unlock endless and keep going if they want via win screen
       endWin();
       return;
     }
     // Campaign chapter transition every 25 waves
     if (playMode === "campaign" && wave % 25 === 0 && wave < MAX_WAVE) {
       advanceCampaignChapter();
+    }
+    // Auto-wave: short delay then next wave
+    if (autoWave && (endless || wave < MAX_WAVE)) {
+      autoWaveDelay = 0.85;
     }
   }
 
@@ -1103,40 +1243,56 @@
   // Abilities
   function useStorm() {
     if (!running || gameOver || paused || abilities.storm.cd > 0) return;
+    if (roundOv && !roundOv.classList.contains("hidden")) return;
     abilities.storm.cd = abilities.storm.maxCd;
     sfxAbility();
     showToast("⚡ PEEL STORM");
-    shake = 0.35;
+    shake = 0.45;
+    hitFlash = 0.2;
     for (var i = 0; i < threats.length; i++) {
       var th = threats[i];
       if (!th.alive) continue;
-      popLayerEntity(th, th.kind === "layer" ? 3 : 18, true);
-      burst(th.x, th.y, "#f5d041", 6);
+      popLayerEntity(th, th.kind === "layer" ? 4 : 24, true);
+      burst(th.x, th.y, "#f5d041", 8);
     }
     confettiBurst();
     refreshUI();
   }
   function useFreeze() {
     if (!running || gameOver || paused || abilities.freeze.cd > 0) return;
+    if (roundOv && !roundOv.classList.contains("hidden")) return;
     abilities.freeze.cd = abilities.freeze.maxCd;
     sfxAbility();
     showToast("🧊 CRYO RAIN");
     for (var i = 0; i < threats.length; i++) {
       if (!threats[i].alive) continue;
-      threats[i].slowMul = 0.25;
-      threats[i].freezeT = Math.max(threats[i].freezeT, 3.5);
-      burst(threats[i].x, threats[i].y, "#67e8f9", 4);
+      threats[i].slowMul = 0.2;
+      threats[i].freezeT = Math.max(threats[i].freezeT, 4.2);
+      burst(threats[i].x, threats[i].y, "#67e8f9", 5);
     }
     refreshUI();
   }
   function useCash() {
     if (!running || gameOver || paused || abilities.cash.cd > 0) return;
+    if (roundOv && !roundOv.classList.contains("hidden")) return;
     abilities.cash.cd = abilities.cash.maxCd;
     sfxAbility();
-    var drop = 180 + wave * 4 + missionsDone * 15;
-    addBan(drop, W / 2, 90);
+    var drop = 220 + wave * 6 + missionsDone * 20 + Math.floor(killStreak * 3);
+    addBan(drop, W / 2, 90, { forceFloat: true, size: 16 });
     showToast("🪂 EMERGENCY DROP +" + drop);
     confettiBurst();
+    refreshUI();
+  }
+  function useRage() {
+    if (!running || gameOver || paused || abilities.rage.cd > 0) return;
+    if (roundOv && !roundOv.classList.contains("hidden")) return;
+    abilities.rage.cd = abilities.rage.maxCd;
+    rageT = 9;
+    sfxFever();
+    showToast("🐵 MONKEY RAGE · MAX FIRE RATE");
+    hitFlash = 0.25;
+    confettiBurst();
+    announce("RAGE MODE!", 1.3);
     refreshUI();
   }
 
@@ -1164,11 +1320,18 @@
   function fire(tower, target, st) {
     var shots = 1 + (st.multishot || 0);
     var baseSpd = tower.def.boomerang ? 240 : tower.def.rail ? 680 : 420;
+    // Crit juice
+    var crit = Math.random() < (0.08 + (feverT > 0 ? 0.1 : 0) + (rageT > 0 ? 0.08 : 0));
+    var pop = st.pop + (crit ? Math.max(1, Math.ceil(st.pop * 0.5)) : 0);
+    if (crit) {
+      burst(tower.x, tower.y, "#fff", 4);
+      floatTxt(target.x, target.y - 18, "CRIT!", "#fff", 11);
+    }
     for (var s = 0; s < shots; s++) {
       var ang = Math.atan2(target.y - tower.y, target.x - tower.x) + (s - (shots - 1) / 2) * 0.1;
       tower.angle = ang;
       if (tower.def.freezePulse) {
-        damageAt(tower.x, tower.y, st.pop, 99, st.splash || st.range * 0.72, st.slow, st.camo, st.lead);
+        damageAt(tower.x, tower.y, pop, 99, st.splash || st.range * 0.72, st.slow, st.camo, st.lead);
         burst(tower.x, tower.y, "#67e8f9", 8);
         continue;
       }
@@ -1177,11 +1340,11 @@
         x: tower.x, y: tower.y,
         vx: Math.cos(ang) * baseSpd, vy: Math.sin(ang) * baseSpd,
         life: tower.def.boomerang ? 1.5 : tower.def.rail ? 0.55 : 0.9,
-        age: 0, pierceLeft: st.pierce, pop: st.pop, splash: st.splash, slow: st.slow,
-        camo: st.camo, lead: st.lead, color: tower.def.color,
+        age: 0, pierceLeft: st.pierce + (crit ? 1 : 0), pop: pop, splash: st.splash, slow: st.slow,
+        camo: st.camo, lead: st.lead, color: crit ? "#ffffff" : tower.def.color,
         boomer: !!tower.def.boomerang, rail: !!tower.def.rail,
         home: tower.def.boomerang ? { x: tower.x, y: tower.y } : null,
-        phase: 0, hitIds: {}, kind: tower.def.id, trail: []
+        phase: 0, hitIds: {}, kind: tower.def.id, trail: [], crit: crit
       });
     }
     beep(tower.def.rail ? 90 : tower.def.id === "bomb" ? 120 : 400, 0.025, "square", 0.015);
@@ -1192,15 +1355,35 @@
     if (toastT > 0) { toastT -= dt; if (toastT <= 0) toast.classList.remove("show"); }
     if (shake > 0) shake = Math.max(0, shake - dt * 2.2);
 
-    // ability CDs always tick while running
+    // ability CDs + juice timers
     if (running && !gameOver && !paused) {
-      ["storm", "freeze", "cash"].forEach(function (k) {
-        if (abilities[k].cd > 0) abilities[k].cd = Math.max(0, abilities[k].cd - dt);
+      ["storm", "freeze", "cash", "rage"].forEach(function (k) {
+        if (abilities[k] && abilities[k].cd > 0) abilities[k].cd = Math.max(0, abilities[k].cd - dt);
       });
       if (floatBanThrottle > 0) floatBanThrottle -= dt;
       if (killStreakT > 0) {
         killStreakT -= dt;
-        if (killStreakT <= 0) killStreak = 0;
+        if (killStreakT <= 0) killStreak = Math.max(0, killStreak - 5);
+      }
+      if (feverT > 0) {
+        feverT -= dt;
+        if (feverT <= 0 && hudFever) { hudFever.classList.remove("on"); hudFever.textContent = "FEVER"; }
+      }
+      if (rageT > 0) rageT -= dt;
+      if (eventT > 0) {
+        eventT -= dt;
+        if (eventT <= 0) { eventKind = null; updateEventHud(); }
+        else updateEventHud();
+      } else if (eventCd > 0) {
+        eventCd -= dt;
+      } else {
+        rollEvent();
+      }
+      if (hitFlash > 0) hitFlash = Math.max(0, hitFlash - dt);
+      if (comboAnnouncerT > 0) comboAnnouncerT -= dt;
+      if (autoWaveDelay > 0) {
+        autoWaveDelay -= dt;
+        if (autoWaveDelay <= 0 && autoWave && !waveActive && !gameOver) startWave();
       }
     }
 
@@ -1208,7 +1391,10 @@
 
     var load = threats.length + projectiles.length;
     quality = load > 120 ? 0.4 : load > 70 ? 0.65 : 1;
-    var d = dt * speed;
+    // Slow-mo event reduces effective sim speed slightly for drama
+    var speedMul = speed;
+    if (eventKind === "slowmo") speedMul = Math.max(1, speed * 0.75);
+    var d = dt * speedMul;
 
     if (waveActive && spawnQueue.length) {
       spawnTimer -= d;
@@ -1642,9 +1828,43 @@
     for (var t = 0; t < towers.length; t++) drawMonkey(towers[t]);
     for (var i = 0; i < threats.length; i++) drawThreat(threats[i]);
     drawProjectiles(); drawFX();
+
+    // Fever / rage edge glow
+    if (feverT > 0 || rageT > 0) {
+      var pulse = 0.12 + Math.sin(animT * 8) * 0.06;
+      var eg = ctx.createRadialGradient(W / 2, H / 2, H * 0.25, W / 2, H / 2, H * 0.7);
+      eg.addColorStop(0, "rgba(0,0,0,0)");
+      eg.addColorStop(1, feverT > 0 ? "rgba(245,208,65," + pulse + ")" : "rgba(244,114,182," + pulse + ")");
+      ctx.fillStyle = eg;
+      ctx.fillRect(-12, -12, W + 24, H + 24);
+    }
+
     var vig = ctx.createRadialGradient(W / 2, H / 2, H * 0.4, W / 2, H / 2, H * 0.82);
     vig.addColorStop(0, "rgba(0,0,0,0)"); vig.addColorStop(1, "rgba(0,0,0,0.3)");
     ctx.fillStyle = vig; ctx.fillRect(-12, -12, W + 24, H + 24);
+
+    // Hit flash
+    if (hitFlash > 0) {
+      ctx.fillStyle = "rgba(255,229,102," + (hitFlash * 0.45) + ")";
+      ctx.fillRect(-12, -12, W + 24, H + 24);
+    }
+
+    // Big announcer text
+    if (comboAnnouncerT > 0 && comboAnnouncer) {
+      var a = Math.min(1, comboAnnouncerT * 2);
+      ctx.save();
+      ctx.globalAlpha = a;
+      ctx.font = "800 42px Fredoka, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.strokeStyle = "rgba(0,0,0,0.55)";
+      ctx.lineWidth = 8;
+      ctx.strokeText(comboAnnouncer, W / 2, H * 0.28);
+      ctx.fillStyle = feverT > 0 ? "#ffe566" : "#fff8d6";
+      ctx.fillText(comboAnnouncer, W / 2, H * 0.28);
+      ctx.restore();
+    }
+
     ctx.setTransform(1, 0, 0, 1, 0, 0);
   }
 
@@ -1677,14 +1897,30 @@
     function label(btn, key, name) {
       if (!btn) return;
       var a = abilities[key];
-      var ready = a.cd <= 0 && running && !gameOver && !paused;
+      if (!a) return;
+      var hold = roundOv && !roundOv.classList.contains("hidden");
+      var ready = a.cd <= 0 && running && !gameOver && !paused && !hold;
       btn.disabled = !ready;
       btn.classList.toggle("ready", ready);
-      btn.textContent = ready ? name : name + " " + Math.ceil(a.cd) + "s";
+      btn.textContent = ready ? name : name.split(" ")[0] + " " + Math.ceil(a.cd) + "s";
     }
     label(btnAbilityStorm, "storm", "⚡ Storm");
     label(btnAbilityFreeze, "freeze", "🧊 Cryo");
     label(btnAbilityCash, "cash", "🪂 Drop");
+    label(btnAbilityRage, "rage", "🐵 Rage");
+    if (btnAutoWave) {
+      btnAutoWave.classList.toggle("on", autoWave);
+      btnAutoWave.textContent = autoWave ? "AUTO ON" : "AUTO OFF";
+    }
+    if (hudFever) {
+      if (feverT > 0) {
+        hudFever.textContent = "FEVER " + Math.ceil(feverT) + "s";
+        hudFever.classList.add("on");
+      } else {
+        hudFever.textContent = "FEVER";
+        hudFever.classList.remove("on");
+      }
+    }
   }
 
   function refreshUI() {
@@ -1755,7 +1991,10 @@
     missionsDone = 0; mission = null;
     roundKillBan = 0; roundKills = 0; roundLeak = false; killStreak = 0;
     chapterPending = false; lastRoundSummary = null;
-    abilities.storm.cd = 0; abilities.freeze.cd = 0; abilities.cash.cd = 0;
+    feverT = 0; rageT = 0; eventT = 0; eventKind = null; eventCd = 10;
+    autoWaveDelay = 0; hitFlash = 0; comboAnnouncerT = 0; bestStreakRun = 0; goldensPopped = 0;
+    endless = false;
+    abilities.storm.cd = 0; abilities.freeze.cd = 0; abilities.cash.cd = 0; abilities.rage.cd = 0;
     rebuildPath(); initDecor();
     startOv.classList.add("hidden"); winOv.classList.add("hidden");
     loseOv.classList.add("hidden"); pauseOv.classList.add("hidden");
@@ -1773,8 +2012,24 @@
     document.getElementById("winMsg").textContent =
       MAX_WAVE + " waves" + (playMode === "campaign" ? " campaign" : " on " + MAPS[currentMap].name) +
       " (" + DIFFS[difficulty].name + ")! Pops " + pops + " · BAN earned " + Math.floor(banEarned) +
+      " · Best streak x" + bestStreakRun + " · Jackpots " + goldensPopped +
       " · MonKeys " + totalBuilt + " · Missions " + missionsDone + ". Legendary.";
-    winOv.classList.remove("hidden"); confettiBurst(); confettiBurst(); sfxWin();
+    winOv.classList.remove("hidden");
+    var endlessBtn = document.getElementById("btnEndless");
+    if (endlessBtn) endlessBtn.classList.remove("hidden");
+    confettiBurst(); confettiBurst(); confettiBurst(); sfxWin();
+  }
+
+  function startEndless() {
+    endless = true;
+    gameOver = false;
+    running = true;
+    paused = false;
+    winOv.classList.add("hidden");
+    showToast("ENDLESS MODE · HOW FAR CAN YOU GO?");
+    confettiBurst();
+    autoWaveDelay = 1.2;
+    refreshUI();
   }
   function endLose() {
     gameOver = true; running = false; waveActive = false; paused = false;
@@ -1861,7 +2116,21 @@
   if (btnAbilityStorm) btnAbilityStorm.addEventListener("click", function () { ensureAudio(); useStorm(); });
   if (btnAbilityFreeze) btnAbilityFreeze.addEventListener("click", function () { ensureAudio(); useFreeze(); });
   if (btnAbilityCash) btnAbilityCash.addEventListener("click", function () { ensureAudio(); useCash(); });
+  if (btnAbilityRage) btnAbilityRage.addEventListener("click", function () { ensureAudio(); useRage(); });
+  if (btnAutoWave) btnAutoWave.addEventListener("click", function () {
+    autoWave = !autoWave;
+    if (btnAutoWave) {
+      btnAutoWave.classList.toggle("on", autoWave);
+      btnAutoWave.textContent = autoWave ? "AUTO ON" : "AUTO OFF";
+    }
+    if (autoWave && running && !waveActive && !gameOver && !(roundOv && !roundOv.classList.contains("hidden"))) {
+      autoWaveDelay = 0.4;
+    }
+    showToast(autoWave ? "AUTO-WAVE ON" : "AUTO-WAVE OFF");
+  });
   if (btnRoundContinue) btnRoundContinue.addEventListener("click", function () { ensureAudio(); dismissRoundSummary(); });
+  var btnEndless = document.getElementById("btnEndless");
+  if (btnEndless) btnEndless.addEventListener("click", function () { ensureAudio(); startEndless(); });
 
   document.querySelectorAll("#modePick .chip-btn").forEach(function (b) {
     b.addEventListener("click", function () {
@@ -1892,7 +2161,29 @@
     if (k === "q" || k === "Q") { ensureAudio(); useStorm(); }
     if (k === "e" || k === "E") { ensureAudio(); useFreeze(); }
     if (k === "r" || k === "R") { ensureAudio(); useCash(); }
+    if (k === "f" || k === "F") { ensureAudio(); useRage(); }
+    if (k === "a" || k === "A") {
+      if (!e.ctrlKey && !e.metaKey) {
+        // don't steal typing — only when playing
+        if (running) {
+          autoWave = !autoWave;
+          if (btnAutoWave) {
+            btnAutoWave.classList.toggle("on", autoWave);
+            btnAutoWave.textContent = autoWave ? "AUTO ON" : "AUTO OFF";
+          }
+          showToast(autoWave ? "AUTO-WAVE ON" : "AUTO-WAVE OFF");
+        }
+      }
+    }
     if (k === "Escape") { selectedTower = null; refreshUI(); }
+    // 10x speed for the chaotic
+    if (k === "0") {
+      speed = 10;
+      document.querySelectorAll(".spd").forEach(function (x) { x.classList.remove("on"); });
+      var s10 = document.querySelector('.spd[data-spd="10"]');
+      if (s10) s10.classList.add("on");
+      showToast("10× CHAOS SPEED");
+    }
     var keys = {
       "1": "dart", "2": "boomer", "3": "sniper", "4": "bomb", "5": "ice",
       "6": "farm", "7": "village", "8": "super", "9": "battery"
