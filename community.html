@@ -5,38 +5,73 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Community · Banano X</title>
   <meta name="description" content="Join the Banano community on Discord, Reddit, and X.">
+  <meta name="theme-color" content="#030806">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="favicon.svg">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Banano X">
+  <meta property="og:url" content="https://bananox.com/community.html">
+  <meta property="og:title" content="Community · Banano X">
+  <meta property="og:description" content="Join the Banano community on Discord, Reddit, and X.">
+  <meta property="og:image" content="https://bananox.com/og-image.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Community · Banano X">
+  <meta name="twitter:description" content="Join the Banano community on Discord, Reddit, and X.">
+  <meta name="twitter:image" content="https://bananox.com/og-image.jpg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <a href="#main" class="skip-link">Skip to content</a>
+
   <header class="nav">
     <div class="nav-inner">
       <a href="index.html" class="logo">
-        <span class="logo-icon" aria-hidden="true">🍌</span>
+        <img src="favicon.svg" alt="" class="logo-mark" width="36" height="36">
         <span>BANANO X</span>
       </a>
       <button class="nav-toggle" type="button" aria-label="Menu" aria-expanded="false">
         <span></span><span></span><span></span>
       </button>
       <ul class="nav-links">
-        <li><a href="play.html">Climb</a></li>
-        <li><a href="playTD.html">Defend</a></li>
-        <li><a href="facts.html">Facts</a></li>
-        <li><a href="ecosystem.html">Ecosystem</a></li>
-        <li><a href="faucets.html">Faucets</a></li>
-        <li><a href="community.html" class="active">Community</a></li>
+        <li class="has-dropdown">
+          <button type="button" class="nav-drop-btn" aria-expanded="false" aria-haspopup="true">
+            Play <span class="chev" aria-hidden="true"></span>
+          </button>
+          <ul class="nav-dropdown" role="menu">
+            <li role="none"><a role="menuitem" href="playTD.html">Defend · Banano TD</a></li>
+            <li role="none"><a role="menuitem" href="play.html">Climb · Banana Tower</a></li>
+          </ul>
+        </li>
+        <li class="has-dropdown">
+          <button type="button" class="nav-drop-btn" aria-expanded="false" aria-haspopup="true">
+            Explore <span class="chev" aria-hidden="true"></span>
+          </button>
+          <ul class="nav-dropdown" role="menu">
+            <li role="none"><a role="menuitem" href="facts.html">Facts</a></li>
+            <li role="none"><a role="menuitem" href="ecosystem.html">Ecosystem</a></li>
+            <li role="none"><a role="menuitem" href="node.html">Node</a></li>
+          </ul>
+        </li>
+        <li><a href="faucets.html">Get BAN</a></li>
+        <li><a href="community.html">Community</a></li>
       </ul>
     </div>
   </header>
 
-  <main class="page">
+  <main id="main" class="page">
     <div class="container">
       <div class="section-header reveal">
         <div class="badge" style="margin-bottom: 1rem;">The troop</div>
         <h1 class="glow-text">Join the midnight jungle</h1>
         <p>Rain Banano, share memes, run nodes, and help the canopy grow.</p>
+      </div>
+
+      <div class="quote-block reveal">
+        <blockquote>“Don’t let your memes be dreams.”</blockquote>
+        <cite>— Banano culture, forever</cite>
       </div>
 
       <div class="social-grid">
@@ -45,25 +80,38 @@
           <span class="social-name">Discord</span>
           <span class="social-desc">Live chat, rains &amp; tips</span>
         </a>
-        <a href="https://reddit.com/r/banano" target="_blank" rel="noopener" class="social-card reveal">
+        <a href="https://reddit.com/r/banano" target="_blank" rel="noopener" class="social-card reveal reveal-delay-1">
           <span class="social-icon" aria-hidden="true">🤖</span>
           <span class="social-name">Reddit</span>
           <span class="social-desc">News, memes &amp; guides</span>
         </a>
-        <a href="https://x.com/bananocoin" target="_blank" rel="noopener" class="social-card reveal">
+        <a href="https://x.com/bananocoin" target="_blank" rel="noopener" class="social-card reveal reveal-delay-2">
           <span class="social-icon" aria-hidden="true">𝕏</span>
           <span class="social-name">X / Twitter</span>
           <span class="social-desc">Announcements &amp; vibes</span>
         </a>
       </div>
 
-      <div class="card reveal" style="max-width: 520px; margin: 0 auto; text-align: center;">
-        <h3 style="margin-bottom: 0.75rem;">How monkeys hang out</h3>
-        <p>Tip strangers. Celebrate folds. Build silly tools. The jungle is what you make it — and it never sleeps.</p>
-        <div class="card-action" style="display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center;">
-          <a href="ecosystem.html" class="btn btn-ghost btn-sm">Explore tools</a>
-          <a href="playTD.html" class="btn btn-primary btn-sm">Banano TD</a>
-          <a href="play.html" class="btn btn-ghost btn-sm">Climb</a>
+      <div class="grid-2" style="max-width: 720px; margin: 0 auto 2.5rem;">
+        <article class="card reveal">
+          <div class="card-icon" aria-hidden="true">🌧️</div>
+          <h3>Rains &amp; tips</h3>
+          <p>Tip strangers. Celebrate folds. Random potassium showers are part of the culture — generosity is the meta.</p>
+        </article>
+        <article class="card reveal reveal-delay-1">
+          <div class="card-icon" aria-hidden="true">🛠️</div>
+          <h3>Build silly tools</h3>
+          <p>The jungle is what you make it. Games, bots, art, nodes — fan projects keep the canopy interesting.</p>
+        </article>
+      </div>
+
+      <div class="cta-band reveal">
+        <h3 style="font-size: clamp(1.4rem, 3vw, 1.85rem); color: var(--banana); margin-bottom: 0.65rem;">How monkeys hang out</h3>
+        <p>Tip strangers. Celebrate folds. Build silly tools. The jungle never sleeps — jump in wherever you vibe.</p>
+        <div class="hero-actions">
+          <a href="ecosystem.html" class="btn btn-ghost">Explore tools</a>
+          <a href="playTD.html" class="btn btn-primary">Banano TD</a>
+          <a href="play.html" class="btn btn-ghost">Climb</a>
         </div>
       </div>
     </div>
@@ -71,7 +119,41 @@
 
   <footer class="footer">
     <div class="container">
-      <p>Built for billions · Fan site · Official: <a href="https://banano.cc" target="_blank" rel="noopener">banano.cc</a></p>
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="index.html" class="logo">
+            <img src="favicon.svg" alt="" class="logo-mark" width="36" height="36">
+            <span>BANANO X</span>
+          </a>
+          <p>Feeless. Instant. Meme-fueled crypto. A fan site for the midnight jungle.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Play</h4>
+          <ul>
+            <li><a href="playTD.html">Banano TD</a></li>
+            <li><a href="play.html">Banana Tower</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Explore</h4>
+          <ul>
+            <li><a href="facts.html">Facts</a></li>
+            <li><a href="ecosystem.html">Ecosystem</a></li>
+            <li><a href="faucets.html">Faucets</a></li>
+            <li><a href="node.html">Node</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <ul>
+            <li><a href="community.html">Community</a></li>
+            <li><a href="https://banano.cc" target="_blank" rel="noopener">Official Banano</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>Built for billions · Fan site · Official: <a class="footer-official" href="https://banano.cc" target="_blank" rel="noopener">banano.cc</a></p>
+      </div>
     </div>
   </footer>
 

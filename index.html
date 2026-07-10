@@ -5,33 +5,63 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Banano X — Midnight Potassium</title>
   <meta name="description" content="Feeless. Instant. Meme-fueled crypto. Explore Banano wallets, faucets, games, and community.">
+  <meta name="theme-color" content="#030806">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="favicon.svg">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Banano X">
+  <meta property="og:url" content="https://bananox.com/">
+  <meta property="og:title" content="Banano X — Midnight Potassium">
+  <meta property="og:description" content="Feeless. Instant. Meme-fueled crypto. Play Banano TD, climb Banana Tower, and explore the jungle.">
+  <meta property="og:image" content="https://bananox.com/og-image.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Banano X — Midnight Potassium">
+  <meta name="twitter:description" content="Feeless. Instant. Meme-fueled crypto. Play games, grab free BAN, join the crew.">
+  <meta name="twitter:image" content="https://bananox.com/og-image.jpg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <a href="#main" class="skip-link">Skip to content</a>
+
   <header class="nav">
     <div class="nav-inner">
       <a href="index.html" class="logo">
-        <span class="logo-icon" aria-hidden="true">🍌</span>
+        <img src="favicon.svg" alt="" class="logo-mark" width="36" height="36">
         <span>BANANO X</span>
       </a>
       <button class="nav-toggle" type="button" aria-label="Menu" aria-expanded="false">
         <span></span><span></span><span></span>
       </button>
       <ul class="nav-links">
-        <li><a href="play.html">Climb</a></li>
-        <li><a href="playTD.html">Defend</a></li>
-        <li><a href="facts.html">Facts</a></li>
-        <li><a href="ecosystem.html">Ecosystem</a></li>
-        <li><a href="faucets.html">Faucets</a></li>
+        <li class="has-dropdown">
+          <button type="button" class="nav-drop-btn" aria-expanded="false" aria-haspopup="true">
+            Play <span class="chev" aria-hidden="true"></span>
+          </button>
+          <ul class="nav-dropdown" role="menu">
+            <li role="none"><a role="menuitem" href="playTD.html">Defend · Banano TD</a></li>
+            <li role="none"><a role="menuitem" href="play.html">Climb · Banana Tower</a></li>
+          </ul>
+        </li>
+        <li class="has-dropdown">
+          <button type="button" class="nav-drop-btn" aria-expanded="false" aria-haspopup="true">
+            Explore <span class="chev" aria-hidden="true"></span>
+          </button>
+          <ul class="nav-dropdown" role="menu">
+            <li role="none"><a role="menuitem" href="facts.html">Facts</a></li>
+            <li role="none"><a role="menuitem" href="ecosystem.html">Ecosystem</a></li>
+            <li role="none"><a role="menuitem" href="node.html">Node</a></li>
+          </ul>
+        </li>
+        <li><a href="faucets.html">Get BAN</a></li>
         <li><a href="community.html">Community</a></li>
       </ul>
     </div>
   </header>
 
-  <main>
+  <main id="main">
     <section class="hero">
       <div class="hero-particles" id="particles" aria-hidden="true"></div>
       <div class="hero-content">
@@ -43,7 +73,7 @@
         <p class="hero-sub">Feeless. Instant. Meme-fueled crypto thriving in the jungle shadows.</p>
         <div class="hero-actions">
           <a href="playTD.html" class="btn btn-primary btn-lg">Play Banano TD</a>
-          <a href="play.html" class="btn btn-ghost btn-lg">Banana Tower</a>
+          <a href="faucets.html" class="btn btn-ghost btn-lg">Get free BAN</a>
         </div>
       </div>
       <div class="hero-scroll" aria-hidden="true">
@@ -52,7 +82,30 @@
       </div>
     </section>
 
-    <section class="section">
+    <section class="section-tight">
+      <div class="container">
+        <div class="stats-strip reveal" role="list">
+          <div class="stat-cell" role="listitem">
+            <span class="stat-value">$0</span>
+            <span class="stat-label">Network fees</span>
+          </div>
+          <div class="stat-cell" role="listitem">
+            <span class="stat-value">&lt;1s</span>
+            <span class="stat-label">Typical settle</span>
+          </div>
+          <div class="stat-cell" role="listitem">
+            <span class="stat-value">2018</span>
+            <span class="stat-label">Fair launch</span>
+          </div>
+          <div class="stat-cell" role="listitem">
+            <span class="stat-value">∞</span>
+            <span class="stat-label">Meme energy</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" style="padding-top: 2.5rem;">
       <div class="container">
         <div class="section-header reveal">
           <h2 class="glow-text">Why Banano?</h2>
@@ -61,15 +114,15 @@
         <div class="grid-3">
           <article class="card reveal">
             <div class="card-icon" aria-hidden="true">⚡</div>
-            <h3>Instant & feeless</h3>
+            <h3>Instant &amp; feeless</h3>
             <p>DAG vines settle transfers in under a second — no gas wars, no miner tax, forever.</p>
           </article>
-          <article class="card reveal">
+          <article class="card reveal reveal-delay-1">
             <div class="card-icon" aria-hidden="true">🌱</div>
             <h3>Eco night mode</h3>
             <p>Almost no energy draw. Perfect for late-night potassium runs and guilt-free rains.</p>
           </article>
-          <article class="card reveal">
+          <article class="card reveal reveal-delay-2">
             <div class="card-icon" aria-hidden="true">😂</div>
             <h3>Meme kingdom</h3>
             <p>Fair launch, community rains, and the friendliest jokes in crypto since 2018.</p>
@@ -81,20 +134,72 @@
     <section class="section" style="padding-top: 0;">
       <div class="container">
         <div class="section-header reveal">
-          <h2>Dive deeper</h2>
-          <p>Wallets, faucets, science folding, and the crew that keeps the jungle alive.</p>
+          <h2>Play the canopy</h2>
+          <p>Two browser games baked into the site — no install, just potassium chaos.</p>
         </div>
-        <div class="grid-2">
-          <a href="ecosystem.html" class="card reveal" style="display:block;">
-            <div class="card-icon" aria-hidden="true">🗺️</div>
-            <h3>Ecosystem</h3>
-            <p>Kalium, JungleTV, Banano Miner, explorers, and the tools monkeys actually use.</p>
+        <div class="game-cards">
+          <a href="playTD.html" class="game-card game-card-td reveal">
+            <span class="badge game-tag">Tower defense</span>
+            <h3>Banano TD</h3>
+            <p>Command MonKeys. Pop layered FUD balloons. Defend the Mega Potassium Core across 40 waves.</p>
+            <div class="game-meta">
+              <span class="chip">7 towers</span>
+              <span class="chip">40 waves</span>
+              <span class="chip">Bosses</span>
+            </div>
+            <span class="btn btn-primary btn-sm">Defend now</span>
           </a>
-          <a href="community.html" class="card reveal" style="display:block;">
-            <div class="card-icon" aria-hidden="true">🐵</div>
-            <h3>Community</h3>
-            <p>Discord, Reddit, X — rain BAN, share memes, run nodes, grow the canopy.</p>
+          <a href="play.html" class="game-card reveal reveal-delay-1">
+            <span class="badge game-tag">Endless climb</span>
+            <h3>Banana Tower</h3>
+            <p>Bounce peel to peel, stack combos, and trigger Banana Rush as you climb the canopy.</p>
+            <div class="game-meta">
+              <span class="chip">Auto / manual</span>
+              <span class="chip">Power-ups</span>
+              <span class="chip">Combos</span>
+            </div>
+            <span class="btn btn-ghost btn-sm">Start climbing</span>
           </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" style="padding-top: 0;">
+      <div class="container">
+        <div class="section-header reveal">
+          <h2>Get started in 3 peels</h2>
+          <p>Wallet → free BAN → join the fun. The jungle doesn’t charge admission.</p>
+        </div>
+        <div class="steps">
+          <article class="step reveal">
+            <h3>Grab a wallet</h3>
+            <p>Install Kalium on mobile or open The Banano Stand in your browser — both are fast and free.</p>
+            <a href="ecosystem.html" class="btn btn-ghost btn-sm">See wallets</a>
+          </article>
+          <article class="step reveal reveal-delay-1">
+            <h3>Claim free BAN</h3>
+            <p>Hit a faucet or fold for science with Banano Miner. Small rains, big potassium energy.</p>
+            <a href="faucets.html" class="btn btn-ghost btn-sm">Open faucets</a>
+          </article>
+          <article class="step reveal reveal-delay-2">
+            <h3>Play &amp; hang out</h3>
+            <p>Defend the core, climb the tower, tip monkeys, and share memes with the troop.</p>
+            <a href="community.html" class="btn btn-ghost btn-sm">Meet the troop</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" style="padding-top: 0;">
+      <div class="container">
+        <div class="cta-band reveal">
+          <h2>Dive deeper into the jungle</h2>
+          <p>Tools monkeys actually use, plus Discord rains, Reddit memes, and node plans under the canopy.</p>
+          <div class="hero-actions">
+            <a href="ecosystem.html" class="btn btn-primary">Ecosystem</a>
+            <a href="community.html" class="btn btn-ghost">Community</a>
+            <a href="facts.html" class="btn btn-ghost">Facts</a>
+          </div>
         </div>
       </div>
     </section>
@@ -102,7 +207,41 @@
 
   <footer class="footer">
     <div class="container">
-      <p>Built for billions · Fan site · Official: <a href="https://banano.cc" target="_blank" rel="noopener">banano.cc</a></p>
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="index.html" class="logo">
+            <img src="favicon.svg" alt="" class="logo-mark" width="36" height="36">
+            <span>BANANO X</span>
+          </a>
+          <p>Feeless. Instant. Meme-fueled crypto. A fan site for the midnight jungle.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Play</h4>
+          <ul>
+            <li><a href="playTD.html">Banano TD</a></li>
+            <li><a href="play.html">Banana Tower</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Explore</h4>
+          <ul>
+            <li><a href="facts.html">Facts</a></li>
+            <li><a href="ecosystem.html">Ecosystem</a></li>
+            <li><a href="faucets.html">Faucets</a></li>
+            <li><a href="node.html">Node</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <ul>
+            <li><a href="community.html">Community</a></li>
+            <li><a href="https://banano.cc" target="_blank" rel="noopener">Official Banano</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>Built for billions · Fan site · Official: <a class="footer-official" href="https://banano.cc" target="_blank" rel="noopener">banano.cc</a></p>
+      </div>
     </div>
   </footer>
 

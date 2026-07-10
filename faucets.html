@@ -5,33 +5,63 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Faucets · Banano X</title>
   <meta name="description" content="Claim free Banano from faucets and earn more by folding for science.">
+  <meta name="theme-color" content="#030806">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="favicon.svg">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Banano X">
+  <meta property="og:url" content="https://bananox.com/faucets.html">
+  <meta property="og:title" content="Faucets · Banano X">
+  <meta property="og:description" content="Claim free Banano from faucets and earn more by folding for science.">
+  <meta property="og:image" content="https://bananox.com/og-image.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Faucets · Banano X">
+  <meta name="twitter:description" content="Claim free Banano from faucets and earn more by folding for science.">
+  <meta name="twitter:image" content="https://bananox.com/og-image.jpg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <a href="#main" class="skip-link">Skip to content</a>
+
   <header class="nav">
     <div class="nav-inner">
       <a href="index.html" class="logo">
-        <span class="logo-icon" aria-hidden="true">🍌</span>
+        <img src="favicon.svg" alt="" class="logo-mark" width="36" height="36">
         <span>BANANO X</span>
       </a>
       <button class="nav-toggle" type="button" aria-label="Menu" aria-expanded="false">
         <span></span><span></span><span></span>
       </button>
       <ul class="nav-links">
-        <li><a href="play.html">Climb</a></li>
-        <li><a href="playTD.html">Defend</a></li>
-        <li><a href="facts.html">Facts</a></li>
-        <li><a href="ecosystem.html">Ecosystem</a></li>
-        <li><a href="faucets.html" class="active">Faucets</a></li>
+        <li class="has-dropdown">
+          <button type="button" class="nav-drop-btn" aria-expanded="false" aria-haspopup="true">
+            Play <span class="chev" aria-hidden="true"></span>
+          </button>
+          <ul class="nav-dropdown" role="menu">
+            <li role="none"><a role="menuitem" href="playTD.html">Defend · Banano TD</a></li>
+            <li role="none"><a role="menuitem" href="play.html">Climb · Banana Tower</a></li>
+          </ul>
+        </li>
+        <li class="has-dropdown">
+          <button type="button" class="nav-drop-btn" aria-expanded="false" aria-haspopup="true">
+            Explore <span class="chev" aria-hidden="true"></span>
+          </button>
+          <ul class="nav-dropdown" role="menu">
+            <li role="none"><a role="menuitem" href="facts.html">Facts</a></li>
+            <li role="none"><a role="menuitem" href="ecosystem.html">Ecosystem</a></li>
+            <li role="none"><a role="menuitem" href="node.html">Node</a></li>
+          </ul>
+        </li>
+        <li><a href="faucets.html">Get BAN</a></li>
         <li><a href="community.html">Community</a></li>
       </ul>
     </div>
   </header>
 
-  <main class="page">
+  <main id="main" class="page">
     <div class="container">
       <div class="section-header reveal">
         <div class="badge" style="margin-bottom: 1rem;">Free potassium</div>
@@ -39,7 +69,25 @@
         <p>Start small with faucets, or earn more by folding for science. You’ll need a wallet first.</p>
       </div>
 
-      <div class="list-stack">
+      <div class="steps" style="margin-bottom: 3rem;">
+        <article class="step reveal">
+          <h3>Get a wallet address</h3>
+          <p>Kalium (mobile) or The Banano Stand (browser). Copy your BAN address before you claim.</p>
+          <a href="https://kalium.banano.cc" target="_blank" rel="noopener" class="btn btn-ghost btn-sm">Kalium</a>
+        </article>
+        <article class="step reveal reveal-delay-1">
+          <h3>Hit a faucet</h3>
+          <p>Daily drops are small but real. Rotate a few sources — the canopy loves generosity.</p>
+          <a href="#faucet-list" class="btn btn-ghost btn-sm">Jump to list</a>
+        </article>
+        <article class="step reveal reveal-delay-2">
+          <h3>Level up earnings</h3>
+          <p>Fold for science with Banano Miner when you want more than a daily sprinkle.</p>
+          <a href="https://bananominer.com" target="_blank" rel="noopener" class="btn btn-ghost btn-sm">Banano Miner</a>
+        </article>
+      </div>
+
+      <div id="faucet-list" class="list-stack">
         <div class="list-item reveal">
           <div>
             <strong>IMalFect Faucet</strong>
@@ -65,18 +113,60 @@
         </div>
       </div>
 
-      <p class="muted reveal" style="text-align: center; margin-top: 2.5rem; max-width: 28rem; margin-inline: auto;">
-        Tip: grab <a href="https://kalium.banano.cc" target="_blank" rel="noopener" style="color: var(--banana); text-decoration: underline; text-underline-offset: 3px;">Kalium</a>
-        or
-        <a href="https://thebananostand.com" target="_blank" rel="noopener" style="color: var(--banana); text-decoration: underline; text-underline-offset: 3px;">The Banano Stand</a>
-        before you claim.
-      </p>
+      <div class="cta-band reveal" style="margin-top: 3rem;">
+        <h2>Wallet ready?</h2>
+        <p>
+          Grab
+          <a href="https://kalium.banano.cc" target="_blank" rel="noopener" style="color: var(--banana); text-decoration: underline; text-underline-offset: 3px;">Kalium</a>
+          or
+          <a href="https://thebananostand.com" target="_blank" rel="noopener" style="color: var(--banana); text-decoration: underline; text-underline-offset: 3px;">The Banano Stand</a>
+          first — then come play.
+        </p>
+        <div class="hero-actions">
+          <a href="playTD.html" class="btn btn-primary">Play Banano TD</a>
+          <a href="ecosystem.html" class="btn btn-ghost">More tools</a>
+        </div>
+      </div>
     </div>
   </main>
 
   <footer class="footer">
     <div class="container">
-      <p>Built for billions · Fan site · Official: <a href="https://banano.cc" target="_blank" rel="noopener">banano.cc</a></p>
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="index.html" class="logo">
+            <img src="favicon.svg" alt="" class="logo-mark" width="36" height="36">
+            <span>BANANO X</span>
+          </a>
+          <p>Feeless. Instant. Meme-fueled crypto. A fan site for the midnight jungle.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Play</h4>
+          <ul>
+            <li><a href="playTD.html">Banano TD</a></li>
+            <li><a href="play.html">Banana Tower</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Explore</h4>
+          <ul>
+            <li><a href="facts.html">Facts</a></li>
+            <li><a href="ecosystem.html">Ecosystem</a></li>
+            <li><a href="faucets.html">Faucets</a></li>
+            <li><a href="node.html">Node</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <ul>
+            <li><a href="community.html">Community</a></li>
+            <li><a href="https://banano.cc" target="_blank" rel="noopener">Official Banano</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>Built for billions · Fan site · Official: <a class="footer-official" href="https://banano.cc" target="_blank" rel="noopener">banano.cc</a></p>
+      </div>
     </div>
   </footer>
 

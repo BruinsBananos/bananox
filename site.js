@@ -18,15 +18,88 @@
       const open = links.classList.toggle("open");
       toggle.classList.toggle("open", open);
       toggle.setAttribute("aria-expanded", open ? "true" : "false");
+      if (!open) closeAllDropdowns();
     });
+  }
 
+  // Dropdowns
+  const dropdownParents = document.querySelectorAll(".has-dropdown");
+
+  function closeAllDropdowns(except) {
+    dropdownParents.forEach((item) => {
+      if (item === except) return;
+      item.classList.remove("open");
+      const btn = item.querySelector(".nav-drop-btn");
+      if (btn) btn.setAttribute("aria-expanded", "false");
+    });
+  }
+
+  dropdownParents.forEach((item) => {
+    const btn = item.querySelector(".nav-drop-btn");
+    if (!btn) return;
+
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const willOpen = !item.classList.contains("open");
+      closeAllDropdowns(item);
+      item.classList.toggle("open", willOpen);
+      btn.setAttribute("aria-expanded", willOpen ? "true" : "false");
+    });
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest(".has-dropdown")) closeAllDropdowns();
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      closeAllDropdowns();
+      if (links && links.classList.contains("open")) {
+        links.classList.remove("open");
+        if (toggle) {
+          toggle.classList.remove("open");
+          toggle.setAttribute("aria-expanded", "false");
+          toggle.focus();
+        }
+      }
+    }
+  });
+
+  // Close mobile menu when following a real link
+  if (links) {
     links.querySelectorAll("a").forEach((a) => {
       a.addEventListener("click", () => {
         links.classList.remove("open");
-        toggle.classList.remove("open");
-        toggle.setAttribute("aria-expanded", "false");
+        if (toggle) {
+          toggle.classList.remove("open");
+          toggle.setAttribute("aria-expanded", "false");
+        }
+        closeAllDropdowns();
       });
     });
+  }
+
+  // Mark active nav item from current path
+  const path = (location.pathname.split("/").pop() || "index.html").toLowerCase();
+  const page = path === "" ? "index.html" : path;
+
+  document.querySelectorAll(".nav-links a[href]").forEach((a) => {
+    const href = (a.getAttribute("href") || "").split("/").pop().toLowerCase();
+    if (href && href === page) {
+      a.classList.add("active");
+      const parent = a.closest(".has-dropdown");
+      if (parent) {
+        const btn = parent.querySelector(".nav-drop-btn");
+        if (btn) btn.classList.add("active");
+      }
+    }
+  });
+
+  // Home: mark logo as current when on index
+  if (page === "index.html" || page === "") {
+    const logo = document.querySelector(".logo");
+    if (logo) logo.setAttribute("aria-current", "page");
   }
 
   // Scroll reveal
@@ -77,7 +150,6 @@
     setTimeout(() => el.remove(), 8000);
   }
 
-  // Gentler density than the original
   setInterval(spawnBanana, 700);
   setInterval(spawnFirefly, 400);
   for (let i = 0; i < 6; i++) spawnFirefly();

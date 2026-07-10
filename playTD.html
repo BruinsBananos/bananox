@@ -5,6 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Banano TD · Don’t Let Your Memes Be Dreams</title>
   <meta name="description" content="Bloons-style Banano tower defense — MonKeys, layered FUD balloons, potassium pops.">
+  <meta name="theme-color" content="#030806">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="favicon.svg">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Banano X">
+  <meta property="og:url" content="https://bananox.com/playTD.html">
+  <meta property="og:title" content="Banano TD · Don’t Let Your Memes Be Dreams">
+  <meta property="og:description" content="MonKeys vs FUD balloons — defend the Mega Potassium Core.">
+  <meta property="og:image" content="https://bananox.com/og-image.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Banano TD · Banano X">
+  <meta name="twitter:description" content="MonKeys vs FUD balloons — defend the Mega Potassium Core.">
+  <meta name="twitter:image" content="https://bananox.com/og-image.jpg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
@@ -218,28 +231,43 @@
   </style>
 </head>
 <body class="td-page">
+  <a href="#main" class="skip-link">Skip to content</a>
   <header class="nav">
     <div class="nav-inner">
       <a href="index.html" class="logo">
-        <span class="logo-icon" aria-hidden="true">🍌</span>
+        <img src="favicon.svg" alt="" class="logo-mark" width="36" height="36">
         <span>BANANO X</span>
       </a>
       <button class="nav-toggle" type="button" aria-label="Menu" aria-expanded="false">
         <span></span><span></span><span></span>
       </button>
       <ul class="nav-links">
-        <li><a href="play.html">Climb</a></li>
-        <li><a href="playTD.html" class="active">Defend</a></li>
-        <li><a href="facts.html">Facts</a></li>
-        <li><a href="ecosystem.html">Ecosystem</a></li>
-        <li><a href="faucets.html">Faucets</a></li>
-        <li><a href="node.html">Node</a></li>
+        <li class="has-dropdown">
+          <button type="button" class="nav-drop-btn" aria-expanded="false" aria-haspopup="true">
+            Play <span class="chev" aria-hidden="true"></span>
+          </button>
+          <ul class="nav-dropdown" role="menu">
+            <li role="none"><a role="menuitem" href="playTD.html">Defend · Banano TD</a></li>
+            <li role="none"><a role="menuitem" href="play.html">Climb · Banana Tower</a></li>
+          </ul>
+        </li>
+        <li class="has-dropdown">
+          <button type="button" class="nav-drop-btn" aria-expanded="false" aria-haspopup="true">
+            Explore <span class="chev" aria-hidden="true"></span>
+          </button>
+          <ul class="nav-dropdown" role="menu">
+            <li role="none"><a role="menuitem" href="facts.html">Facts</a></li>
+            <li role="none"><a role="menuitem" href="ecosystem.html">Ecosystem</a></li>
+            <li role="none"><a role="menuitem" href="node.html">Node</a></li>
+          </ul>
+        </li>
+        <li><a href="faucets.html">Get BAN</a></li>
         <li><a href="community.html">Community</a></li>
       </ul>
     </div>
   </header>
 
-  <div class="td-app">
+  <main id="main" class="td-app">
     <div class="td-title">
       <h1>Banano TD</h1>
       <p>Don’t let your memes be dreams — pop the FUD before it hits the Core.</p>
@@ -316,7 +344,7 @@
         </div>
       </aside>
     </div>
-  </div>
+  </main>
 
   <script src="site.js"></script>
   <script>
