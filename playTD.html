@@ -3,20 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Banano TD · Don’t Let Your Memes Be Dreams</title>
-  <meta name="description" content="Bloons-style Banano tower defense — MonKeys, layered FUD balloons, potassium pops.">
+  <title>Banano TD · Extreme Banana Defense</title>
+  <meta name="description" content="Starship-scale Banano tower defense — pop layered bananas, 5-tier MonKeys, 80 extreme waves.">
   <meta name="theme-color" content="#030806">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="favicon.svg">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Banano X">
   <meta property="og:url" content="https://bananox.com/playTD.html">
-  <meta property="og:title" content="Banano TD · Don’t Let Your Memes Be Dreams">
-  <meta property="og:description" content="MonKeys vs FUD balloons — defend the Mega Potassium Core.">
+  <meta property="og:title" content="Banano TD · Extreme Banana Defense">
+  <meta property="og:description" content="Pop layered bananas. 5-tier MonKeys. 80-wave Starship campaign.">
   <meta property="og:image" content="https://bananox.com/og-image.jpg">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Banano TD · Banano X">
-  <meta name="twitter:description" content="MonKeys vs FUD balloons — defend the Mega Potassium Core.">
+  <meta name="twitter:description" content="Pop layered bananas. 5-tier MonKeys. 80-wave Starship campaign.">
   <meta name="twitter:image" content="https://bananox.com/og-image.jpg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -137,6 +137,14 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 0.4rem;
+      max-height: 280px;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+    .shop::-webkit-scrollbar { width: 6px; }
+    .shop::-webkit-scrollbar-thumb {
+      background: rgba(245,208,65,0.35);
+      border-radius: 4px;
     }
     .shop-btn {
       border: 2px solid rgba(245,208,65,0.25);
@@ -269,39 +277,41 @@
 
   <main id="main" class="td-app">
     <div class="td-title">
-      <h1>Banano TD</h1>
-      <p>Don’t let your memes be dreams — pop the FUD before it hits the Core.</p>
+      <h1>Banano TD · Extreme</h1>
+      <p>Pop layered bananas. Climb 5-tier upgrade paths. Survive 80 Starship-scale waves.</p>
     </div>
 
     <div class="td-layout">
       <div class="td-stage-wrap" id="stage">
         <div class="td-hud">
-          <span class="pill">🍌 BAN <b id="hudBan">650</b></span>
-          <span class="pill">❤️ Potassium <b id="hudLives">200</b></span>
-          <span class="pill">🌊 Wave <b id="hudWave">0</b>/40</span>
+          <span class="pill">🍌 BAN <b id="hudBan">750</b></span>
+          <span class="pill">❤️ Potassium <b id="hudLives">250</b></span>
+          <span class="pill">🌊 Wave <b id="hudWave">0</b>/<span id="hudWaveMax">80</span></span>
           <span class="pill">💥 Pops <b id="hudPops">0</b></span>
           <span class="speed-btns">
             <button type="button" class="spd on" data-spd="1">1×</button>
             <button type="button" class="spd" data-spd="2">2×</button>
             <button type="button" class="spd" data-spd="3">3×</button>
+            <button type="button" class="spd" data-spd="5">5×</button>
           </span>
         </div>
-        <canvas id="game" width="840" height="520" aria-label="Banano TD map"></canvas>
+        <canvas id="game" width="840" height="520" aria-label="Banano TD banana defense map"></canvas>
         <div class="wave-toast" id="toast">WAVE 1</div>
 
         <div class="overlay" id="startOv">
           <div>
             <h2>Defend the Mega Potassium Core! 🍌</h2>
             <p>
-              Place MonKeys along the jungle path. Pop every FUD balloon layer.
-              Earn BAN, upgrade, and don’t let the memes die.
+              Place MonKeys on jungle grass. Peel layered bananas before they hit the Core.
+              Camo ghosts need vision. Armor plating needs bombs, snipers, or the Starship Battery.
+              Five tiers per tower — go full Raptor path.
             </p>
             <button type="button" class="btn btn-primary" id="btnStart">START DEFENSE</button>
           </div>
         </div>
         <div class="overlay hidden" id="winOv">
           <div>
-            <h2>Memes Secured! 👑</h2>
+            <h2>Starship Cleared! 🚀</h2>
             <p id="winMsg">You kept the potassium flowing.</p>
             <button type="button" class="btn btn-primary" id="btnWin">PLAY AGAIN</button>
           </div>
@@ -309,7 +319,7 @@
         <div class="overlay lose hidden" id="loseOv">
           <div>
             <h2>Core Drained… 💀</h2>
-            <p id="loseMsg">The FUD got through. Rebuild and try again!</p>
+            <p id="loseMsg">The bananas got through. Rebuild and try again!</p>
             <button type="button" class="btn btn-primary" id="btnLose">RETRY</button>
           </div>
         </div>
@@ -337,9 +347,9 @@
             <button type="button" class="btn btn-ghost btn-sm" id="btnPause">Pause (P)</button>
           </div>
           <p class="hint" style="margin-top:0.55rem;">
-            Camo FUD needs Sniper / Super / upgraded eyes.<br>
-            Lead Scams need bombs or sniper lead-pop.<br>
-            Hotkeys 1–7 shop · Esc deselect
+            Camo bananas need Sniper / Super / Village radar / Battery.<br>
+            Armored bananas need Bomb, late Sniper, Ice max, or Battery.<br>
+            Hotkeys 1–8 shop · U upgrade · S sell · Esc deselect · 5× speed for grind
           </p>
         </div>
       </aside>
