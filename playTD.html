@@ -534,7 +534,9 @@
       animation: menu-card-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
     }
     #startOv .overlay-card {
-      max-width: 440px;
+      max-width: min(480px, 96vw);
+      max-height: min(92vh, 920px);
+      overflow-y: auto;
       padding: 2.5rem 2rem 2rem;
     }
     @keyframes menu-card-in {
@@ -614,6 +616,10 @@
       border-radius: 14px;
       background: rgba(0, 0, 0, 0.28);
       border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    #modePick .chip-btn {
+      flex: 1 1 calc(50% - 0.35rem);
+      min-width: 0;
     }
     .map-grid {
       display: grid;
@@ -697,6 +703,241 @@
       font-size: 0.75rem;
       color: rgba(232, 245, 216, 0.32);
       letter-spacing: 0.01em;
+    }
+    .mode-desc {
+      margin: 0.45rem 0 0;
+      font-size: 0.78rem;
+      color: rgba(232, 245, 216, 0.45);
+      line-height: 1.35;
+      letter-spacing: -0.01em;
+    }
+    .td-save-status {
+      margin: 0.35rem 0 0;
+      min-height: 1.1em;
+      font-size: 0.72rem;
+      color: rgba(134, 239, 172, 0.75);
+      letter-spacing: 0.02em;
+    }
+    .td-save-status.flash {
+      color: #86efac;
+    }
+    .td-save-status.warn {
+      color: rgba(252, 165, 165, 0.9);
+    }
+    .progress-tools {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      justify-content: center;
+      margin-top: 0.85rem;
+    }
+    .prog-btn {
+      font-family: Fredoka, system-ui, sans-serif;
+      font-size: 0.72rem;
+      font-weight: 500;
+      padding: 0.4rem 0.75rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.05);
+      color: rgba(232, 245, 216, 0.65);
+      cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+    .prog-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff8d6;
+    }
+    .prog-btn.danger:hover {
+      background: rgba(248, 113, 113, 0.15);
+      color: #fca5a5;
+      border-color: rgba(248, 113, 113, 0.3);
+    }
+    /* ── Meta hub: progress / badges / leaderboard ── */
+    .menu-hub {
+      margin: 0.65rem 0 0.15rem;
+      padding: 0.7rem 0.75rem;
+      border-radius: 16px;
+      background: rgba(0, 0, 0, 0.28);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      text-align: left;
+    }
+    .hub-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem 0.75rem;
+      font-size: 0.72rem;
+      color: rgba(232, 245, 216, 0.55);
+      margin-bottom: 0.45rem;
+    }
+    .hub-stats b {
+      color: #f5d041;
+      font-family: Fredoka, system-ui, sans-serif;
+      font-weight: 600;
+    }
+    .hub-next {
+      font-size: 0.78rem;
+      color: rgba(232, 245, 216, 0.78);
+      line-height: 1.35;
+      margin: 0 0 0.55rem;
+    }
+    .hub-next span {
+      color: #86efac;
+      font-weight: 600;
+    }
+    .hub-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
+    .hub-tab {
+      font-family: Fredoka, system-ui, sans-serif;
+      font-size: 0.72rem;
+      font-weight: 500;
+      padding: 0.38rem 0.7rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.05);
+      color: rgba(232, 245, 216, 0.7);
+      cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    }
+    .hub-tab:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff8d6;
+    }
+    .hub-tab.on {
+      background: rgba(245, 208, 65, 0.18);
+      border-color: rgba(245, 208, 65, 0.45);
+      color: #ffe566;
+    }
+    .hub-panel {
+      margin-top: 0.55rem;
+      max-height: 11.5rem;
+      overflow-y: auto;
+      padding-right: 0.15rem;
+    }
+    .hub-panel.hidden { display: none; }
+    .badge-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(7.2rem, 1fr));
+      gap: 0.4rem;
+    }
+    .badge-card {
+      border-radius: 12px;
+      padding: 0.45rem 0.4rem;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      text-align: center;
+      min-height: 4.2rem;
+    }
+    .badge-card.on {
+      background: rgba(134, 239, 172, 0.08);
+      border-color: rgba(134, 239, 172, 0.28);
+    }
+    .badge-card .b-ico {
+      font-size: 1.15rem;
+      line-height: 1.2;
+      filter: grayscale(1);
+      opacity: 0.35;
+    }
+    .badge-card.on .b-ico {
+      filter: none;
+      opacity: 1;
+    }
+    .badge-card .b-name {
+      font-family: Fredoka, system-ui, sans-serif;
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: rgba(232, 245, 216, 0.45);
+      margin-top: 0.15rem;
+    }
+    .badge-card.on .b-name { color: #fff8d6; }
+    .badge-card .b-desc {
+      font-size: 0.62rem;
+      color: rgba(232, 245, 216, 0.32);
+      line-height: 1.25;
+      margin-top: 0.1rem;
+    }
+    .badge-card.on .b-desc { color: rgba(232, 245, 216, 0.5); }
+    .lb-list { display: flex; flex-direction: column; gap: 0.3rem; }
+    .lb-row {
+      display: grid;
+      grid-template-columns: 1.4rem 1fr auto;
+      gap: 0.4rem;
+      align-items: center;
+      padding: 0.4rem 0.5rem;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.04);
+      font-size: 0.72rem;
+      color: rgba(232, 245, 216, 0.7);
+    }
+    .lb-row .rank {
+      font-family: Fredoka, system-ui, sans-serif;
+      color: rgba(245, 208, 65, 0.75);
+      font-weight: 600;
+    }
+    .lb-row .score {
+      font-family: Fredoka, system-ui, sans-serif;
+      color: #f5d041;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .lb-row .meta {
+      font-size: 0.65rem;
+      color: rgba(232, 245, 216, 0.4);
+    }
+    .lb-empty, .hub-empty {
+      text-align: center;
+      font-size: 0.75rem;
+      color: rgba(232, 245, 216, 0.4);
+      padding: 0.75rem 0.4rem;
+    }
+    .map-card .map-stars {
+      display: block;
+      font-size: 0.62rem;
+      letter-spacing: 0.06em;
+      color: rgba(245, 208, 65, 0.85);
+      margin-top: 0.1rem;
+      min-height: 0.9em;
+    }
+    .badge-toast {
+      position: absolute;
+      left: 50%;
+      bottom: 12%;
+      transform: translateX(-50%) translateY(12px);
+      z-index: 12;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      padding: 0.55rem 0.95rem;
+      border-radius: 999px;
+      background: rgba(8, 24, 16, 0.92);
+      border: 1px solid rgba(134, 239, 172, 0.45);
+      box-shadow: 0 10px 32px rgba(0, 0, 0, 0.4);
+      color: #fff8d6;
+      font-family: Fredoka, system-ui, sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      white-space: nowrap;
+      max-width: 92%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .badge-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    .run-score-line {
+      margin: 0.35rem 0 0.15rem;
+      font-family: Fredoka, system-ui, sans-serif;
+      font-size: 0.95rem;
+      color: #f5d041;
+    }
+    .run-badges-line {
+      margin: 0.2rem 0 0.6rem;
+      font-size: 0.78rem;
+      color: rgba(134, 239, 172, 0.9);
+      min-height: 1.1em;
     }
     .overlay .btn { min-width: 10rem; }
     .wave-toast {
@@ -861,15 +1102,30 @@
               <h1 class="menu-title">Banano TD</h1>
               <p class="menu-tagline">Pop bananas. Defend the Core.</p>
               <p class="td-records hidden" id="tdRecords"></p>
+              <p class="td-save-status" id="tdSaveStatus" aria-live="polite"></p>
+            </div>
+
+            <div class="menu-hub" id="menuHub">
+              <div class="hub-stats" id="hubStats"></div>
+              <p class="hub-next" id="hubNext">Next goal: <span>Play your first run</span></p>
+              <div class="hub-tabs" role="tablist">
+                <button type="button" class="hub-tab on" data-hub="badges" role="tab" aria-selected="true">Badges</button>
+                <button type="button" class="hub-tab" data-hub="board" role="tab" aria-selected="false">Leaderboard</button>
+              </div>
+              <div class="hub-panel" id="hubBadges" role="tabpanel"></div>
+              <div class="hub-panel hidden" id="hubBoard" role="tabpanel"></div>
             </div>
 
             <div class="setup-block">
               <div class="setup-row">
                 <label>Mode</label>
                 <div class="chip-row" id="modePick">
-                  <button type="button" class="chip-btn on" data-mode="skirmish">Skirmish</button>
-                  <button type="button" class="chip-btn" data-mode="campaign">Campaign</button>
+                  <button type="button" class="chip-btn on" data-mode="classic">Classic</button>
+                  <button type="button" class="chip-btn" data-mode="tour">World Tour</button>
+                  <button type="button" class="chip-btn" data-mode="rush">Fever Rush</button>
+                  <button type="button" class="chip-btn" data-mode="party">Party</button>
                 </div>
+                <p class="mode-desc" id="modeDesc">One map. 150 waves. Pure tower defense.</p>
               </div>
               <div class="setup-row">
                 <label>Map</label>
@@ -893,13 +1149,21 @@
             </div>
 
             <button type="button" class="btn btn-primary menu-cta" id="btnStart">Play</button>
-            <p class="menu-footnote">Place on grass · Space starts a wave</p>
+            <div class="progress-tools">
+              <button type="button" class="prog-btn" id="btnExportProgress" title="Download a backup JSON file">Export</button>
+              <button type="button" class="prog-btn" id="btnImportProgress" title="Import progress from a file">Import</button>
+              <button type="button" class="prog-btn danger" id="btnResetProgress" title="Wipe all saved progress">Reset</button>
+              <input type="file" id="tdImportFile" accept="application/json,.json" hidden>
+            </div>
+            <p class="menu-footnote">Place on grass · Space starts a wave · Progress, badges &amp; scores save on this device</p>
           </div>
         </div>
         <div class="overlay hidden" id="winOv">
           <div class="overlay-card">
             <h2>Complete</h2>
             <p id="winMsg">You kept the potassium flowing.</p>
+            <p class="run-score-line" id="winScore"></p>
+            <p class="run-badges-line" id="winBadges"></p>
             <div class="climb-actions" style="display:flex;flex-wrap:wrap;gap:0.55rem;justify-content:center;">
               <button type="button" class="btn btn-primary" id="btnEndless">Endless</button>
               <button type="button" class="btn btn-ghost" id="btnWin">Menu</button>
@@ -910,9 +1174,12 @@
           <div class="overlay-card">
             <h2>Core drained</h2>
             <p id="loseMsg">The bananas got through. Rebuild and try again.</p>
-            <button type="button" class="btn btn-primary" id="btnLose">Retry</button>
+            <p class="run-score-line" id="loseScore"></p>
+            <p class="run-badges-line" id="loseBadges"></p>
+            <button type="button" class="btn btn-primary" id="btnLose">Menu</button>
           </div>
         </div>
+        <div class="badge-toast" id="badgeToast" aria-live="polite"></div>
         <div class="overlay hidden" id="pauseOv">
           <div class="overlay-card">
             <h2>Paused</h2>

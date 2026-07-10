@@ -177,17 +177,36 @@
     }
   };
 
-  // Campaign chapters (map progression)
-  var CHAPTERS = [
-    { map: "canyon",  waves: 25, title: "Ch.1 · Jungle Approach" },
-    { map: "helix",   waves: 25, title: "Ch.2 · Double Helix" },
-    { map: "spiral",  waves: 25, title: "Ch.3 · Peel Spiral" },
-    { map: "fork",    waves: 25, title: "Ch.4 · Twin Fork" },
-    { map: "runway",  waves: 25, title: "Ch.5 · Starship Runway" },
-    { map: "gauntlet", waves: 25, title: "Ch.6 · Gauntlet Finale" }
-  ];
-  var playMode = "skirmish"; // skirmish | campaign
-  var campaignChapter = 0;
+  // ── Game modes (fun first — no more full campaign wipes) ──
+  var TOUR_ROUTE = ["canyon", "helix", "spiral", "fork", "runway", "gauntlet"];
+  var MODES = {
+    classic: {
+      name: "Classic", short: "Classic",
+      tagline: "One map. 150 waves. Pure tower defense.",
+      waves: 150, dens: 1, ban: 1, startBan: 0,
+      pickMap: true, tour: false, eventScale: 1, jackpot: 1
+    },
+    tour: {
+      name: "World Tour", short: "Tour",
+      tagline: "Maps rotate every 20 waves — MonKeys relocate, upgrades stay.",
+      waves: 120, dens: 1.08, ban: 1.18, startBan: 150,
+      pickMap: false, tour: true, tourEvery: 20, eventScale: 0.9, jackpot: 1.15
+    },
+    rush: {
+      name: "Fever Rush", short: "Rush",
+      tagline: "80 dense waves, fat bounties, free Fever to start. Go loud.",
+      waves: 80, dens: 1.42, ban: 1.55, startBan: 300,
+      pickMap: true, tour: false, eventScale: 0.75, jackpot: 1.9, feverStart: 12
+    },
+    party: {
+      name: "Party", short: "Party",
+      tagline: "Events on loop. Jackpots rain. 100 waves of pure juice.",
+      waves: 100, dens: 1.22, ban: 1.35, startBan: 200,
+      pickMap: true, tour: false, eventScale: 0.4, jackpot: 1.7
+    }
+  };
+  var playMode = "classic";
+  var tourStop = 0;
 
   var pathSet = {};
   var PATH_CELLS = [];
@@ -428,6 +447,16 @@
   var MAX_PATH = 4; // upgrades per path (BTD-style)
   var MAX_WAVE = 150;
 
+  function getMode() {
+    return MODES[playMode] || MODES.classic;
+  }
+  function syncWaveCap() {
+    MAX_WAVE = endless ? 99999 : (getMode().waves || 150);
+  }
+  function modeEventCdBase() {
+    return (6 + Math.random() * 8) * (getMode().eventScale || 1);
+  }
+
   // Difficulty
   var DIFFS = {
     normal:   { name: "Normal",   ban: 900, lives: 300, scale: 1,    dens: 1,    reward: 1 },
@@ -480,7 +509,994 @@
   var goldensPopped = 0;
   var endless = false;      // continues past MAX_WAVE
   var muted = false;
-  var records = { bestWave: 0, bestStreak: 0, bestPops: 0, games: 0 };
+  // ─────────────────────────────────────────────────────────────
+  // ProgressSave — guest local progress (localStorage only)
+  // Public API: loadRecords, saveRecords, exportProgress, importProgress,
+  //             resetProgress, getProgressSummary, checkBadges, computeRunScore
+  //
+  // Storage keys:
+  //   bananox_td_v1      — primary JSON blob
+  //   bananox_td_v1.bak  — previous good copy (dual-slot safety)
+  //
+  // Schema (schemaVersion 3):
+  //   schemaVersion, updatedAt, lastPlayedAt, lastMapId, lastMode, lastDifficulty
+  //   records: { bestWave, bestStreak, bestPops, games, goldens, missions, bestScore }
+  //   maps:    { [mapId]: { bestWave, bestStreak, clears, bestScore } }
+  //   modes:   { [modeId]: { bestWave, wins, plays, bestScore } }
+  //   badges:  { [badgeId]: unlockedAtMs }
+  //   leaderboard: [{ score, wave, pops, mode, map, difficulty, won, at }]  (top 20 local)
+  //   stats:   { abilityUses, perfectWaves, totalWins, totalPops }
+  //   unlockedMaps, settings: { muted, autoWave }
+  //
+  // NOT saved: mid-wave entities, live BAN/lives of an active run (session only).
+  // Cloud accounts can later sync this same JSON blob.
+  // ─────────────────────────────────────────────────────────────
+  var SAVE_KEY = "bananox_td_v1";
+  var SAVE_BAK = "bananox_td_v1.bak";
+  var SAVE_SCHEMA = 3;
+  var LB_MAX = 20;
+  var saveTimer = null;
+  var lastSavedAt = 0;
+  var saveFlashT = 0;
+  var storageOk = true;
+
+  var records = {
+    bestWave: 0, bestStreak: 0, bestPops: 0, games: 0,
+    goldens: 0, missions: 0, bestScore: 0
+  };
+  var mapRecords = {};   // mapId -> { bestWave, bestStreak, clears, bestScore }
+  var modeRecords = {};  // modeId -> { bestWave, wins, plays, bestScore }
+  var badgesUnlocked = {}; // badgeId -> timestamp
+  var leaderboard = [];  // top local scores
+  var metaStats = { abilityUses: 0, perfectWaves: 0, totalWins: 0, totalPops: 0 };
+  var unlockedMaps = ["canyon", "helix", "spiral", "fork", "runway", "gauntlet"];
+  var progressMeta = {
+    lastMapId: "canyon",
+    lastMode: "classic",
+    lastDifficulty: "normal",
+    lastPlayedAt: 0,
+    updatedAt: 0
+  };
+  // Per-run meta (not all persisted mid-run; finalized on end)
+  var runPerfectWaves = 0;
+  var runAbilityUses = 0;
+  var runBadgeQueue = [];
+  var badgeToastT = 0;
+  var lastRunScore = 0;
+  var lastRunBadges = []; // badges earned this run (persist until next resetGame)
+
+  function defaultProgress() {
+    return {
+      schemaVersion: SAVE_SCHEMA,
+      updatedAt: 0,
+      lastPlayedAt: 0,
+      lastMapId: "canyon",
+      lastMode: "classic",
+      lastDifficulty: "normal",
+      records: {
+        bestWave: 0, bestStreak: 0, bestPops: 0, games: 0,
+        goldens: 0, missions: 0, bestScore: 0
+      },
+      maps: {},
+      modes: {},
+      badges: {},
+      leaderboard: [],
+      stats: { abilityUses: 0, perfectWaves: 0, totalWins: 0, totalPops: 0 },
+      unlockedMaps: ["canyon", "helix", "spiral", "fork", "runway", "gauntlet"],
+      settings: { muted: false, autoWave: false }
+    };
+  }
+
+  function safeInt(v, d) {
+    var n = parseInt(v, 10);
+    return isFinite(n) ? n : (d || 0);
+  }
+
+  function migrateProgress(raw) {
+    // v1: flat { bestWave, bestStreak, bestPops, games }
+    if (!raw || typeof raw !== "object") return defaultProgress();
+    if (!raw.schemaVersion || raw.schemaVersion < 2) {
+      var d = defaultProgress();
+      d.records.bestWave = safeInt(raw.bestWave, 0);
+      d.records.bestStreak = safeInt(raw.bestStreak, 0);
+      d.records.bestPops = safeInt(raw.bestPops, 0);
+      d.records.games = safeInt(raw.games, 0);
+      if (raw.records) {
+        d.records.bestWave = Math.max(d.records.bestWave, safeInt(raw.records.bestWave, 0));
+        d.records.bestStreak = Math.max(d.records.bestStreak, safeInt(raw.records.bestStreak, 0));
+        d.records.bestPops = Math.max(d.records.bestPops, safeInt(raw.records.bestPops, 0));
+        d.records.games = Math.max(d.records.games, safeInt(raw.records.games, 0));
+      }
+      d.schemaVersion = SAVE_SCHEMA;
+      return d;
+    }
+    // v2 → v3: add badges, leaderboard, stats, bestScore fields
+    if (raw.schemaVersion < 3) {
+      raw.badges = raw.badges || {};
+      raw.leaderboard = Array.isArray(raw.leaderboard) ? raw.leaderboard : [];
+      raw.stats = raw.stats || { abilityUses: 0, perfectWaves: 0, totalWins: 0, totalPops: 0 };
+      if (raw.records && raw.records.bestScore == null) raw.records.bestScore = 0;
+      raw.schemaVersion = SAVE_SCHEMA;
+    }
+    return raw;
+  }
+
+  function validateProgress(p) {
+    if (!p || typeof p !== "object") return null;
+    var out = defaultProgress();
+    out.schemaVersion = SAVE_SCHEMA;
+    out.updatedAt = safeInt(p.updatedAt, 0);
+    out.lastPlayedAt = safeInt(p.lastPlayedAt, 0);
+    out.lastMapId = typeof p.lastMapId === "string" && MAPS[p.lastMapId] ? p.lastMapId : "canyon";
+    out.lastMode = typeof p.lastMode === "string" && MODES[p.lastMode] ? p.lastMode : "classic";
+    out.lastDifficulty = typeof p.lastDifficulty === "string" && DIFFS[p.lastDifficulty] ? p.lastDifficulty : "normal";
+    var r = p.records || p;
+    out.records.bestWave = Math.max(0, safeInt(r.bestWave, 0));
+    out.records.bestStreak = Math.max(0, safeInt(r.bestStreak, 0));
+    out.records.bestPops = Math.max(0, safeInt(r.bestPops, 0));
+    out.records.games = Math.max(0, safeInt(r.games, 0));
+    out.records.goldens = Math.max(0, safeInt(r.goldens, 0));
+    out.records.missions = Math.max(0, safeInt(r.missions, 0));
+    out.records.bestScore = Math.max(0, safeInt(r.bestScore, 0));
+    out.maps = {};
+    if (p.maps && typeof p.maps === "object") {
+      Object.keys(p.maps).forEach(function (id) {
+        if (!MAPS[id]) return;
+        var m = p.maps[id] || {};
+        out.maps[id] = {
+          bestWave: Math.max(0, safeInt(m.bestWave, 0)),
+          bestStreak: Math.max(0, safeInt(m.bestStreak, 0)),
+          clears: Math.max(0, safeInt(m.clears, 0)),
+          bestScore: Math.max(0, safeInt(m.bestScore, 0))
+        };
+      });
+    }
+    out.modes = {};
+    if (p.modes && typeof p.modes === "object") {
+      Object.keys(p.modes).forEach(function (id) {
+        if (!MODES[id]) return;
+        var m = p.modes[id] || {};
+        out.modes[id] = {
+          bestWave: Math.max(0, safeInt(m.bestWave, 0)),
+          wins: Math.max(0, safeInt(m.wins, 0)),
+          plays: Math.max(0, safeInt(m.plays, 0)),
+          bestScore: Math.max(0, safeInt(m.bestScore, 0))
+        };
+      });
+    }
+    out.badges = {};
+    if (p.badges && typeof p.badges === "object") {
+      Object.keys(p.badges).forEach(function (id) {
+        var ts = safeInt(p.badges[id], 0);
+        if (ts > 0) out.badges[id] = ts;
+      });
+    }
+    out.leaderboard = [];
+    if (Array.isArray(p.leaderboard)) {
+      for (var li = 0; li < p.leaderboard.length && out.leaderboard.length < LB_MAX; li++) {
+        var e = p.leaderboard[li];
+        if (!e || typeof e !== "object") continue;
+        out.leaderboard.push({
+          score: Math.max(0, safeInt(e.score, 0)),
+          wave: Math.max(0, safeInt(e.wave, 0)),
+          pops: Math.max(0, safeInt(e.pops, 0)),
+          mode: typeof e.mode === "string" && MODES[e.mode] ? e.mode : "classic",
+          map: typeof e.map === "string" && MAPS[e.map] ? e.map : "canyon",
+          difficulty: typeof e.difficulty === "string" && DIFFS[e.difficulty] ? e.difficulty : "normal",
+          won: !!e.won,
+          at: safeInt(e.at, 0)
+        });
+      }
+      out.leaderboard.sort(function (a, b) { return b.score - a.score; });
+    }
+    var st = p.stats || {};
+    out.stats.abilityUses = Math.max(0, safeInt(st.abilityUses, 0));
+    out.stats.perfectWaves = Math.max(0, safeInt(st.perfectWaves, 0));
+    out.stats.totalWins = Math.max(0, safeInt(st.totalWins, 0));
+    out.stats.totalPops = Math.max(0, safeInt(st.totalPops, 0));
+    if (Array.isArray(p.unlockedMaps) && p.unlockedMaps.length) {
+      out.unlockedMaps = p.unlockedMaps.filter(function (id) { return !!MAPS[id]; });
+      if (!out.unlockedMaps.length) out.unlockedMaps = defaultProgress().unlockedMaps.slice();
+    }
+    var s = p.settings || {};
+    out.settings.muted = !!s.muted;
+    out.settings.autoWave = !!s.autoWave;
+    return out;
+  }
+
+  function applyProgress(p) {
+    if (!p) return;
+    records.bestWave = p.records.bestWave;
+    records.bestStreak = p.records.bestStreak;
+    records.bestPops = p.records.bestPops;
+    records.games = p.records.games;
+    records.goldens = p.records.goldens;
+    records.missions = p.records.missions;
+    records.bestScore = p.records.bestScore || 0;
+    mapRecords = p.maps || {};
+    modeRecords = p.modes || {};
+    badgesUnlocked = p.badges ? JSON.parse(JSON.stringify(p.badges)) : {};
+    leaderboard = Array.isArray(p.leaderboard) ? p.leaderboard.slice() : [];
+    metaStats = {
+      abilityUses: (p.stats && p.stats.abilityUses) || 0,
+      perfectWaves: (p.stats && p.stats.perfectWaves) || 0,
+      totalWins: (p.stats && p.stats.totalWins) || 0,
+      totalPops: (p.stats && p.stats.totalPops) || 0
+    };
+    unlockedMaps = p.unlockedMaps.slice();
+    progressMeta.lastMapId = p.lastMapId;
+    progressMeta.lastMode = p.lastMode;
+    progressMeta.lastDifficulty = p.lastDifficulty;
+    progressMeta.lastPlayedAt = p.lastPlayedAt;
+    progressMeta.updatedAt = p.updatedAt;
+    muted = !!p.settings.muted;
+    autoWave = !!p.settings.autoWave;
+    lastSavedAt = p.updatedAt || 0;
+  }
+
+  function buildProgressPayload() {
+    // Pull latest session highs into records before serializing
+    if (typeof wave === "number" && wave > records.bestWave) records.bestWave = wave;
+    if (typeof bestStreakRun === "number" && bestStreakRun > records.bestStreak) records.bestStreak = bestStreakRun;
+    if (typeof pops === "number" && pops > records.bestPops) records.bestPops = pops;
+    if (typeof goldensPopped === "number" && goldensPopped > records.goldens) records.goldens = goldensPopped;
+    if (typeof missionsDone === "number" && missionsDone > records.missions) records.missions = missionsDone;
+
+    // Per-map / per-mode session update (compact)
+    if (running || wave > 0) {
+      var mid = currentMap || progressMeta.lastMapId;
+      if (MAPS[mid]) {
+        if (!mapRecords[mid]) mapRecords[mid] = { bestWave: 0, bestStreak: 0, clears: 0, bestScore: 0 };
+        if (wave > mapRecords[mid].bestWave) mapRecords[mid].bestWave = wave;
+        if (bestStreakRun > mapRecords[mid].bestStreak) mapRecords[mid].bestStreak = bestStreakRun;
+      }
+      var moid = playMode || progressMeta.lastMode;
+      if (MODES[moid]) {
+        if (!modeRecords[moid]) modeRecords[moid] = { bestWave: 0, wins: 0, plays: 0, bestScore: 0 };
+        if (wave > modeRecords[moid].bestWave) modeRecords[moid].bestWave = wave;
+      }
+    }
+
+    var now = Date.now();
+    var payload = {
+      schemaVersion: SAVE_SCHEMA,
+      updatedAt: now,
+      lastPlayedAt: now,
+      lastMapId: currentMap || progressMeta.lastMapId || "canyon",
+      lastMode: playMode || progressMeta.lastMode || "classic",
+      lastDifficulty: difficulty || progressMeta.lastDifficulty || "normal",
+      records: {
+        bestWave: records.bestWave | 0,
+        bestStreak: records.bestStreak | 0,
+        bestPops: records.bestPops | 0,
+        games: records.games | 0,
+        goldens: records.goldens | 0,
+        missions: records.missions | 0,
+        bestScore: records.bestScore | 0
+      },
+      maps: mapRecords,
+      modes: modeRecords,
+      badges: badgesUnlocked,
+      leaderboard: leaderboard.slice(0, LB_MAX),
+      stats: {
+        abilityUses: metaStats.abilityUses | 0,
+        perfectWaves: metaStats.perfectWaves | 0,
+        totalWins: metaStats.totalWins | 0,
+        totalPops: metaStats.totalPops | 0
+      },
+      unlockedMaps: unlockedMaps.slice(),
+      settings: {
+        muted: !!muted,
+        autoWave: !!autoWave
+      }
+    };
+    return validateProgress(payload);
+  }
+
+  function writeStorage(key, str) {
+    try {
+      localStorage.setItem(key, str);
+      return true;
+    } catch (e) {
+      storageOk = false;
+      return false;
+    }
+  }
+
+  function readStorage(key) {
+    try {
+      return localStorage.getItem(key);
+    } catch (e) {
+      storageOk = false;
+      return null;
+    }
+  }
+
+  function parseSaveRaw(raw) {
+    if (!raw || typeof raw !== "string") return null;
+    try {
+      var o = JSON.parse(raw);
+      return validateProgress(migrateProgress(o));
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /** Load progress on startup. Falls back to .bak, then defaults. Never throws. */
+  function loadRecords() {
+    var primary = parseSaveRaw(readStorage(SAVE_KEY));
+    if (!primary) {
+      primary = parseSaveRaw(readStorage(SAVE_BAK));
+      if (primary) {
+        // Restore primary from backup
+        try {
+          writeStorage(SAVE_KEY, JSON.stringify(primary));
+        } catch (e) {}
+      }
+    }
+    if (!primary) primary = defaultProgress();
+    applyProgress(primary);
+    return primary;
+  }
+
+  /**
+   * Persist progress (dual-slot: rotate current → .bak, then write primary).
+   * @param {boolean} [immediate] skip debounce
+   */
+  function saveRecords(immediate) {
+    if (immediate) {
+      if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
+      return commitSave();
+    }
+    if (saveTimer) clearTimeout(saveTimer);
+    saveTimer = setTimeout(function () {
+      saveTimer = null;
+      commitSave();
+    }, 450);
+    return true;
+  }
+
+  function commitSave() {
+    var payload = buildProgressPayload();
+    if (!payload) return false;
+    var str;
+    try {
+      str = JSON.stringify(payload);
+    } catch (e) {
+      return false;
+    }
+    // Dual-slot: keep last good as .bak
+    try {
+      var prev = readStorage(SAVE_KEY);
+      if (prev && parseSaveRaw(prev)) writeStorage(SAVE_BAK, prev);
+    } catch (e2) {}
+    var ok = writeStorage(SAVE_KEY, str);
+    if (ok) {
+      lastSavedAt = payload.updatedAt;
+      progressMeta.updatedAt = payload.updatedAt;
+      progressMeta.lastPlayedAt = payload.lastPlayedAt;
+      saveFlashT = 1.6;
+      updateSaveUI();
+    }
+    return ok;
+  }
+
+  function mergeProgress(a, b) {
+    // Merge-friendly: take max for scores, union unlocks/badges, prefer newer timestamps for "last*"
+    var A = validateProgress(migrateProgress(a)) || defaultProgress();
+    var B = validateProgress(migrateProgress(b)) || defaultProgress();
+    var out = defaultProgress();
+    out.records.bestWave = Math.max(A.records.bestWave, B.records.bestWave);
+    out.records.bestStreak = Math.max(A.records.bestStreak, B.records.bestStreak);
+    out.records.bestPops = Math.max(A.records.bestPops, B.records.bestPops);
+    out.records.games = Math.max(A.records.games, B.records.games);
+    out.records.goldens = Math.max(A.records.goldens, B.records.goldens);
+    out.records.missions = Math.max(A.records.missions, B.records.missions);
+    out.records.bestScore = Math.max(A.records.bestScore || 0, B.records.bestScore || 0);
+    var mapIds = {};
+    Object.keys(A.maps).forEach(function (k) { mapIds[k] = 1; });
+    Object.keys(B.maps).forEach(function (k) { mapIds[k] = 1; });
+    Object.keys(mapIds).forEach(function (id) {
+      var am = A.maps[id] || { bestWave: 0, bestStreak: 0, clears: 0, bestScore: 0 };
+      var bm = B.maps[id] || { bestWave: 0, bestStreak: 0, clears: 0, bestScore: 0 };
+      out.maps[id] = {
+        bestWave: Math.max(am.bestWave, bm.bestWave),
+        bestStreak: Math.max(am.bestStreak, bm.bestStreak),
+        clears: Math.max(am.clears, bm.clears),
+        bestScore: Math.max(am.bestScore || 0, bm.bestScore || 0)
+      };
+    });
+    var modeIds = {};
+    Object.keys(A.modes).forEach(function (k) { modeIds[k] = 1; });
+    Object.keys(B.modes).forEach(function (k) { modeIds[k] = 1; });
+    Object.keys(modeIds).forEach(function (id) {
+      var am = A.modes[id] || { bestWave: 0, wins: 0, plays: 0, bestScore: 0 };
+      var bm = B.modes[id] || { bestWave: 0, wins: 0, plays: 0, bestScore: 0 };
+      out.modes[id] = {
+        bestWave: Math.max(am.bestWave, bm.bestWave),
+        wins: Math.max(am.wins, bm.wins),
+        plays: Math.max(am.plays, bm.plays),
+        bestScore: Math.max(am.bestScore || 0, bm.bestScore || 0)
+      };
+    });
+    var unlock = {};
+    A.unlockedMaps.forEach(function (id) { unlock[id] = 1; });
+    B.unlockedMaps.forEach(function (id) { unlock[id] = 1; });
+    out.unlockedMaps = Object.keys(unlock);
+    // Union badges (earliest unlock time wins)
+    Object.keys(A.badges || {}).forEach(function (id) {
+      out.badges[id] = A.badges[id];
+    });
+    Object.keys(B.badges || {}).forEach(function (id) {
+      if (!out.badges[id] || (B.badges[id] && B.badges[id] < out.badges[id])) {
+        out.badges[id] = B.badges[id];
+      }
+    });
+    // Merge leaderboards, keep top LB_MAX by score
+    var allLb = (A.leaderboard || []).concat(B.leaderboard || []);
+    allLb.sort(function (x, y) { return (y.score || 0) - (x.score || 0); });
+    out.leaderboard = allLb.slice(0, LB_MAX);
+    out.stats.abilityUses = Math.max(A.stats.abilityUses, B.stats.abilityUses);
+    out.stats.perfectWaves = Math.max(A.stats.perfectWaves, B.stats.perfectWaves);
+    out.stats.totalWins = Math.max(A.stats.totalWins, B.stats.totalWins);
+    out.stats.totalPops = Math.max(A.stats.totalPops, B.stats.totalPops);
+    // Prefer newer file for "last*" and settings
+    var newer = (B.updatedAt || 0) >= (A.updatedAt || 0) ? B : A;
+    out.lastMapId = newer.lastMapId;
+    out.lastMode = newer.lastMode;
+    out.lastDifficulty = newer.lastDifficulty;
+    out.lastPlayedAt = Math.max(A.lastPlayedAt, B.lastPlayedAt);
+    out.updatedAt = Math.max(A.updatedAt, B.updatedAt);
+    out.settings.muted = newer.settings.muted;
+    out.settings.autoWave = newer.settings.autoWave;
+    return out;
+  }
+
+  /** Export JSON string for backup / device move. */
+  function exportProgress() {
+    var payload = buildProgressPayload();
+    return JSON.stringify(payload, null, 2);
+  }
+
+  /**
+   * Import JSON string. Merges with current (max scores).
+   * @returns {{ok:boolean, message:string}}
+   */
+  function importProgress(jsonStr) {
+    var incoming = parseSaveRaw(typeof jsonStr === "string" ? jsonStr : "");
+    if (!incoming) return { ok: false, message: "Invalid save data" };
+    var current = buildProgressPayload() || defaultProgress();
+    var merged = mergeProgress(current, incoming);
+    applyProgress(merged);
+    commitSave();
+    applyLoadedPrefsToUI();
+    refreshRecordsLabel();
+    if (typeof refreshHubUI === "function") refreshHubUI();
+    return { ok: true, message: "Progress imported" };
+  }
+
+  /** Wipe progress after caller confirms. */
+  function resetProgress() {
+    try {
+      localStorage.removeItem(SAVE_KEY);
+      localStorage.removeItem(SAVE_BAK);
+    } catch (e) {}
+    applyProgress(defaultProgress());
+    lastSavedAt = 0;
+    applyLoadedPrefsToUI();
+    refreshRecordsLabel();
+    updateSaveUI();
+    if (typeof refreshHubUI === "function") refreshHubUI();
+    return true;
+  }
+
+  function getProgressSummary() {
+    return {
+      bestWave: records.bestWave | 0,
+      bestStreak: records.bestStreak | 0,
+      bestPops: records.bestPops | 0,
+      games: records.games | 0,
+      goldens: records.goldens | 0,
+      bestScore: records.bestScore | 0,
+      badges: Object.keys(badgesUnlocked).length,
+      badgesTotal: BADGE_DEFS.length,
+      lastMapId: progressMeta.lastMapId,
+      lastMode: progressMeta.lastMode,
+      lastSavedAt: lastSavedAt,
+      storageOk: storageOk
+    };
+  }
+
+  function noteMapClear(mapId) {
+    if (!MAPS[mapId]) return;
+    if (!mapRecords[mapId]) mapRecords[mapId] = { bestWave: 0, bestStreak: 0, clears: 0, bestScore: 0 };
+    mapRecords[mapId].clears = (mapRecords[mapId].clears | 0) + 1;
+  }
+
+  function noteModePlay(modeId) {
+    if (!MODES[modeId]) return;
+    if (!modeRecords[modeId]) modeRecords[modeId] = { bestWave: 0, wins: 0, plays: 0, bestScore: 0 };
+    modeRecords[modeId].plays = (modeRecords[modeId].plays | 0) + 1;
+  }
+
+  function noteModeWin(modeId) {
+    if (!MODES[modeId]) return;
+    if (!modeRecords[modeId]) modeRecords[modeId] = { bestWave: 0, wins: 0, plays: 0, bestScore: 0 };
+    modeRecords[modeId].wins = (modeRecords[modeId].wins | 0) + 1;
+  }
+
+  // ── Badges (30 goals across easy → legendary) ──
+  var BADGE_DEFS = [
+    { id: "first_peel", icon: "🍌", name: "First Peel", desc: "Finish any run", tier: "easy" },
+    { id: "wave_10", icon: "🔟", name: "Wave 10", desc: "Reach wave 10", tier: "easy" },
+    { id: "wave_25", icon: "🌊", name: "Quarter Stack", desc: "Reach wave 25", tier: "easy" },
+    { id: "builder", icon: "🏗️", name: "Builder", desc: "Place 10 MonKeys in one run", tier: "easy" },
+    { id: "jackpot", icon: "✨", name: "Jackpot", desc: "Pop a golden banana", tier: "easy" },
+    { id: "streak_25", icon: "🔥", name: "On a Roll", desc: "Kill streak ×25", tier: "easy" },
+    { id: "mission_1", icon: "📋", name: "Side Quest", desc: "Complete a mission", tier: "easy" },
+    { id: "ability_1", icon: "⚡", name: "Power User", desc: "Use any ability", tier: "easy" },
+    { id: "wave_50", icon: "5️⃣", name: "Half Century", desc: "Reach wave 50", tier: "medium" },
+    { id: "wave_75", icon: "🏔️", name: "High Ground", desc: "Reach wave 75", tier: "medium" },
+    { id: "first_win", icon: "🏆", name: "Core Secure", desc: "Win any mode", tier: "medium" },
+    { id: "golden_5", icon: "💎", name: "Treasure Hunt", desc: "5 jackpots lifetime", tier: "medium" },
+    { id: "streak_50", icon: "☄️", name: "Fever Pitch", desc: "Kill streak ×50", tier: "medium" },
+    { id: "perfect_10", icon: "🛡️", name: "Iron Core", desc: "10 perfect waves in one run", tier: "medium" },
+    { id: "hard_40", icon: "💪", name: "Hardened", desc: "Wave 40 on Hard+", tier: "medium" },
+    { id: "all_maps", icon: "🗺️", name: "Tourist", desc: "Play all 6 maps", tier: "medium" },
+    { id: "modes_all", icon: "🎲", name: "Variety Pack", desc: "Play every mode", tier: "medium" },
+    { id: "abilities_25", icon: "🌩️", name: "Storm Chaser", desc: "Use abilities 25 times", tier: "medium" },
+    { id: "wave_100", icon: "💯", name: "Century", desc: "Reach wave 100", tier: "hard" },
+    { id: "classic_clear", icon: "👑", name: "Classic Champ", desc: "Win Classic mode", tier: "hard" },
+    { id: "tour_clear", icon: "🌍", name: "World Tourist", desc: "Win World Tour", tier: "hard" },
+    { id: "rush_clear", icon: "🚀", name: "Fever Finisher", desc: "Win Fever Rush", tier: "hard" },
+    { id: "party_clear", icon: "🎉", name: "Party Animal", desc: "Win Party mode", tier: "hard" },
+    { id: "starship_40", icon: "🛸", name: "Starship Cadet", desc: "Wave 40 on Starship", tier: "hard" },
+    { id: "golden_25", icon: "🌟", name: "Midas Touch", desc: "25 jackpots lifetime", tier: "hard" },
+    { id: "streak_100", icon: "⚡", name: "Unstoppable", desc: "Kill streak ×100", tier: "hard" },
+    { id: "wave_150", icon: "🌈", name: "End of the Line", desc: "Reach wave 150", tier: "legend" },
+    { id: "starship_win", icon: "🚀", name: "Starship Ace", desc: "Win on Starship difficulty", tier: "legend" },
+    { id: "badge_half", icon: "⭐", name: "Collector", desc: "Unlock 15 badges", tier: "legend" },
+    { id: "badge_all", icon: "🍌", name: "Potassium God", desc: "Unlock every other badge", tier: "legend" }
+  ];
+
+  function mapStars(mapId) {
+    var bw = (mapRecords[mapId] && mapRecords[mapId].bestWave) || 0;
+    if (bw >= 150) return 4;
+    if (bw >= 100) return 3;
+    if (bw >= 50) return 2;
+    if (bw >= 25) return 1;
+    return 0;
+  }
+
+  function starString(n) {
+    var s = "";
+    for (var i = 0; i < 4; i++) s += i < n ? "★" : "☆";
+    return s;
+  }
+
+  /** Run score — higher is better. Diff/mode multiply for prestige. */
+  function computeRunScore(opts) {
+    opts = opts || {};
+    var w = opts.wave != null ? opts.wave : wave;
+    var p = opts.pops != null ? opts.pops : pops;
+    var earned = opts.banEarned != null ? opts.banEarned : banEarned;
+    var streak = opts.streak != null ? opts.streak : bestStreakRun;
+    var gold = opts.goldens != null ? opts.goldens : goldensPopped;
+    var won = !!opts.won;
+    var diff = opts.difficulty || difficulty;
+    var mode = opts.mode || playMode;
+    var diffMul = diff === "starship" ? 1.85 : diff === "hard" ? 1.4 : 1;
+    var modeMul = mode === "rush" ? 1.15 : mode === "party" ? 1.1 : mode === "tour" ? 1.12 : 1;
+    var base = w * 1000 + p * 2 + Math.floor(earned * 0.08) + streak * 40 + gold * 600 + (won ? 8000 : 0);
+    return Math.max(0, Math.floor(base * diffMul * modeMul));
+  }
+
+  function pushLeaderboardEntry(entry) {
+    if (!entry || !(entry.score > 0)) return;
+    leaderboard.push({
+      score: entry.score | 0,
+      wave: entry.wave | 0,
+      pops: entry.pops | 0,
+      mode: entry.mode || playMode,
+      map: entry.map || currentMap,
+      difficulty: entry.difficulty || difficulty,
+      won: !!entry.won,
+      at: entry.at || Date.now()
+    });
+    leaderboard.sort(function (a, b) { return b.score - a.score; });
+    if (leaderboard.length > LB_MAX) leaderboard.length = LB_MAX;
+  }
+
+  function unlockBadge(id) {
+    if (!id || badgesUnlocked[id]) return false;
+    var def = null;
+    for (var i = 0; i < BADGE_DEFS.length; i++) {
+      if (BADGE_DEFS[i].id === id) { def = BADGE_DEFS[i]; break; }
+    }
+    if (!def) return false;
+    badgesUnlocked[id] = Date.now();
+    runBadgeQueue.push(def);
+    // De-dupe in lastRunBadges
+    var already = false;
+    for (var j = 0; j < lastRunBadges.length; j++) {
+      if (lastRunBadges[j].id === id) { already = true; break; }
+    }
+    if (!already) lastRunBadges.push(def);
+    queueBadgeToast(def);
+    // Persist soon so refresh/crash keeps the badge
+    saveRecords();
+    return true;
+  }
+
+  function queueBadgeToast(def) {
+    var el = document.getElementById("badgeToast");
+    if (!el) return;
+    el.textContent = def.icon + " Badge unlocked: " + def.name;
+    el.classList.add("show");
+    badgeToastT = 2.8;
+  }
+
+  function tickBadgeToast(dt) {
+    if (badgeToastT <= 0) return;
+    badgeToastT -= dt;
+    if (badgeToastT <= 0) {
+      var el = document.getElementById("badgeToast");
+      if (el) el.classList.remove("show");
+      // show next queued badge if any still pending display
+      if (runBadgeQueue.length > 1) {
+        // already showing first; remaining shown on next unlock call
+      }
+    }
+  }
+
+  function countMapsPlayed() {
+    var n = 0;
+    Object.keys(MAPS).forEach(function (id) {
+      if (mapRecords[id] && mapRecords[id].bestWave > 0) n++;
+    });
+    return n;
+  }
+
+  function countModesPlayed() {
+    var n = 0;
+    Object.keys(MODES).forEach(function (id) {
+      if (modeRecords[id] && modeRecords[id].plays > 0) n++;
+    });
+    return n;
+  }
+
+  /**
+   * Evaluate badge unlocks from current progress + optional run context.
+   * @param {{won?:boolean}} ctx
+   * @returns {object[]} newly unlocked badge defs
+   */
+  function checkBadges(ctx) {
+    ctx = ctx || {};
+    var w = wave | 0;
+    var won = !!ctx.won;
+
+    if ((records.games | 0) >= 1 || w > 0) unlockBadge("first_peel");
+    if (w >= 10) unlockBadge("wave_10");
+    if (w >= 25) unlockBadge("wave_25");
+    if (w >= 50) unlockBadge("wave_50");
+    if (w >= 75) unlockBadge("wave_75");
+    if (w >= 100) unlockBadge("wave_100");
+    if (w >= 150) unlockBadge("wave_150");
+    if (totalBuilt >= 10) unlockBadge("builder");
+    if ((goldensPopped | 0) >= 1 || (records.goldens | 0) >= 1) unlockBadge("jackpot");
+    if ((records.goldens | 0) >= 5) unlockBadge("golden_5");
+    if ((records.goldens | 0) >= 25) unlockBadge("golden_25");
+    if ((bestStreakRun | 0) >= 25 || (records.bestStreak | 0) >= 25) unlockBadge("streak_25");
+    if ((bestStreakRun | 0) >= 50 || (records.bestStreak | 0) >= 50) unlockBadge("streak_50");
+    if ((bestStreakRun | 0) >= 100 || (records.bestStreak | 0) >= 100) unlockBadge("streak_100");
+    if ((missionsDone | 0) >= 1 || (records.missions | 0) >= 1) unlockBadge("mission_1");
+    if ((runAbilityUses | 0) >= 1 || (metaStats.abilityUses | 0) >= 1) unlockBadge("ability_1");
+    if ((metaStats.abilityUses | 0) >= 25) unlockBadge("abilities_25");
+    if ((runPerfectWaves | 0) >= 10) unlockBadge("perfect_10");
+    if (w >= 40 && (difficulty === "hard" || difficulty === "starship")) unlockBadge("hard_40");
+    if (w >= 40 && difficulty === "starship") unlockBadge("starship_40");
+    if (countMapsPlayed() >= 6) unlockBadge("all_maps");
+    if (countModesPlayed() >= 4) unlockBadge("modes_all");
+
+    if (won || (metaStats.totalWins | 0) >= 1) unlockBadge("first_win");
+    if (won && playMode === "classic") unlockBadge("classic_clear");
+    if (won && playMode === "tour") unlockBadge("tour_clear");
+    if (won && playMode === "rush") unlockBadge("rush_clear");
+    if (won && playMode === "party") unlockBadge("party_clear");
+    if (won && difficulty === "starship") unlockBadge("starship_win");
+
+    // Collector badges after others
+    var unlocked = Object.keys(badgesUnlocked).length;
+    if (unlocked >= 15) unlockBadge("badge_half");
+    // badge_all: all except itself
+    var nonLegendAll = BADGE_DEFS.filter(function (b) { return b.id !== "badge_all"; });
+    var haveAll = nonLegendAll.every(function (b) { return !!badgesUnlocked[b.id]; });
+    if (haveAll) unlockBadge("badge_all");
+
+    return lastRunBadges.slice(); // all badges earned this run
+  }
+
+  function getNextBadgeGoal() {
+    for (var i = 0; i < BADGE_DEFS.length; i++) {
+      if (!badgesUnlocked[BADGE_DEFS[i].id]) return BADGE_DEFS[i];
+    }
+    return null;
+  }
+
+  function formatScore(n) {
+    n = n | 0;
+    if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, "") + "M";
+    if (n >= 10000) return Math.floor(n / 1000) + "k";
+    return String(n);
+  }
+
+  function refreshHubUI() {
+    var statsEl = document.getElementById("hubStats");
+    var nextEl = document.getElementById("hubNext");
+    var badgesEl = document.getElementById("hubBadges");
+    var boardEl = document.getElementById("hubBoard");
+    var s = getProgressSummary();
+    if (statsEl) {
+      statsEl.innerHTML =
+        "<span>Best wave <b>" + s.bestWave + "</b></span>" +
+        "<span>Best score <b>" + formatScore(s.bestScore) + "</b></span>" +
+        "<span>Badges <b>" + s.badges + "/" + s.badgesTotal + "</b></span>" +
+        "<span>Runs <b>" + s.games + "</b></span>";
+    }
+    if (nextEl) {
+      var goal = getNextBadgeGoal();
+      if (goal) {
+        nextEl.innerHTML = "Next goal: <span>" + goal.icon + " " + goal.name + "</span> — " + goal.desc;
+      } else {
+        nextEl.innerHTML = "Next goal: <span>All badges unlocked</span> — legend status achieved.";
+      }
+    }
+    if (badgesEl) {
+      var html = '<div class="badge-grid">';
+      for (var i = 0; i < BADGE_DEFS.length; i++) {
+        var b = BADGE_DEFS[i];
+        var on = !!badgesUnlocked[b.id];
+        html += '<div class="badge-card' + (on ? " on" : "") + '" title="' + b.desc + '">' +
+          '<div class="b-ico">' + b.icon + "</div>" +
+          '<div class="b-name">' + b.name + "</div>" +
+          '<div class="b-desc">' + b.desc + "</div></div>";
+      }
+      html += "</div>";
+      badgesEl.innerHTML = html;
+    }
+    if (boardEl) {
+      if (!leaderboard.length) {
+        boardEl.innerHTML = '<div class="lb-empty">No scores yet. Finish a run to post a local high score.</div>';
+      } else {
+        var lh = '<div class="lb-list">';
+        for (var j = 0; j < leaderboard.length; j++) {
+          var e = leaderboard[j];
+          var mapName = MAPS[e.map] ? MAPS[e.map].short : e.map;
+          var modeName = MODES[e.mode] ? MODES[e.mode].short : e.mode;
+          var diffName = DIFFS[e.difficulty] ? DIFFS[e.difficulty].name : e.difficulty;
+          lh += '<div class="lb-row">' +
+            '<span class="rank">#' + (j + 1) + "</span>" +
+            '<div><div>' + modeName + " · " + mapName + (e.won ? " · Win" : "") + "</div>" +
+            '<div class="meta">W' + e.wave + " · " + diffName + " · " + (e.pops | 0) + " pops</div></div>" +
+            '<span class="score">' + formatScore(e.score) + "</span></div>";
+        }
+        lh += "</div>";
+        boardEl.innerHTML = lh;
+      }
+    }
+    // Map mastery stars on map cards
+    document.querySelectorAll("#mapPick .map-card").forEach(function (card) {
+      var mid = card.getAttribute("data-map");
+      var stars = mapStars(mid);
+      var el = card.querySelector(".map-stars");
+      if (!el) {
+        el = document.createElement("span");
+        el.className = "map-stars";
+        card.appendChild(el);
+      }
+      el.textContent = stars ? starString(stars) : "";
+    });
+    refreshRecordsLabel();
+  }
+
+  function setHubTab(which) {
+    document.querySelectorAll(".hub-tab").forEach(function (t) {
+      var on = t.getAttribute("data-hub") === which;
+      t.classList.toggle("on", on);
+      t.setAttribute("aria-selected", on ? "true" : "false");
+    });
+    var badgesEl = document.getElementById("hubBadges");
+    var boardEl = document.getElementById("hubBoard");
+    if (badgesEl) badgesEl.classList.toggle("hidden", which !== "badges");
+    if (boardEl) boardEl.classList.toggle("hidden", which !== "board");
+  }
+
+  /**
+   * Finalize a run: score, leaderboard, badges, records. Call from win/lose.
+   * @param {{won:boolean}} ctx
+   */
+  function finalizeRun(ctx) {
+    ctx = ctx || { won: false };
+    var won = !!ctx.won;
+    var score = computeRunScore({ won: won });
+    lastRunScore = score;
+
+    if (score > (records.bestScore | 0)) records.bestScore = score;
+    if (wave > records.bestWave) records.bestWave = wave;
+    if (bestStreakRun > records.bestStreak) records.bestStreak = bestStreakRun;
+    if (pops > records.bestPops) records.bestPops = pops;
+    if (goldensPopped > records.goldens) records.goldens = goldensPopped;
+    if (missionsDone > records.missions) records.missions = missionsDone;
+
+    metaStats.totalPops = (metaStats.totalPops | 0) + (pops | 0);
+    if (won) metaStats.totalWins = (metaStats.totalWins | 0) + 1;
+
+    var mid = currentMap;
+    if (MAPS[mid]) {
+      if (!mapRecords[mid]) mapRecords[mid] = { bestWave: 0, bestStreak: 0, clears: 0, bestScore: 0 };
+      if (wave > mapRecords[mid].bestWave) mapRecords[mid].bestWave = wave;
+      if (bestStreakRun > mapRecords[mid].bestStreak) mapRecords[mid].bestStreak = bestStreakRun;
+      if (score > (mapRecords[mid].bestScore | 0)) mapRecords[mid].bestScore = score;
+    }
+    var moid = playMode;
+    if (MODES[moid]) {
+      if (!modeRecords[moid]) modeRecords[moid] = { bestWave: 0, wins: 0, plays: 0, bestScore: 0 };
+      if (wave > modeRecords[moid].bestWave) modeRecords[moid].bestWave = wave;
+      if (score > (modeRecords[moid].bestScore | 0)) modeRecords[moid].bestScore = score;
+    }
+
+    pushLeaderboardEntry({
+      score: score,
+      wave: wave,
+      pops: pops,
+      mode: playMode,
+      map: currentMap,
+      difficulty: difficulty,
+      won: won,
+      at: Date.now()
+    });
+
+    var newly = checkBadges({ won: won });
+    var badgeLine = newly.length
+      ? "New badges: " + newly.map(function (b) { return b.icon + " " + b.name; }).join(" · ")
+      : (Object.keys(badgesUnlocked).length
+        ? "Badges " + Object.keys(badgesUnlocked).length + "/" + BADGE_DEFS.length
+        : "");
+
+    var scoreLine = "Score " + formatScore(score) +
+      (score >= (records.bestScore | 0) && score > 0 ? " · Personal best!" : "");
+
+    return { score: score, scoreLine: scoreLine, badgeLine: badgeLine, newBadges: newly };
+  }
+
+  function showRunMeta(won) {
+    var scoreEl = document.getElementById(won ? "winScore" : "loseScore");
+    var badgeEl = document.getElementById(won ? "winBadges" : "loseBadges");
+    if (scoreEl) scoreEl.textContent = lastRunScore ? "Score " + formatScore(lastRunScore) : "";
+    if (badgeEl) {
+      if (lastRunBadges.length) {
+        badgeEl.textContent = "New: " + lastRunBadges.map(function (b) {
+          return b.icon + " " + b.name;
+        }).join(" · ");
+      } else {
+        badgeEl.textContent = "";
+      }
+    }
+  }
+
+  function applyLoadedPrefsToUI() {
+    var btn = document.getElementById("btnMute");
+    if (btn) {
+      btn.textContent = muted ? "Muted" : "Sound";
+      btn.classList.toggle("on", muted);
+      btn.title = muted ? "Unmute (M)" : "Mute (M)";
+    }
+    if (btnAutoWave) {
+      btnAutoWave.classList.toggle("on", autoWave);
+      btnAutoWave.textContent = autoWave ? "Auto on" : "Auto";
+    }
+    // Restore last mode / map / difficulty on menu
+    if (!running) {
+      if (progressMeta.lastMode && MODES[progressMeta.lastMode]) {
+        playMode = progressMeta.lastMode;
+        document.querySelectorAll("#modePick .chip-btn").forEach(function (b) {
+          b.classList.toggle("on", b.getAttribute("data-mode") === playMode);
+        });
+      }
+      if (progressMeta.lastMapId && MAPS[progressMeta.lastMapId]) {
+        currentMap = progressMeta.lastMapId;
+        document.querySelectorAll("#mapPick .chip-btn, #mapPick .map-card").forEach(function (b) {
+          b.classList.toggle("on", b.getAttribute("data-map") === currentMap);
+        });
+      }
+      if (progressMeta.lastDifficulty && DIFFS[progressMeta.lastDifficulty]) {
+        difficulty = progressMeta.lastDifficulty;
+        document.querySelectorAll("#diffPick .chip-btn").forEach(function (b) {
+          b.classList.toggle("on", b.getAttribute("data-diff") === difficulty);
+        });
+      }
+      if (typeof updateModeUI === "function") updateModeUI();
+      if (typeof rebuildPath === "function") { rebuildPath(); initDecor(); }
+    }
+  }
+
+  function refreshRecordsLabel() {
+    var el = document.getElementById("tdRecords");
+    if (!el) return;
+    var s = getProgressSummary();
+    if (s.bestWave || s.bestStreak || s.games || s.badges) {
+      el.textContent = "Best wave " + s.bestWave +
+        " · Score " + formatScore(s.bestScore) +
+        " · Badges " + s.badges + "/" + s.badgesTotal +
+        (s.games ? " · Runs " + s.games : "");
+      el.classList.remove("hidden");
+    } else {
+      el.textContent = storageOk ? "Progress, badges & scores save on this device" : "Storage unavailable — progress won't persist";
+      el.classList.remove("hidden");
+    }
+  }
+
+  function updateSaveUI() {
+    var el = document.getElementById("tdSaveStatus");
+    if (!el) return;
+    if (!storageOk) {
+      el.textContent = "Save unavailable";
+      el.classList.add("warn");
+      return;
+    }
+    el.classList.remove("warn");
+    if (saveFlashT > 0) {
+      el.textContent = "Saved";
+      el.classList.add("flash");
+    } else if (lastSavedAt) {
+      el.textContent = "Saved " + formatSaveAge(lastSavedAt);
+      el.classList.remove("flash");
+    } else {
+      el.textContent = "";
+    }
+  }
+
+  function formatSaveAge(ts) {
+    var sec = Math.max(0, Math.floor((Date.now() - ts) / 1000));
+    if (sec < 5) return "just now";
+    if (sec < 60) return sec + "s ago";
+    if (sec < 3600) return Math.floor(sec / 60) + "m ago";
+    if (sec < 86400) return Math.floor(sec / 3600) + "h ago";
+    return Math.floor(sec / 86400) + "d ago";
+  }
+
+  function downloadProgressFile() {
+    try {
+      var blob = new Blob([exportProgress()], { type: "application/json" });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      a.href = url;
+      a.download = "bananox-td-progress.json";
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function () {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 0);
+      showToast("Progress exported");
+    } catch (e) {
+      showToast("Export failed");
+    }
+  }
+
+  function promptImportProgress() {
+    var input = document.getElementById("tdImportFile");
+    if (input) input.click();
+  }
+
+  function confirmResetProgress() {
+    if (!confirm("Reset all Banano TD progress on this device?\n\nHigh scores, badges, leaderboard, map records, and settings will be wiped. This cannot be undone (export first if you want a backup).")) {
+      return;
+    }
+    resetProgress();
+    refreshHubUI();
+    showToast("Progress reset");
+  }
 
   // Abilities (cooldowns in seconds)
   var abilities = {
@@ -510,28 +1526,6 @@
     o.connect(g); g.connect(actx.destination);
     o.start(t); o.stop(t + d + 0.02);
   }
-  function loadRecords() {
-    try {
-      var raw = localStorage.getItem("bananox_td_v1");
-      if (raw) {
-        var o = JSON.parse(raw);
-        if (o && typeof o === "object") {
-          records.bestWave = o.bestWave | 0;
-          records.bestStreak = o.bestStreak | 0;
-          records.bestPops = o.bestPops | 0;
-          records.games = o.games | 0;
-        }
-      }
-    } catch (e) {}
-  }
-  function saveRecords() {
-    try {
-      if (wave > records.bestWave) records.bestWave = wave;
-      if (bestStreakRun > records.bestStreak) records.bestStreak = bestStreakRun;
-      if (pops > records.bestPops) records.bestPops = pops;
-      localStorage.setItem("bananox_td_v1", JSON.stringify(records));
-    } catch (e) {}
-  }
   function toggleMute() {
     muted = !muted;
     var btn = document.getElementById("btnMute");
@@ -541,6 +1535,7 @@
       btn.title = muted ? "Unmute (M)" : "Mute (M)";
     }
     showToast(muted ? "Muted" : "Sound on");
+    saveRecords();
   }
   loadRecords();
   function sfxPop() { beep(520 + Math.random() * 380, 0.03, "square", 0.022); }
@@ -741,7 +1736,7 @@
     // Live kill payout scales with wave + streak + fever/events
     var streakMul = 1 + Math.min(0.75, killStreak * 0.025);
     var waveMul = 1 + wave * 0.012;
-    var mult = DIFFS[difficulty].reward * streakMul * waveMul;
+    var mult = DIFFS[difficulty].reward * streakMul * waveMul * (getMode().ban || 1);
     if (feverT > 0) mult *= 2;
     if (eventKind === "double") mult *= 2;
     if (eventKind === "frenzy") mult *= 1.5;
@@ -896,6 +1891,10 @@
       trackMission("pop", th.layer);
       if (wasGolden) {
         goldensPopped++;
+        if (goldensPopped > records.goldens) records.goldens = goldensPopped;
+        unlockBadge("jackpot");
+        if (records.goldens >= 5) unlockBadge("golden_5");
+        if (records.goldens >= 25) unlockBadge("golden_25");
         sfxJackpot();
         announce("JACKPOT BANANA!", 1.2);
         confettiBurst();
@@ -958,8 +1957,14 @@
 
   function rollEvent() {
     if (!waveActive || eventT > 0 || eventCd > 0) return;
-    if (Math.random() > 0.35) { eventCd = 8; return; }
+    var mode = getMode();
+    // Party / Rush fire events more often
+    var skipChance = 0.35 * (mode.eventScale || 1);
+    if (Math.random() > (1 - skipChance)) { eventCd = modeEventCdBase(); return; }
     var kinds = ["double", "slowmo", "rain", "frenzy"];
+    if (mode.eventScale && mode.eventScale < 0.6 && Math.random() < 0.25) {
+      kinds.push("double", "frenzy"); // party bias
+    }
     startEvent(kinds[(Math.random() * kinds.length) | 0], 6 + Math.random() * 4);
   }
 
@@ -1075,8 +2080,9 @@
 
   function buildWave(n) {
     var q = [];
-    var dens = DIFFS[difficulty].dens;
+    var dens = DIFFS[difficulty].dens * (getMode().dens || 1);
     var scale = 1 + Math.max(0, n - 40) * 0.045;
+    var jpMul = getMode().jackpot || 1;
 
     function add(layer, count, gap, flags) {
       count = Math.max(1, Math.round(count * dens));
@@ -1131,11 +2137,12 @@
     if (n >= 18 && n < 70 && n % 4 === 0) {
       for (var li = 0; li < 8; li++) q.push({ t: "gold", gap: 0.38, flags: { lead: true } });
     }
-    // Jackpot bananas — rare, juicy
-    if (n >= 8 && Math.random() < 0.22 + Math.min(0.25, n * 0.002)) {
-      add("golden", 1 + (n > 40 && Math.random() < 0.35 ? 1 : 0), 1.1);
+    // Jackpot bananas — rare, juicy (mode can juice this)
+    if (n >= 8 && Math.random() < (0.22 + Math.min(0.25, n * 0.002)) * jpMul) {
+      add("golden", 1 + (n > 40 && Math.random() < 0.35 * jpMul ? 1 : 0), 1.1);
     }
     if (n % 15 === 0) add("golden", 2, 0.8);
+    if (jpMul > 1.4 && n % 8 === 0) add("golden", 1, 0.9);
     return q;
   }
 
@@ -1148,7 +2155,7 @@
     spawnTimer = 0.25;
     waveActive = true;
     airdropT = 5 + Math.random() * 10;
-    eventCd = 6 + Math.random() * 8;
+    eventCd = modeEventCdBase();
     roundKillBan = 0;
     roundKills = 0;
     roundLeak = false;
@@ -1157,56 +2164,36 @@
     if (wave % 5 === 1) rollMission();
     else if (!mission) rollMission();
 
-    var label = "WAVE " + wave + (endless && wave > MAX_WAVE ? " ∞" : " / " + MAX_WAVE);
-    if (wave === 25) label = "BOSS · MEGA BUNCH";
-    if (wave === 50) label = "🚀 STARSHIP INBOUND";
-    if (wave === 75) label = "💥 FULL STACK ASSAULT";
-    if (wave === 100) label = "☢️ ORBITAL SIEGE";
-    if (wave === 125) label = "🔥 GAUNTLET PROTOCOL";
-    if (wave === 150) label = "🚀 FINAL · RAPTOR PROTOCOL";
-    if (wave > 150) label = "ENDLESS · WAVE " + wave;
-    if (playMode === "campaign" && wave <= MAX_WAVE) {
-      var ch = getChapterForWave(wave);
-      if (ch) label = ch.title + " · W" + waveInChapter(wave);
+    var mode = getMode();
+    var label = "WAVE " + wave + (endless ? " ∞" : " / " + MAX_WAVE);
+    if (mode.tour) {
+      var stop = Math.min(tourStop, TOUR_ROUTE.length - 1);
+      var localW = ((wave - 1) % (mode.tourEvery || 20)) + 1;
+      label = MAPS[TOUR_ROUTE[stop]].short + " · W" + localW + " · Tour " + (stop + 1) + "/" + TOUR_ROUTE.length;
     }
+    if (wave === 25) label = "BOSS · MEGA BUNCH";
+    if (wave === 50) label = "STARSHIP INBOUND";
+    if (wave === 75) label = "FULL STACK ASSAULT";
+    if (wave === 100) label = "ORBITAL SIEGE";
+    if (wave === MAX_WAVE && !endless) label = "FINAL WAVE · " + mode.short.toUpperCase();
+    if (endless && wave > (getMode().waves || 150)) label = "ENDLESS · WAVE " + wave;
     showToast(label);
-    if (wave === 25 || wave === 50 || wave === 100 || wave === 150 || (wave > 0 && wave % 25 === 0)) {
+    if (wave === 25 || wave === 50 || wave === 100 || wave === MAX_WAVE || (wave > 0 && wave % 25 === 0)) {
       sfxBoss();
       shake = 0.4;
       hitFlash = 0.2;
-      announce(wave >= 150 ? "FINAL BOSS WAVE!" : "BOSS WAVE!", 1.6);
+      announce(wave >= MAX_WAVE && !endless ? "FINAL WAVE!" : "BOSS WAVE!", 1.6);
     } else sfxWave();
+    // Rush / party mid-run juice
+    if (mode.feverStart && wave > 1 && wave % 15 === 0 && feverT <= 0) {
+      triggerFever(5);
+    }
     refreshUI();
-  }
-
-  function getChapterForWave(w) {
-    var acc = 0;
-    for (var i = 0; i < CHAPTERS.length; i++) {
-      acc += CHAPTERS[i].waves;
-      if (w <= acc) return CHAPTERS[i];
-    }
-    return CHAPTERS[CHAPTERS.length - 1];
-  }
-  function waveInChapter(w) {
-    var acc = 0;
-    for (var i = 0; i < CHAPTERS.length; i++) {
-      if (w <= acc + CHAPTERS[i].waves) return w - acc;
-      acc += CHAPTERS[i].waves;
-    }
-    return w;
-  }
-  function chapterIndexForWave(w) {
-    var acc = 0;
-    for (var i = 0; i < CHAPTERS.length; i++) {
-      acc += CHAPTERS[i].waves;
-      if (w <= acc) return i;
-    }
-    return CHAPTERS.length - 1;
   }
 
   function finishRoundEconomy() {
     // End-of-round bonus breakdown (kill money already paid live)
-    var rewardMul = DIFFS[difficulty].reward;
+    var rewardMul = DIFFS[difficulty].reward * (getMode().ban || 1);
     var clearBase = Math.floor((100 + wave * 14 + wave * wave * 0.1) * rewardMul);
     var perfect = roundLeak ? 0 : Math.floor((50 + wave * 8) * rewardMul);
     var farmInc = 0;
@@ -1228,7 +2215,12 @@
     }
 
     addBan(clearBase, W / 2, 90, { forceFloat: true, color: "#f5d041", size: 16 });
-    if (perfect > 0) addBan(perfect, W / 2, 120, { forceFloat: true, color: "#86efac", size: 14 });
+    if (perfect > 0) {
+      addBan(perfect, W / 2, 120, { forceFloat: true, color: "#86efac", size: 14 });
+      runPerfectWaves = (runPerfectWaves | 0) + 1;
+      metaStats.perfectWaves = (metaStats.perfectWaves | 0) + 1;
+      if (runPerfectWaves >= 10) unlockBadge("perfect_10");
+    }
     if (farmInc > 0) addBan(farmInc, W / 2, 150, { forceFloat: true, color: "#84cc16", size: 13 });
     if (interest > 0) addBan(interest, W / 2, 175, { forceFloat: true, color: "#67e8f9", size: 13 });
     if (streakBonus > 0) addBan(streakBonus, W / 2, 200, { forceFloat: true, color: "#fb923c", size: 13 });
@@ -1236,9 +2228,23 @@
       addBan(missionPay, W / 2, 225, { forceFloat: true, color: "#c084fc", size: 14 });
       missionsDone++;
       mission = null;
+      unlockBadge("mission_1");
     } else {
       mission = null;
     }
+    // Milestone badges mid-run (wave thresholds, streaks)
+    if (wave >= 10) unlockBadge("wave_10");
+    if (wave >= 25) unlockBadge("wave_25");
+    if (wave >= 50) unlockBadge("wave_50");
+    if (wave >= 75) unlockBadge("wave_75");
+    if (wave >= 100) unlockBadge("wave_100");
+    if (wave >= 150) unlockBadge("wave_150");
+    if (bestStreakRun >= 25) unlockBadge("streak_25");
+    if (bestStreakRun >= 50) unlockBadge("streak_50");
+    if (bestStreakRun >= 100) unlockBadge("streak_100");
+    if (totalBuilt >= 10) unlockBadge("builder");
+    if (goldensPopped >= 1) unlockBadge("jackpot");
+    saveRecords();
 
     var totalBonus = clearBase + perfect + farmInc + interest + streakBonus + missionPay;
     lastRoundSummary = {
@@ -1261,7 +2267,7 @@
     abilities.freeze.cd = Math.max(0, abilities.freeze.cd - 8);
     abilities.cash.cd = Math.max(0, abilities.cash.cd - 6);
     killStreak = 0;
-    saveRecords();
+    saveRecords(true); // wave complete — durable save
     refreshUI();
   }
 
@@ -1294,15 +2300,14 @@
 
   function afterRoundSummary() {
     if (!endless && wave >= MAX_WAVE) {
-      // Offer endless feel: unlock endless and keep going if they want via win screen
       endWin();
       return;
     }
-    // Campaign chapter transition every 25 waves
-    if (playMode === "campaign" && wave % 25 === 0 && wave < MAX_WAVE) {
-      advanceCampaignChapter();
+    // World Tour: hop maps without wiping progress — relocate towers
+    var mode = getMode();
+    if (mode.tour && mode.tourEvery && wave % mode.tourEvery === 0 && wave < MAX_WAVE) {
+      worldTourHop();
     }
-    // Auto-wave: short delay then next wave
     if (autoWave && (endless || wave < MAX_WAVE)) {
       autoWaveDelay = 0.85;
     }
@@ -1315,27 +2320,109 @@
     refreshUI();
   }
 
-  function advanceCampaignChapter() {
-    var nextIdx = chapterIndexForWave(wave + 1);
-    if (nextIdx <= campaignChapter && wave < MAX_WAVE) nextIdx = campaignChapter + 1;
-    if (nextIdx >= CHAPTERS.length) return;
-    campaignChapter = nextIdx;
-    var ch = CHAPTERS[campaignChapter];
-    currentMap = ch.map;
-    // Keep BAN + lives; reset board for new path
-    towers = []; threats = []; projectiles = []; particles = []; floats = [];
+  function blueprintSpent(bp) {
+    var def = TOWER_BY_ID[bp.id];
+    if (!def) return 0;
+    var sum = def.cost;
+    if (def.paths && bp.paths) {
+      for (var p = 0; p < 2; p++) {
+        for (var i = 0; i < (bp.paths[p] || 0); i++) {
+          if (def.paths[p][i]) sum += def.paths[p][i].cost;
+        }
+      }
+    }
+    return sum;
+  }
+
+  function findRedeployCell() {
+    var best = null, bestScore = 1e15;
+    for (var r = 0; r < ROWS; r++) {
+      for (var c = 0; c < COLS; c++) {
+        if (isPath(c, r) || towerAt(c, r)) continue;
+        var minD = 1e15;
+        for (var i = 0; i < PATH_CELLS.length; i++) {
+          var dx = PATH_CELLS[i][0] - c, dy = PATH_CELLS[i][1] - r;
+          var d = dx * dx + dy * dy;
+          if (d < minD) minD = d;
+        }
+        // Prefer near the path with a little noise so packs spread out
+        var score = minD + Math.random() * 3;
+        if (score < bestScore) {
+          bestScore = score;
+          best = { c: c, r: r };
+        }
+      }
+    }
+    return best;
+  }
+
+  // World Tour hop — keep upgrades, BAN, lives; relocate MonKeys to the new map
+  function worldTourHop() {
+    var pack = [];
+    for (var i = 0; i < towers.length; i++) {
+      var t = towers[i];
+      pack.push({
+        id: t.def.id,
+        paths: [t.paths[0], t.paths[1]],
+        target: t.target || "first"
+      });
+    }
+    threats = [];
+    projectiles = [];
+    particles = [];
+    floats = [];
+    spawnQueue = [];
     selectedTower = null;
+    clearPlaceMode();
+    towers = [];
+
+    tourStop = Math.min(tourStop + 1, TOUR_ROUTE.length - 1);
+    currentMap = TOUR_ROUTE[tourStop];
     rebuildPath();
     initDecor();
-    // Chapter clear bonus
-    var chBonus = 250 + campaignChapter * 120;
-    addBan(chBonus, W / 2, H / 2, { forceFloat: true, size: 18, color: "#f472b6" });
-    showToast(ch.title.toUpperCase() + " · +" + chBonus + " BAN");
+
+    var redeployed = 0, refunded = 0, refundBan = 0;
+    for (var j = 0; j < pack.length; j++) {
+      var bp = pack[j];
+      var def = TOWER_BY_ID[bp.id];
+      if (!def) continue;
+      var spot = findRedeployCell();
+      if (!spot) {
+        var val = blueprintSpent(bp);
+        ban += val;
+        refundBan += val;
+        refunded++;
+        continue;
+      }
+      towers.push({
+        c: spot.c, r: spot.r,
+        x: spot.c * TW + TW / 2, y: spot.r * TH + TH / 2,
+        def: def,
+        paths: [bp.paths[0] || 0, bp.paths[1] || 0],
+        cd: 0, angle: 0,
+        target: bp.target,
+        flashT: 0.55
+      });
+      redeployed++;
+    }
+
+    var hopBonus = 500 + tourStop * 280 + redeployed * 45;
+    addBan(hopBonus, W / 2, H * 0.42, { forceFloat: true, size: 18, color: "#f472b6" });
     confettiBurst();
-    // sync map picker UI
+    sfxAbility();
+    frameStatsId++;
+    announce(MAPS[currentMap].name.toUpperCase() + "!", 1.55);
+    var msg = "WORLD TOUR · " + MAPS[currentMap].name + " · " + redeployed + " relocated";
+    if (refunded) msg += " · " + refunded + " refunded (+" + Math.floor(refundBan) + ")";
+    msg += " · +" + hopBonus + " BAN";
+    showToast(msg);
     document.querySelectorAll("#mapPick .chip-btn, #mapPick .map-card").forEach(function (b) {
       b.classList.toggle("on", b.getAttribute("data-map") === currentMap);
     });
+    if (hudMapName) {
+      hudMapName.textContent = MAPS[currentMap].short + " · Tour";
+    }
+    saveRecords(true); // map hop / progress
     refreshUI();
   }
 
@@ -1352,11 +2439,19 @@
     threats.push(th);
   }
 
-  function placeTower(c, r) {
-    if (!running || gameOver || paused) return;
-    if (!inBounds(c, r) || isPath(c, r) || towerAt(c, r)) return;
+  function clearPlaceMode() {
+    if (selectedShop != null) {
+      selectedShop = null;
+      uiShopSnap = "";
+    }
+  }
+
+  function placeTower(c, r, keepPlacing) {
+    if (!running || gameOver || paused) return false;
+    if (!selectedShop) return false;
+    if (!inBounds(c, r) || isPath(c, r) || towerAt(c, r)) return false;
     var def = TOWER_BY_ID[selectedShop];
-    if (!def || ban < def.cost) return;
+    if (!def || ban < def.cost) return false;
     ban -= def.cost;
     var t = {
       c: c, r: r, x: c * TW + TW / 2, y: r * TH + TH / 2,
@@ -1368,7 +2463,11 @@
     sfxPlace(); burst(t.x, t.y, def.color, 10);
     floatTxt(t.x, t.y - 16, "-" + def.cost, "#f5d041");
     frameStatsId++; // invalidate aura caches for nearby towers
+    // Default: leave place mode so next click selects/upgrades, not spam-builds
+    // Hold Ctrl/Cmd to keep placing the same tower type
+    if (!keepPlacing) clearPlaceMode();
     refreshUI();
+    return true;
   }
 
   function upgradeTower(pathIdx) {
@@ -1414,11 +2513,19 @@
     refreshUI();
   }
 
+  function noteAbilityUse() {
+    runAbilityUses = (runAbilityUses | 0) + 1;
+    metaStats.abilityUses = (metaStats.abilityUses | 0) + 1;
+    if (runAbilityUses === 1) unlockBadge("ability_1");
+    if (metaStats.abilityUses >= 25) unlockBadge("abilities_25");
+  }
+
   // Abilities
   function useStorm() {
     if (!running || gameOver || paused || abilities.storm.cd > 0) return;
     if (roundOv && !roundOv.classList.contains("hidden")) return;
     abilities.storm.cd = abilities.storm.maxCd;
+    noteAbilityUse();
     sfxAbility();
     showToast("⚡ PEEL STORM");
     shake = 0.45;
@@ -1436,6 +2543,7 @@
     if (!running || gameOver || paused || abilities.freeze.cd > 0) return;
     if (roundOv && !roundOv.classList.contains("hidden")) return;
     abilities.freeze.cd = abilities.freeze.maxCd;
+    noteAbilityUse();
     sfxAbility();
     showToast("🧊 CRYO RAIN");
     for (var i = 0; i < threats.length; i++) {
@@ -1450,6 +2558,7 @@
     if (!running || gameOver || paused || abilities.cash.cd > 0) return;
     if (roundOv && !roundOv.classList.contains("hidden")) return;
     abilities.cash.cd = abilities.cash.maxCd;
+    noteAbilityUse();
     sfxAbility();
     var drop = 220 + wave * 6 + missionsDone * 20 + Math.floor(killStreak * 3);
     addBan(drop, W / 2, 90, { forceFloat: true, size: 16 });
@@ -1461,6 +2570,7 @@
     if (!running || gameOver || paused || abilities.rage.cd > 0) return;
     if (roundOv && !roundOv.classList.contains("hidden")) return;
     abilities.rage.cd = abilities.rage.maxCd;
+    noteAbilityUse();
     rageT = 9;
     sfxFever();
     showToast("🐵 MONKEY RAGE · MAX FIRE RATE");
@@ -1545,6 +2655,11 @@
     animT += dt;
     frameStatsId++; // invalidate per-frame stats cache
     if (toastT > 0) { toastT -= dt; if (toastT <= 0) toast.classList.remove("show"); }
+    tickBadgeToast(dt);
+    if (saveFlashT > 0) {
+      saveFlashT -= dt;
+      if (saveFlashT <= 0) updateSaveUI();
+    }
     if (shake > 0) shake = Math.max(0, shake - dt * 2.2);
 
     // ability CDs + juice timers
@@ -1604,7 +2719,7 @@
         for (var vi = 0; vi < towers.length; vi++) {
           if (towers[vi].def.support) drop += getStats(towers[vi]).income || 0;
         }
-        drop = Math.floor(drop * DIFFS[difficulty].reward);
+        drop = Math.floor(drop * DIFFS[difficulty].reward * (getMode().ban || 1));
         addBan(drop, W / 2, 80);
         showToast("🪂 AIRDROP +" + drop + " BAN");
         confettiBurst();
@@ -1892,8 +3007,8 @@
     ctx.moveTo(cx, cy - 8); ctx.lineTo(cx, cy + 8);
     ctx.stroke();
 
-    // Placement preview only when not selecting an existing tower for upgrade
-    if (!selectedTower || !occupied) {
+    // Placement ghost only while a shop tower is armed for placing
+    if (selectedShop && (!selectedTower || !occupied)) {
       var def = TOWER_BY_ID[selectedShop];
       if (def && valid) {
         ctx.beginPath();
@@ -1905,7 +3020,6 @@
         ctx.setLineDash([5, 5]);
         ctx.stroke();
         ctx.setLineDash([]);
-        // Ghost portrait
         ctx.globalAlpha = 0.55;
         ctx.font = "22px serif";
         ctx.textAlign = "center";
@@ -2152,7 +3266,8 @@
       ctx.globalAlpha = 0.55;
       ctx.fillStyle = "#fff8d6";
       var tip = autoWave ? "AUTO" : "Space → wave";
-      if (selectedTower) tip = "Z/X path · Tab target · click again target";
+      if (selectedShop) tip = "Click to place · hold Ctrl to place more";
+      else if (selectedTower) tip = "Z/X upgrade · Tab target · click tower to select";
       ctx.fillText(tip, 12, 10);
       ctx.globalAlpha = 1;
     }
@@ -2314,7 +3429,18 @@
       b.disabled = !running || gameOver || ban < d.cost;
       b.title = d.desc + " · [" + (i + 1) + "]";
       b.addEventListener("click", (function (id) {
-        return function () { selectedShop = id; selectedTower = null; uiShopSnap = ""; refreshUI(); };
+        return function () {
+          // Toggle: click same shop item again to cancel place mode
+          if (selectedShop === id) {
+            clearPlaceMode();
+            selectedTower = null;
+          } else {
+            selectedShop = id;
+            selectedTower = null;
+          }
+          uiShopSnap = "";
+          refreshUI();
+        };
       })(d.id));
       shopEl.appendChild(b);
     }
@@ -2364,7 +3490,7 @@
       hudStreak.style.opacity = killStreak >= 5 ? "1" : "0.45";
     }
     if (hudMapName) {
-      var modeTag = playMode === "campaign" ? "Campaign" : DIFFS[difficulty].name;
+      var modeTag = getMode().short + " · " + DIFFS[difficulty].name;
       hudMapName.textContent = MAPS[currentMap].short + " · " + modeTag;
     }
     if (running && !gameOver) {
@@ -2432,9 +3558,11 @@
           " · " + def.cost + " BAN</span></div></div>" +
           '<p class="sel-desc">' + def.desc + "</p>" +
           upgradePathHtml(def, false) +
-          '<p class="sel-hint">Click grass to place</p>';
+          '<p class="sel-hint">Click grass to place · hold Ctrl to place more</p>';
       } else {
-        selBox.innerHTML = "Choose a tower from the shop.";
+        selBox.innerHTML = selectedTower
+          ? ""
+          : "Select a tower on the map, or pick one from the shop to place.";
       }
       if (btnUp) { btnUp.style.display = "none"; btnUp.disabled = true; }
       btnSell.disabled = true; btnSell.textContent = "Sell";
@@ -2445,14 +3573,18 @@
 
   function resetGame() {
     var d = DIFFS[difficulty];
-    if (playMode === "campaign") {
-      campaignChapter = 0;
-      currentMap = CHAPTERS[0].map;
+    var mode = getMode();
+    endless = false;
+    syncWaveCap();
+    tourStop = 0;
+    if (mode.tour) {
+      currentMap = TOUR_ROUTE[0];
       document.querySelectorAll("#mapPick .chip-btn, #mapPick .map-card").forEach(function (b) {
         b.classList.toggle("on", b.getAttribute("data-map") === currentMap);
       });
     }
-    ban = d.ban; lives = d.lives; wave = 0; pops = 0; banEarned = 0;
+    ban = d.ban + (mode.startBan || 0);
+    lives = d.lives; wave = 0; pops = 0; banEarned = 0;
     running = true; paused = false; gameOver = false;
     setPlayingUI(true);
     selectedShop = "dart"; selectedTower = null;
@@ -2461,18 +3593,27 @@
     missionsDone = 0; mission = null;
     roundKillBan = 0; roundKills = 0; roundLeak = false; killStreak = 0;
     chapterPending = false; lastRoundSummary = null;
-    feverT = 0; rageT = 0; eventT = 0; eventKind = null; eventCd = 10;
+    feverT = mode.feverStart || 0; rageT = 0; eventT = 0; eventKind = null; eventCd = modeEventCdBase();
     autoWaveDelay = 0; hitFlash = 0; comboAnnouncerT = 0; bestStreakRun = 0; goldensPopped = 0;
-    endless = false;
+    runPerfectWaves = 0; runAbilityUses = 0; runBadgeQueue = [];
+    lastRunScore = 0; lastRunBadges = []; badgeToastT = 0;
+    var bToast = document.getElementById("badgeToast");
+    if (bToast) bToast.classList.remove("show");
     abilities.storm.cd = 0; abilities.freeze.cd = 0; abilities.cash.cd = 0; abilities.rage.cd = 0;
     rebuildPath(); initDecor();
     startOv.classList.add("hidden"); winOv.classList.add("hidden");
     loseOv.classList.add("hidden"); pauseOv.classList.add("hidden");
     if (roundOv) roundOv.classList.add("hidden");
-    var label = playMode === "campaign"
-      ? "CAMPAIGN · " + CHAPTERS[0].title
-      : MAPS[currentMap].name.toUpperCase() + " · " + d.name.toUpperCase();
+    if (feverT > 0) {
+      if (hudFever) { hudFever.classList.add("on"); hudFever.textContent = "Fever " + Math.ceil(feverT) + "s"; }
+    }
+    var label = mode.name.toUpperCase() + " · " + MAPS[currentMap].name.toUpperCase() + " · " + d.name.toUpperCase();
     showToast(label);
+    if (mode.tour) announce("WORLD TOUR!", 1.3);
+    if (mode.feverStart) announce("FEVER RUSH!", 1.2);
+    if (playMode === "party") announce("PARTY TIME!", 1.2);
+    noteModePlay(playMode);
+    saveRecords(true);
     refreshUI(); sfxPlace();
   }
 
@@ -2480,26 +3621,34 @@
     gameOver = true; running = false; paused = false;
     setPlayingUI(false);
     if (roundOv) roundOv.classList.add("hidden");
+    var mode = getMode();
     document.getElementById("winMsg").textContent =
-      MAX_WAVE + " waves" + (playMode === "campaign" ? " campaign" : " on " + MAPS[currentMap].name) +
-      " (" + DIFFS[difficulty].name + ")! Pops " + pops + " · BAN earned " + Math.floor(banEarned) +
+      mode.name + " clear — " + wave + " waves on " + MAPS[currentMap].name +
+      " (" + DIFFS[difficulty].name + "). Pops " + pops + " · BAN earned " + Math.floor(banEarned) +
       " · Best streak x" + bestStreakRun + " · Jackpots " + goldensPopped +
-      " · MonKeys " + totalBuilt + " · Missions " + missionsDone + ". Legendary.";
+      " · MonKeys " + totalBuilt + ". Legendary.";
     winOv.classList.remove("hidden");
     var endlessBtn = document.getElementById("btnEndless");
     if (endlessBtn) endlessBtn.classList.remove("hidden");
     confettiBurst(); confettiBurst(); confettiBurst(); sfxWin();
     records.games = (records.games | 0) + 1;
-    saveRecords();
+    noteMapClear(currentMap);
+    noteModeWin(playMode);
+    finalizeRun({ won: true });
+    showRunMeta(true);
+    saveRecords(true);
+    refreshHubUI();
   }
 
   function startEndless() {
     endless = true;
+    syncWaveCap();
     gameOver = false;
     running = true;
     paused = false;
+    setPlayingUI(true);
     winOv.classList.add("hidden");
-    showToast("ENDLESS MODE · HOW FAR CAN YOU GO?");
+    showToast("ENDLESS · HOW FAR CAN YOU GO?");
     confettiBurst();
     autoWaveDelay = 1.2;
     refreshUI();
@@ -2513,7 +3662,10 @@
       " · BAN earned " + Math.floor(banEarned) + ". Refuel and relaunch.";
     loseOv.classList.remove("hidden"); sfxLeak();
     records.games = (records.games | 0) + 1;
-    saveRecords();
+    finalizeRun({ won: false });
+    showRunMeta(false);
+    saveRecords(true);
+    refreshHubUI();
   }
 
   // Map pointer → game coords, correctly handling letterboxing / object-fit
@@ -2558,6 +3710,8 @@
     if (!p.inCanvas || !inBounds(p.c, p.r)) return;
     var existing = towerAt(p.c, p.r);
     if (existing) {
+      // Selecting a tower always exits place mode
+      clearPlaceMode();
       // Click same tower again → cycle target priority (BTD-style)
       if (selectedTower === existing && !existing.def.farm && !(existing.def.support && !existing.def.freezePulse)) {
         cycleTarget(existing);
@@ -2567,7 +3721,17 @@
       }
       return;
     }
-    placeTower(p.c, p.r);
+    // Empty tile: place only if a shop tower is armed
+    if (selectedShop) {
+      var keepPlacing = !!(e.ctrlKey || e.metaKey);
+      placeTower(p.c, p.r, keepPlacing);
+      return;
+    }
+    // Normal click on empty grass — deselect
+    if (selectedTower) {
+      selectedTower = null;
+      refreshUI();
+    }
   }
   canvas.addEventListener("mousedown", onPointer);
   canvas.addEventListener("touchstart", onPointer, { passive: false });
@@ -2588,6 +3752,8 @@
       document.querySelectorAll("#mapPick .chip-btn, #mapPick .map-card").forEach(function (x) { x.classList.remove("on"); });
       b.classList.add("on");
       rebuildPath(); initDecor();
+      progressMeta.lastMapId = currentMap;
+      saveRecords();
       refreshUI();
     });
   });
@@ -2597,6 +3763,8 @@
       difficulty = b.getAttribute("data-diff");
       document.querySelectorAll("#diffPick .chip-btn").forEach(function (x) { x.classList.remove("on"); });
       b.classList.add("on");
+      progressMeta.lastDifficulty = difficulty;
+      saveRecords();
       refreshUI();
     });
   });
@@ -2613,10 +3781,10 @@
   });
   document.getElementById("btnStart").addEventListener("click", function () { ensureAudio(); resetGame(); });
   document.getElementById("btnWin").addEventListener("click", function () {
-    ensureAudio(); startOv.classList.remove("hidden"); winOv.classList.add("hidden"); running = false; gameOver = false; setPlayingUI(false); refreshUI();
+    ensureAudio(); startOv.classList.remove("hidden"); winOv.classList.add("hidden"); running = false; gameOver = false; setPlayingUI(false); refreshHubUI(); refreshUI();
   });
   document.getElementById("btnLose").addEventListener("click", function () {
-    ensureAudio(); startOv.classList.remove("hidden"); loseOv.classList.add("hidden"); running = false; gameOver = false; setPlayingUI(false); refreshUI();
+    ensureAudio(); startOv.classList.remove("hidden"); loseOv.classList.add("hidden"); running = false; gameOver = false; setPlayingUI(false); refreshHubUI(); refreshUI();
   });
 
   if (btnAbilityStorm) btnAbilityStorm.addEventListener("click", function () { ensureAudio(); useStorm(); });
@@ -2627,28 +3795,49 @@
     autoWave = !autoWave;
     if (btnAutoWave) {
       btnAutoWave.classList.toggle("on", autoWave);
-      btnAutoWave.textContent = autoWave ? "AUTO ON" : "AUTO OFF";
+      btnAutoWave.textContent = autoWave ? "Auto on" : "Auto";
     }
     if (autoWave && running && !waveActive && !gameOver && !(roundOv && !roundOv.classList.contains("hidden"))) {
       autoWaveDelay = 0.4;
     }
     showToast(autoWave ? "AUTO-WAVE ON" : "AUTO-WAVE OFF");
+    saveRecords();
   });
   if (btnRoundContinue) btnRoundContinue.addEventListener("click", function () { ensureAudio(); dismissRoundSummary(); });
   var btnEndless = document.getElementById("btnEndless");
   if (btnEndless) btnEndless.addEventListener("click", function () { ensureAudio(); startEndless(); });
 
+  function updateModeUI() {
+    var mode = getMode();
+    var mapPick = document.getElementById("mapPick");
+    var mapRow = mapPick ? mapPick.closest(".setup-row") : null;
+    if (mapPick) {
+      mapPick.style.opacity = mode.pickMap ? "1" : "0.45";
+      mapPick.style.pointerEvents = mode.pickMap ? "" : "none";
+    }
+    if (mapRow) {
+      var lab = mapRow.querySelector("label");
+      if (lab) lab.textContent = mode.pickMap ? "Map" : "Map (Tour picks for you)";
+    }
+    var desc = document.getElementById("modeDesc");
+    if (desc) desc.textContent = mode.tagline;
+    syncWaveCap();
+    if (hudWaveMax) hudWaveMax.textContent = String(MAX_WAVE);
+  }
+
   document.querySelectorAll("#modePick .chip-btn").forEach(function (b) {
     b.addEventListener("click", function () {
       if (running && !gameOver) return;
-      playMode = b.getAttribute("data-mode") || "skirmish";
+      playMode = b.getAttribute("data-mode") || "classic";
       document.querySelectorAll("#modePick .chip-btn").forEach(function (x) { x.classList.remove("on"); });
       b.classList.add("on");
-      var mapPick = document.getElementById("mapPick");
-      if (mapPick) mapPick.style.opacity = playMode === "campaign" ? "0.45" : "1";
+      progressMeta.lastMode = playMode;
+      updateModeUI();
+      saveRecords();
       refreshUI();
     });
   });
+  updateModeUI();
 
   window.addEventListener("keydown", function (e) {
     var k = e.key;
@@ -2679,13 +3868,14 @@
           autoWave = !autoWave;
           if (btnAutoWave) {
             btnAutoWave.classList.toggle("on", autoWave);
-            btnAutoWave.textContent = autoWave ? "AUTO ON" : "AUTO OFF";
+            btnAutoWave.textContent = autoWave ? "Auto on" : "Auto";
           }
           showToast(autoWave ? "AUTO-WAVE ON" : "AUTO-WAVE OFF");
+          saveRecords();
         }
       }
     }
-    if (k === "Escape") { selectedTower = null; refreshUI(); }
+    if (k === "Escape") { selectedTower = null; clearPlaceMode(); refreshUI(); }
     // 10x speed for the chaotic
     if (k === "0") {
       speed = 10;
@@ -2698,7 +3888,13 @@
       "1": "dart", "2": "boomer", "3": "sniper", "4": "bomb", "5": "ice",
       "6": "farm", "7": "village", "8": "super", "9": "battery"
     };
-    if (keys[k]) { selectedShop = keys[k]; selectedTower = null; refreshUI(); }
+    if (keys[k]) {
+      // Arm place mode for that tower (toggle off if already selected)
+      if (selectedShop === keys[k]) clearPlaceMode();
+      else { selectedShop = keys[k]; selectedTower = null; }
+      uiShopSnap = "";
+      refreshUI();
+    }
   });
 
   // ability UI tick
@@ -2707,17 +3903,55 @@
   var btnMute = document.getElementById("btnMute");
   if (btnMute) btnMute.addEventListener("click", function () { ensureAudio(); toggleMute(); });
 
-  // Show personal bests on start screen
-  (function showRecords() {
-    var el = document.getElementById("tdRecords");
-    if (!el) return;
-    if (records.bestWave || records.bestStreak) {
-      el.textContent = "Best wave " + (records.bestWave || 0) +
-        " · Streak x" + (records.bestStreak || 0) +
-        " · Pops " + (records.bestPops || 0);
-      el.classList.remove("hidden");
-    }
-  })();
+  // Apply loaded prefs (mute/map/mode) + hub
+  applyLoadedPrefsToUI();
+  refreshRecordsLabel();
+  updateSaveUI();
+  refreshHubUI();
+  setHubTab("badges");
+
+  document.querySelectorAll(".hub-tab").forEach(function (tab) {
+    tab.addEventListener("click", function () {
+      setHubTab(tab.getAttribute("data-hub") || "badges");
+    });
+  });
+
+  // Progress UI buttons
+  var btnExport = document.getElementById("btnExportProgress");
+  var btnImport = document.getElementById("btnImportProgress");
+  var btnReset = document.getElementById("btnResetProgress");
+  var importFile = document.getElementById("tdImportFile");
+  if (btnExport) btnExport.addEventListener("click", function () { downloadProgressFile(); });
+  if (btnImport) btnImport.addEventListener("click", function () { promptImportProgress(); });
+  if (btnReset) btnReset.addEventListener("click", function () { confirmResetProgress(); });
+  if (importFile) {
+    importFile.addEventListener("change", function () {
+      var file = importFile.files && importFile.files[0];
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function () {
+        var res = importProgress(String(reader.result || ""));
+        showToast(res.message);
+        if (res.ok) { refreshHubUI(); refreshUI(); }
+        importFile.value = "";
+      };
+      reader.onerror = function () {
+        showToast("Import failed");
+        importFile.value = "";
+      };
+      reader.readAsText(file);
+    });
+  }
+
+  // Flush save when leaving the page / backgrounding the tab
+  function flushSaveOnLeave() {
+    try { saveRecords(true); } catch (e) {}
+  }
+  window.addEventListener("pagehide", flushSaveOnLeave);
+  window.addEventListener("beforeunload", flushSaveOnLeave);
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "hidden") flushSaveOnLeave();
+  });
 
   rebuildPath();
   initDecor();
