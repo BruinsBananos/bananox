@@ -3,195 +3,221 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Play · Banano Defense Command · Banano X</title>
-  <meta name="description" content="Mission-control Banano tower defense — research trees, branching upgrades, orbital strikes, 40 waves.">
+  <title>Banano TD · Don’t Let Your Memes Be Dreams</title>
+  <meta name="description" content="Bloons-style Banano tower defense — MonKeys, layered FUD balloons, potassium pops.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <style>
-    .td-wrap {
-      padding: calc(var(--nav-h) + 1rem) 0.85rem 2.5rem;
-      max-width: 1180px;
+    :root {
+      --td-yellow: #ffe566;
+      --td-ban: #f5d041;
+      --td-green: #3d8b4f;
+      --td-leaf: #6fbf73;
+      --td-path: #c4a574;
+      --td-ink: #1a2e1a;
+    }
+    body.td-page { background: #0c1a10; }
+    .td-app {
+      max-width: 1100px;
       margin: 0 auto;
+      padding: calc(var(--nav-h) + 0.75rem) 0.75rem 2rem;
     }
-    .td-header { text-align: center; margin-bottom: 0.85rem; }
-    .td-header h1 {
-      font-size: clamp(1.6rem, 3.5vw, 2.35rem);
-      background: linear-gradient(90deg, #ffe566, #f5d041, #67e8f9, #a78bfa, #f5d041);
-      background-size: 240% auto;
-      -webkit-background-clip: text; background-clip: text;
-      -webkit-text-fill-color: transparent;
-      animation: shine 3.5s linear infinite;
+    .td-title {
+      text-align: center;
+      margin-bottom: 0.65rem;
     }
-    @keyframes shine { to { background-position: 240% center; } }
-    .td-header p { color: var(--text-muted); font-size: 0.9rem; margin-top: 0.3rem; }
-    .td-shell {
+    .td-title h1 {
+      font-family: Fredoka, Syne, system-ui, sans-serif;
+      font-size: clamp(1.55rem, 3.5vw, 2.2rem);
+      color: var(--td-ban);
+      text-shadow: 0 0 24px rgba(245, 208, 65, 0.35);
+      letter-spacing: -0.02em;
+    }
+    .td-title p {
+      color: rgba(232, 245, 216, 0.7);
+      font-size: 0.9rem;
+      margin-top: 0.25rem;
+    }
+    .td-layout {
       display: grid;
-      grid-template-columns: 1fr;
       gap: 0.75rem;
     }
-    @media (min-width: 980px) {
-      .td-shell { grid-template-columns: 1fr 280px; align-items: start; }
+    @media (min-width: 960px) {
+      .td-layout { grid-template-columns: 1fr 250px; align-items: start; }
     }
-    .td-stage {
-      position: relative;
-      border-radius: 16px;
+    .td-stage-wrap {
+      border-radius: 18px;
       overflow: hidden;
-      border: 2px solid rgba(245, 208, 65, 0.35);
-      box-shadow: 0 0 70px rgba(103, 232, 249, 0.08), 0 0 50px rgba(245, 208, 65, 0.1), 0 20px 40px rgba(0,0,0,0.5);
-      background: #070f12;
+      border: 3px solid rgba(245, 208, 65, 0.45);
+      box-shadow: 0 0 0 3px rgba(61, 139, 79, 0.35), 0 18px 50px rgba(0,0,0,0.5);
+      background: #1a3d24;
+      position: relative;
       touch-action: none;
       user-select: none;
     }
-    .td-stage canvas { display: block; width: 100%; height: auto; }
     .td-hud {
-      display: flex; flex-wrap: wrap; gap: 0.4rem;
-      justify-content: space-between; align-items: center;
-      padding: 0.55rem 0.7rem;
-      background: linear-gradient(180deg, rgba(8,16,22,0.95), rgba(5,12,16,0.9));
-      border-bottom: 1px solid rgba(103, 232, 249, 0.15);
-      font-size: 0.78rem; font-weight: 600;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem 0.65rem;
+      background: linear-gradient(180deg, #2d5a38, #234a2e);
+      border-bottom: 2px solid rgba(245, 208, 65, 0.3);
+      font-family: Fredoka, system-ui, sans-serif;
+      font-size: 0.82rem;
+      color: #fff8d6;
     }
-    .td-hud .stat {
-      display: inline-flex; align-items: center; gap: 0.28rem;
-      padding: 0.22rem 0.5rem; border-radius: 999px;
-      background: rgba(245, 208, 65, 0.07);
-      border: 1px solid rgba(245, 208, 65, 0.14);
+    .td-hud .pill {
+      background: rgba(0,0,0,0.25);
+      border: 2px solid rgba(255,255,255,0.12);
+      border-radius: 999px;
+      padding: 0.28rem 0.65rem;
+      display: inline-flex;
+      gap: 0.35rem;
+      align-items: center;
     }
-    .td-hud .stat em {
-      color: var(--banana); font-style: normal;
-      font-family: Syne, system-ui, sans-serif;
+    .td-hud .pill b { color: var(--td-yellow); font-weight: 700; }
+    .td-hud .speed-btns { display: inline-flex; gap: 0.25rem; }
+    .td-hud button.spd {
+      font-family: Fredoka, system-ui, sans-serif;
+      border: 2px solid rgba(255,255,255,0.15);
+      background: rgba(0,0,0,0.25);
+      color: #fff8d6;
+      border-radius: 8px;
+      padding: 0.2rem 0.45rem;
+      cursor: pointer;
+      font-size: 0.75rem;
     }
-    .td-hud .stat.sci em { color: #67e8f9; }
-    .td-side { display: flex; flex-direction: column; gap: 0.55rem; min-width: 0; }
-    .tabs {
-      display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.3rem;
+    .td-hud button.spd.on {
+      background: var(--td-ban);
+      color: #1a1400;
+      border-color: transparent;
     }
-    .tab {
-      font-family: Syne, system-ui, sans-serif; font-weight: 700; font-size: 0.68rem;
-      padding: 0.5rem 0.2rem; border-radius: 10px; cursor: pointer;
-      border: 1px solid rgba(245,208,65,0.18);
-      background: rgba(0,0,0,0.35); color: var(--text-muted);
-      letter-spacing: 0.04em; text-transform: uppercase;
+    canvas#game {
+      display: block;
+      width: 100%;
+      height: auto;
+      background: #2f6b3c;
+      cursor: crosshair;
     }
-    .tab.active {
-      color: #0a0a0a; border-color: transparent;
-      background: linear-gradient(135deg, #ffe566, #f5d041);
-      box-shadow: 0 4px 16px rgba(245,208,65,0.25);
+    .td-side {
+      display: flex;
+      flex-direction: column;
+      gap: 0.55rem;
     }
-    .td-panel {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 0.75rem;
-      backdrop-filter: blur(12px);
-      max-height: min(70vh, 640px);
-      overflow: auto;
+    .td-card {
+      background: linear-gradient(160deg, rgba(20,40,28,0.95), rgba(12,28,20,0.95));
+      border: 2px solid rgba(245, 208, 65, 0.28);
+      border-radius: 16px;
+      padding: 0.7rem;
     }
-    .td-panel h3 {
-      font-size: 0.72rem; letter-spacing: 0.07em; text-transform: uppercase;
-      color: var(--banana); margin-bottom: 0.55rem;
+    .td-card h3 {
+      font-family: Fredoka, system-ui, sans-serif;
+      font-size: 0.85rem;
+      color: var(--td-ban);
+      margin-bottom: 0.5rem;
     }
-    .panel-section { display: none; }
-    .panel-section.active { display: block; }
-    .tower-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; }
-    .tower-btn {
-      display: flex; align-items: flex-start; gap: 0.4rem; text-align: left;
-      padding: 0.5rem; border-radius: 11px;
-      border: 1.5px solid rgba(245,208,65,0.18);
-      background: rgba(0,0,0,0.35); color: var(--text);
-      cursor: pointer; font-family: inherit; transition: 0.15s;
+    .shop {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.4rem;
     }
-    .tower-btn:hover:not(:disabled) { border-color: rgba(245,208,65,0.5); background: rgba(245,208,65,0.08); }
-    .tower-btn.active { border-color: var(--banana); background: rgba(245,208,65,0.14); }
-    .tower-btn.locked { opacity: 0.45; }
-    .tower-btn:disabled { cursor: not-allowed; }
-    .tower-btn .ico { font-size: 1.15rem; line-height: 1; }
-    .tower-btn .name { font-family: Syne, system-ui, sans-serif; font-weight: 700; font-size: 0.75rem; color: var(--banana); display: block; }
-    .tower-btn .cost { font-size: 0.68rem; color: var(--text-muted); }
-    .tower-btn .lock { font-size: 0.62rem; color: #f87171; }
-    .selected-box {
-      font-size: 0.78rem; color: var(--text-muted); line-height: 1.45;
-      padding: 0.55rem; border-radius: 10px;
-      background: rgba(0,0,0,0.3); border: 1px solid rgba(245,208,65,0.1);
-      margin-bottom: 0.5rem; min-height: 4.5rem;
+    .shop-btn {
+      border: 2px solid rgba(245,208,65,0.25);
+      background: rgba(0,0,0,0.35);
+      border-radius: 12px;
+      padding: 0.45rem;
+      cursor: pointer;
+      text-align: left;
+      color: #e8f5d8;
+      font-family: DM Sans, system-ui, sans-serif;
+      transition: 0.12s;
     }
-    .selected-box strong { color: var(--text); }
-    .path-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 0.35rem; margin: 0.4rem 0; }
-    .path-btn {
-      font-size: 0.68rem; padding: 0.45rem; border-radius: 9px; cursor: pointer;
-      border: 1px solid rgba(103,232,249,0.3); background: rgba(103,232,249,0.08);
-      color: #a5f3fc; font-family: inherit; text-align: left; line-height: 1.3;
+    .shop-btn:hover:not(:disabled) {
+      border-color: var(--td-ban);
+      transform: translateY(-1px);
     }
-    .path-btn:hover:not(:disabled) { background: rgba(103,232,249,0.16); }
-    .path-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-    .path-btn.picked { border-color: #f5d041; background: rgba(245,208,65,0.12); color: #fde68a; }
-    .td-actions { display: flex; flex-direction: column; gap: 0.35rem; }
-    .td-actions .btn { width: 100%; font-size: 0.8rem; }
-    .research-list, .ability-list, .intel-list { display: flex; flex-direction: column; gap: 0.4rem; }
-    .res-item, .abil-item {
-      display: flex; gap: 0.5rem; align-items: flex-start;
-      padding: 0.5rem; border-radius: 10px;
-      border: 1px solid rgba(245,208,65,0.14); background: rgba(0,0,0,0.28);
+    .shop-btn.on {
+      border-color: var(--td-yellow);
+      background: rgba(245,208,65,0.16);
+      box-shadow: 0 0 16px rgba(245,208,65,0.2);
     }
-    .res-item.owned { border-color: rgba(134,239,172,0.35); background: rgba(134,239,172,0.06); }
-    .res-item .ico, .abil-item .ico { font-size: 1.2rem; }
-    .res-item .body, .abil-item .body { flex: 1; min-width: 0; }
-    .res-item .title, .abil-item .title {
-      font-family: Syne, system-ui, sans-serif; font-weight: 700;
-      font-size: 0.78rem; color: #f5d041;
+    .shop-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .shop-btn .ico { font-size: 1.35rem; display: block; line-height: 1.1; }
+    .shop-btn .nm {
+      font-family: Fredoka, system-ui, sans-serif;
+      font-size: 0.72rem;
+      color: var(--td-ban);
+      display: block;
     }
-    .res-item .desc, .abil-item .desc { font-size: 0.68rem; color: var(--text-muted); line-height: 1.35; margin-top: 0.15rem; }
-    .res-item button, .abil-item button {
-      flex-shrink: 0; font-size: 0.68rem; font-weight: 700;
-      padding: 0.35rem 0.5rem; border-radius: 8px; cursor: pointer;
-      border: none; background: linear-gradient(135deg, #ffe566, #f5d041); color: #1a1400;
-      font-family: Syne, system-ui, sans-serif;
+    .shop-btn .cs { font-size: 0.68rem; opacity: 0.8; }
+    .sel-box {
+      min-height: 5.5rem;
+      font-size: 0.8rem;
+      color: rgba(232,245,216,0.75);
+      line-height: 1.4;
+      margin-bottom: 0.5rem;
     }
-    .res-item button:disabled, .abil-item button:disabled {
-      background: rgba(255,255,255,0.08); color: var(--text-muted); cursor: not-allowed;
+    .sel-box strong { color: #fff8d6; }
+    .act { display: flex; flex-direction: column; gap: 0.35rem; }
+    .act .btn { width: 100%; font-family: Fredoka, system-ui, sans-serif; }
+    .hint {
+      font-size: 0.72rem;
+      color: rgba(232,245,216,0.55);
+      line-height: 1.4;
     }
-    .abil-item button.ready { box-shadow: 0 0 12px rgba(245,208,65,0.35); }
-    .abil-item button.cd { background: rgba(255,255,255,0.08); color: #94a3b8; }
-    .td-tip { font-size: 0.7rem; color: var(--text-muted); line-height: 1.4; margin-top: 0.5rem; }
-    .td-tip strong { color: var(--banana); }
-    .overlay-msg {
-      position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-      background: rgba(3, 8, 12, 0.9); backdrop-filter: blur(10px);
-      z-index: 6; padding: 1.25rem; text-align: center;
+    .overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(8, 18, 12, 0.88);
+      backdrop-filter: blur(8px);
+      padding: 1.25rem;
+      text-align: center;
     }
-    .overlay-msg.hidden { display: none; }
-    .overlay-msg h2 {
-      font-size: 1.65rem; color: var(--banana); margin-bottom: 0.5rem;
-      text-shadow: 0 0 28px rgba(245,208,65,0.45);
+    .overlay.hidden { display: none; }
+    .overlay h2 {
+      font-family: Fredoka, system-ui, sans-serif;
+      font-size: 1.75rem;
+      color: var(--td-ban);
+      margin-bottom: 0.5rem;
+      text-shadow: 0 0 20px rgba(245,208,65,0.4);
     }
-    .overlay-msg.lose h2 { color: #f87171; text-shadow: 0 0 24px rgba(248,113,113,0.4); }
-    .overlay-msg p { color: var(--text-muted); margin-bottom: 1rem; font-size: 0.9rem; line-height: 1.45; }
-    .wave-banner {
-      position: absolute; left: 50%; top: 16%; transform: translateX(-50%);
-      pointer-events: none; font-family: Syne, system-ui, sans-serif; font-weight: 800;
-      font-size: 1.25rem; color: #67e8f9;
-      text-shadow: 0 2px 14px rgba(0,0,0,0.85), 0 0 22px rgba(103,232,249,0.45);
-      opacity: 0; transition: opacity 0.25s; z-index: 4; white-space: nowrap;
+    .overlay.lose h2 { color: #f87171; text-shadow: 0 0 20px rgba(248,113,113,0.35); }
+    .overlay p {
+      color: rgba(232,245,216,0.75);
+      margin-bottom: 1rem;
+      font-size: 0.92rem;
+      line-height: 1.45;
+      max-width: 22rem;
+      margin-left: auto;
+      margin-right: auto;
     }
-    .wave-banner.show { opacity: 1; }
-    .ability-bar {
-      display: flex; gap: 0.35rem; flex-wrap: wrap;
-      padding: 0.4rem 0.55rem;
-      background: rgba(0,0,0,0.45);
-      border-top: 1px solid rgba(103,232,249,0.12);
+    .wave-toast {
+      position: absolute;
+      left: 50%;
+      top: 18%;
+      transform: translateX(-50%);
+      font-family: Fredoka, system-ui, sans-serif;
+      font-size: 1.35rem;
+      color: #fff8d6;
+      text-shadow: 0 3px 0 #1a2e1a, 0 0 18px rgba(245,208,65,0.5);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 5;
+      transition: opacity 0.2s;
+      white-space: nowrap;
     }
-    .ability-chip {
-      font-size: 0.72rem; font-weight: 700; padding: 0.35rem 0.55rem;
-      border-radius: 999px; cursor: pointer; border: 1px solid rgba(245,208,65,0.25);
-      background: rgba(245,208,65,0.08); color: var(--text); font-family: inherit;
-    }
-    .ability-chip:disabled { opacity: 0.4; cursor: not-allowed; }
-    .ability-chip.ready { border-color: #f5d041; box-shadow: 0 0 12px rgba(245,208,65,0.25); }
+    .wave-toast.show { opacity: 1; }
   </style>
 </head>
-<body>
+<body class="td-page">
   <header class="nav">
     <div class="nav-inner">
       <a href="index.html" class="logo">
@@ -207,1476 +233,1500 @@
         <li><a href="facts.html">Facts</a></li>
         <li><a href="ecosystem.html">Ecosystem</a></li>
         <li><a href="faucets.html">Faucets</a></li>
+        <li><a href="node.html">Node</a></li>
         <li><a href="community.html">Community</a></li>
       </ul>
     </div>
   </header>
 
-  <main class="td-wrap">
-    <div class="td-header">
-      <h1>Banano Defense Command</h1>
-      <p>Mission control · research trees · branching towers · orbital kits · 40-wave campaign</p>
+  <div class="td-app">
+    <div class="td-title">
+      <h1>Banano TD</h1>
+      <p>Don’t let your memes be dreams — pop the FUD before it hits the Core.</p>
     </div>
 
-    <div class="td-shell">
-      <div class="td-stage" id="stage">
+    <div class="td-layout">
+      <div class="td-stage-wrap" id="stage">
         <div class="td-hud">
-          <span class="stat">🍌 BAN <em id="hudBan">200</em></span>
-          <span class="stat sci">🔬 Sci <em id="hudSci">0</em></span>
-          <span class="stat">❤️ Vault <em id="hudLives">25</em></span>
-          <span class="stat">🌊 Wave <em id="hudWave">0</em>/<em id="hudMax">40</em></span>
-          <span class="stat">⭐ Score <em id="hudScore">0</em></span>
-          <span class="stat">☠️ <em id="hudKills">0</em></span>
+          <span class="pill">🍌 BAN <b id="hudBan">650</b></span>
+          <span class="pill">❤️ Potassium <b id="hudLives">200</b></span>
+          <span class="pill">🌊 Wave <b id="hudWave">0</b>/40</span>
+          <span class="pill">💥 Pops <b id="hudPops">0</b></span>
+          <span class="speed-btns">
+            <button type="button" class="spd on" data-spd="1">1×</button>
+            <button type="button" class="spd" data-spd="2">2×</button>
+            <button type="button" class="spd" data-spd="3">3×</button>
+          </span>
         </div>
-        <canvas id="c" width="800" height="520" aria-label="Banano Defense Command"></canvas>
-        <div class="ability-bar" id="abilityBar"></div>
-        <div class="wave-banner" id="waveBanner">MISSION READY</div>
+        <canvas id="game" width="840" height="520" aria-label="Banano TD map"></canvas>
+        <div class="wave-toast" id="toast">WAVE 1</div>
 
-        <div class="overlay-msg" id="startOverlay">
+        <div class="overlay" id="startOv">
           <div>
-            <h2>DEFENSE COMMAND 🚀🍌</h2>
+            <h2>Defend the Mega Potassium Core! 🍌</h2>
             <p>
-              Build · research · specialize · strike.<br>
-              Branch tower paths. Unlock orbital tools.<br>
-              Hold the vault for <strong style="color:#f5d041">40 waves</strong>.
+              Place MonKeys along the jungle path. Pop every FUD balloon layer.
+              Earn BAN, upgrade, and don’t let the memes die.
             </p>
-            <button type="button" class="btn btn-primary" id="btnStart">INITIATE MISSION</button>
+            <button type="button" class="btn btn-primary" id="btnStart">START DEFENSE</button>
           </div>
         </div>
-        <div class="overlay-msg hidden" id="winOverlay">
+        <div class="overlay hidden" id="winOv">
           <div>
-            <h2>MISSION COMPLETE 👑</h2>
-            <p id="winText">Vault secure. Potassium secured.</p>
-            <button type="button" class="btn btn-primary" id="btnWin">RELAUNCH</button>
+            <h2>Memes Secured! 👑</h2>
+            <p id="winMsg">You kept the potassium flowing.</p>
+            <button type="button" class="btn btn-primary" id="btnWin">PLAY AGAIN</button>
           </div>
         </div>
-        <div class="overlay-msg lose hidden" id="loseOverlay">
+        <div class="overlay lose hidden" id="loseOv">
           <div>
-            <h2>MISSION FAILED 💀</h2>
-            <p id="loseText">Vault breached.</p>
-            <button type="button" class="btn btn-primary" id="btnLose">RETRY MISSION</button>
+            <h2>Core Drained… 💀</h2>
+            <p id="loseMsg">The FUD got through. Rebuild and try again!</p>
+            <button type="button" class="btn btn-primary" id="btnLose">RETRY</button>
+          </div>
+        </div>
+        <div class="overlay hidden" id="pauseOv">
+          <div>
+            <h2>Paused 🌴</h2>
+            <p>Even MonKeys need a banana break.</p>
+            <button type="button" class="btn btn-primary" id="btnResume">RESUME</button>
           </div>
         </div>
       </div>
 
       <aside class="td-side">
-        <div class="tabs" role="tablist">
-          <button type="button" class="tab active" data-tab="build">Build</button>
-          <button type="button" class="tab" data-tab="research">Research</button>
-          <button type="button" class="tab" data-tab="arsenal">Arsenal</button>
-          <button type="button" class="tab" data-tab="intel">Intel</button>
+        <div class="td-card">
+          <h3>MonKey Shop</h3>
+          <div class="shop" id="shop"></div>
         </div>
-
-        <div class="td-panel">
-          <!-- BUILD -->
-          <div class="panel-section active" id="tab-build">
-            <h3>Hangar · Towers</h3>
-            <div class="tower-btns" id="towerBtns"></div>
-            <h3 style="margin-top:0.75rem;">Selected unit</h3>
-            <div class="selected-box" id="selectedInfo">Select a tower blueprint, then plant on grass.</div>
-            <div class="path-btns" id="pathBtns" style="display:none;">
-              <button type="button" class="path-btn" id="pathA"></button>
-              <button type="button" class="path-btn" id="pathB"></button>
-            </div>
-            <div class="td-actions">
-              <button type="button" class="btn btn-primary btn-sm" id="btnUpgrade" disabled>Upgrade</button>
-              <button type="button" class="btn btn-ghost btn-sm" id="btnSell" disabled>Sell</button>
-              <button type="button" class="btn btn-primary btn-sm" id="btnWave">Launch wave</button>
-              <button type="button" class="btn btn-ghost btn-sm" id="btnCancel">Deselect</button>
-            </div>
-            <p class="td-tip"><strong>Keys:</strong> 1–8 towers · Space wave · U upgrade · S sell · Q/E abilities</p>
+        <div class="td-card">
+          <h3>Selected</h3>
+          <div class="sel-box" id="selBox">Pick a MonKey, then click grass near the path.</div>
+          <div class="act">
+            <button type="button" class="btn btn-primary btn-sm" id="btnUp" disabled>Upgrade</button>
+            <button type="button" class="btn btn-ghost btn-sm" id="btnSell" disabled>Sell</button>
+            <button type="button" class="btn btn-primary btn-sm" id="btnWave">Send Wave (Space)</button>
+            <button type="button" class="btn btn-ghost btn-sm" id="btnPause">Pause (P)</button>
           </div>
-
-          <!-- RESEARCH -->
-          <div class="panel-section" id="tab-research">
-            <h3>R&amp;D Lab · spend Sci 🔬</h3>
-            <p class="td-tip" style="margin-top:0;margin-bottom:0.55rem;">Earn Sci by clearing waves. Research stacks permanently this run.</p>
-            <div class="research-list" id="researchList"></div>
-          </div>
-
-          <!-- ARSENAL -->
-          <div class="panel-section" id="tab-arsenal">
-            <h3>Orbital Arsenal</h3>
-            <p class="td-tip" style="margin-top:0;margin-bottom:0.55rem;">Unlock via research, then fire mid-battle (cooldowns).</p>
-            <div class="ability-list" id="abilityList"></div>
-          </div>
-
-          <!-- INTEL -->
-          <div class="panel-section" id="tab-intel">
-            <h3>Mission Intel</h3>
-            <div class="intel-list" id="intelList"></div>
-            <p class="td-tip">
-              <strong>Expandable systems:</strong> tower paths, R&amp;D, orbitals, vault mods, interest, crits, burns, chain lightning.
-            </p>
-          </div>
+          <p class="hint" style="margin-top:0.55rem;">
+            Camo FUD needs Sniper / Super / upgraded eyes.<br>
+            Lead Scams need bombs or sniper lead-pop.<br>
+            Hotkeys 1–7 shop · Esc deselect
+          </p>
         </div>
       </aside>
     </div>
-  </main>
+  </div>
 
   <script src="site.js"></script>
   <script>
-    (function () {
-      "use strict";
+  (function () {
+    "use strict";
 
-      // ═══════════════════════════════════════════════════════════
-      // BANANO DEFENSE COMMAND — expanded mission-control TD
-      // Research · branching paths · arsenal · deep progression
-      // ═══════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════
+    // BANANO TD — Bloons-style layered tower defense
+    // ═══════════════════════════════════════════════════════
 
-      var canvas = document.getElementById("c");
-      var ctx = canvas.getContext("2d");
-      var COLS = 20, ROWS = 13;
-      var CW = canvas.width / COLS;
-      var CH = canvas.height / ROWS;
+    var canvas = document.getElementById("game");
+    var ctx = canvas.getContext("2d");
+    var W = canvas.width, H = canvas.height;
+    var COLS = 21, ROWS = 13;
+    var TW = W / COLS, TH = H / ROWS;
 
-      // DOM
-      var elBan = document.getElementById("hudBan");
-      var elSci = document.getElementById("hudSci");
-      var elLives = document.getElementById("hudLives");
-      var elWave = document.getElementById("hudWave");
-      var elMax = document.getElementById("hudMax");
-      var elScore = document.getElementById("hudScore");
-      var elKills = document.getElementById("hudKills");
-      var elSelected = document.getElementById("selectedInfo");
-      var pathBtns = document.getElementById("pathBtns");
-      var pathA = document.getElementById("pathA");
-      var pathB = document.getElementById("pathB");
-      var btnUpgrade = document.getElementById("btnUpgrade");
-      var btnSell = document.getElementById("btnSell");
-      var btnWave = document.getElementById("btnWave");
-      var btnCancel = document.getElementById("btnCancel");
-      var waveBanner = document.getElementById("waveBanner");
-      var towerBtnsEl = document.getElementById("towerBtns");
-      var researchList = document.getElementById("researchList");
-      var abilityList = document.getElementById("abilityList");
-      var abilityBar = document.getElementById("abilityBar");
-      var intelList = document.getElementById("intelList");
-      var startOverlay = document.getElementById("startOverlay");
-      var winOverlay = document.getElementById("winOverlay");
-      var loseOverlay = document.getElementById("loseOverlay");
+    // DOM
+    var hudBan = document.getElementById("hudBan");
+    var hudLives = document.getElementById("hudLives");
+    var hudWave = document.getElementById("hudWave");
+    var hudPops = document.getElementById("hudPops");
+    var shopEl = document.getElementById("shop");
+    var selBox = document.getElementById("selBox");
+    var btnUp = document.getElementById("btnUp");
+    var btnSell = document.getElementById("btnSell");
+    var btnWave = document.getElementById("btnWave");
+    var btnPause = document.getElementById("btnPause");
+    var toast = document.getElementById("toast");
+    var startOv = document.getElementById("startOv");
+    var winOv = document.getElementById("winOv");
+    var loseOv = document.getElementById("loseOv");
+    var pauseOv = document.getElementById("pauseOv");
 
-      var MAX_WAVES = 40;
-      elMax.textContent = String(MAX_WAVES);
+    // Path cells (winding jungle trail)
+    var PATH_CELLS = [
+      [0,6],[1,6],[2,6],[3,6],[4,6],[5,6],[5,5],[5,4],[5,3],[5,2],
+      [6,2],[7,2],[8,2],[9,2],[10,2],[10,3],[10,4],[10,5],[10,6],[10,7],[10,8],[10,9],
+      [11,9],[12,9],[13,9],[14,9],[14,8],[14,7],[14,6],[14,5],[14,4],[14,3],
+      [15,3],[16,3],[17,3],[18,3],[18,4],[18,5],[18,6],[18,7],[18,8],[18,9],[18,10],
+      [19,10],[20,10]
+    ];
+    var pathSet = {};
+    var waypoints = [];
+    for (var i = 0; i < PATH_CELLS.length; i++) {
+      var c = PATH_CELLS[i][0], r = PATH_CELLS[i][1];
+      pathSet[c + "," + r] = true;
+      waypoints.push({ x: c * TW + TW / 2, y: r * TH + TH / 2 });
+    }
+    var pathLen = 0;
+    var segLens = [0];
+    for (var s = 1; s < waypoints.length; s++) {
+      var dx = waypoints[s].x - waypoints[s - 1].x;
+      var dy = waypoints[s].y - waypoints[s - 1].y;
+      pathLen += Math.sqrt(dx * dx + dy * dy);
+      segLens.push(pathLen);
+    }
 
-      // Path (longer snaking route)
-      var PATH = [
-        [0,6],[1,6],[2,6],[3,6],[4,6],[5,6],[5,5],[5,4],[5,3],[5,2],
-        [6,2],[7,2],[8,2],[9,2],[10,2],[10,3],[10,4],[10,5],[10,6],[10,7],[10,8],
-        [11,8],[12,8],[13,8],[14,8],[14,7],[14,6],[14,5],[14,4],[14,3],
-        [15,3],[16,3],[17,3],[17,4],[17,5],[17,6],[17,7],[17,8],[17,9],
-        [18,9],[19,9]
-      ];
-      var pathSet = {}, waypoints = [];
-      for (var i = 0; i < PATH.length; i++) {
-        pathSet[PATH[i][0] + "," + PATH[i][1]] = true;
-        waypoints.push({ x: PATH[i][0] * CW + CW / 2, y: PATH[i][1] * CH + CH / 2 });
+    // ── Layer definitions (Bloons-style) ──
+    var LAYERS = {
+      red:    { id: "red",    name: "FUD Red",     next: null,    r: 11, color: "#ef4444", stroke: "#991b1b", value: 1, speed: 55 },
+      blue:   { id: "blue",   name: "Scam Blue",   next: "red",   r: 12, color: "#3b82f6", stroke: "#1e3a8a", value: 2, speed: 62 },
+      green:  { id: "green",  name: "FOMO Green",  next: "blue",  r: 13, color: "#22c55e", stroke: "#14532d", value: 3, speed: 70 },
+      yellow: { id: "yellow", name: "Hype Yellow", next: "green", r: 14, color: "#eab308", stroke: "#854d0e", value: 4, speed: 88 },
+      pink:   { id: "pink",   name: "Meme Pink",   next: "yellow",r: 15, color: "#ec4899", stroke: "#9d174d", value: 5, speed: 105 }
+    };
+
+    // ── Towers ──
+    var TOWER_DEFS = [
+      {
+        id: "dart", name: "Dart MonKey", icon: "🐵", role: "Primary",
+        desc: "Fast banana darts. The classic MonKey.",
+        cost: 200, range: 120, rof: 0.55, pierce: 1, pop: 1, splash: 0, slow: 0,
+        camo: false, lead: false, color: "#f5d041",
+        upCost: [140, 280, 520],
+        ups: [
+          { name: "Sharp Bananas", desc: "+1 pierce, faster", pierce: 1, rof: -0.08 },
+          { name: "Razor Rinds", desc: "+1 pop power, +range", pop: 1, range: 20 },
+          { name: "Spike Storm", desc: "Double shot!", multishot: 1, pierce: 1, pop: 1 }
+        ]
+      },
+      {
+        id: "boomer", name: "Boomer K⁺", icon: "🪃", role: "Mid",
+        desc: "Returning potassium blades for groups.",
+        cost: 325, range: 100, rof: 0.95, pierce: 4, pop: 1, splash: 0, slow: 0,
+        camo: false, lead: false, color: "#fb923c", boomerang: true,
+        upCost: [200, 380, 700],
+        ups: [
+          { name: "Wide Arc", desc: "+pierce", pierce: 2 },
+          { name: "K-Rang", desc: "+pop power", pop: 1, pierce: 1 },
+          { name: "Glaive Lord", desc: "Huge pierce + speed", pierce: 4, rof: -0.2, pop: 1 }
+        ]
+      },
+      {
+        id: "sniper", name: "Sniper MonKey", icon: "🎯", role: "Support",
+        desc: "Long range. Sees camo. Cracks lead later.",
+        cost: 350, range: 260, rof: 1.15, pierce: 1, pop: 2, splash: 0, slow: 0,
+        camo: true, lead: false, color: "#86efac", preferStrong: true,
+        upCost: [220, 450, 900],
+        ups: [
+          { name: "Night Vision", desc: "Faster shots", rof: -0.25 },
+          { name: "Lead Popper", desc: "Pops lead + more power", lead: true, pop: 2 },
+          { name: "Elite Marksman", desc: "Shreds layers", pop: 4, rof: -0.2, range: 40 }
+        ]
+      },
+      {
+        id: "bomb", name: "Bomb MonKey", icon: "💣", role: "Military",
+        desc: "Banana peel explosions. Pops lead.",
+        cost: 550, range: 110, rof: 1.25, pierce: 1, pop: 1, splash: 55, slow: 0,
+        camo: false, lead: true, color: "#f97316",
+        upCost: [300, 600, 1100],
+        ups: [
+          { name: "Bigger Bombs", desc: "+splash", splash: 20, pop: 1 },
+          { name: "Missile Mayhem", desc: "Faster + stronger", rof: -0.3, pop: 1, splash: 15 },
+          { name: "MOAB Mauler", desc: "Boss shred AOE", pop: 3, splash: 25, range: 25 }
+        ]
+      },
+      {
+        id: "ice", name: "Chill MonKey", icon: "🧊", role: "Magic",
+        desc: "Chilling potassium slows the pack.",
+        cost: 400, range: 95, rof: 1.4, pierce: 1, pop: 0, splash: 70, slow: 0.55,
+        camo: false, lead: false, color: "#67e8f9", freezePulse: true,
+        upCost: [250, 500, 850],
+        ups: [
+          { name: "Permafrost", desc: "Stronger slow", slow: 0.15, splash: 15 },
+          { name: "Ice Shards", desc: "Slow + light pops", pop: 1, splash: 10 },
+          { name: "Absolute Zero", desc: "Deep freeze aura", slow: 0.2, splash: 30, rof: -0.35, pop: 1 }
+        ]
+      },
+      {
+        id: "village", name: "Jungle Village", icon: "🏠", role: "Support",
+        desc: "Buffs nearby MonKeys. Airdrop income.",
+        cost: 1000, range: 130, rof: 99, pierce: 0, pop: 0, splash: 0, slow: 0,
+        camo: false, lead: false, color: "#c084fc", support: true,
+        upCost: [600, 1200, 2000],
+        ups: [
+          { name: "Jungle Drums", desc: "+atk speed aura", auraRof: 0.12 },
+          { name: "Radar Scanner", desc: "Grants camo detect nearby", auraCamo: true, auraRof: 0.05 },
+          { name: "Monkey Commerce", desc: "Big airdrops each round", auraRof: 0.08, income: 80 }
+        ]
+      },
+      {
+        id: "super", name: "Super MonKey", icon: "🦸", role: "Hero",
+        desc: "Meme-powered multi-banana fury.",
+        cost: 2500, range: 140, rof: 0.12, pierce: 1, pop: 1, splash: 0, slow: 0,
+        camo: true, lead: true, color: "#f472b6", multishot: 1,
+        upCost: [1500, 3000, 6000],
+        ups: [
+          { name: "Laser Eyes", desc: "Faster + pierce", pierce: 2, rof: -0.03 },
+          { name: "Robo Super", desc: "Triple stream", multishot: 2, pop: 1 },
+          { name: "Tech Terror", desc: "Plasma storm", multishot: 2, pierce: 3, pop: 2, splash: 25 }
+        ]
       }
+    ];
+    var TOWER_BY_ID = {};
+    for (var ti = 0; ti < TOWER_DEFS.length; ti++) TOWER_BY_ID[TOWER_DEFS[ti].id] = TOWER_DEFS[ti];
 
-      // ── Tower catalog (expandable) ──
-      var TOWERS = {
-        peeler: {
-          id: "peeler", name: "Peeler", icon: "🍌", unlock: null,
-          desc: "Core flinger. Fast potassium darts.",
-          cost: 50, range: 105, damage: 14, rate: 0.42, color: "#f5d041",
-          proj: "banana", splash: 0, slow: 0, burn: 0, chain: 0, crit: 0,
-          pathA: { name: "Rapid Peel", desc: "+fire rate, +multishot later", mods: { rate: -0.12, damage: 4 } },
-          pathB: { name: "Heavy BAN", desc: "+damage, pierce chance", mods: { damage: 18, pierce: 1 } }
-        },
-        rain: {
-          id: "rain", name: "Rain Bot", icon: "🌧️", unlock: null,
-          desc: "Splash rain — shreds packs.",
-          cost: 95, range: 92, damage: 11, rate: 0.8, color: "#60a5fa",
-          proj: "drop", splash: 50, slow: 0, burn: 0, chain: 0, crit: 0,
-          pathA: { name: "Monsoon", desc: "Bigger splash radius", mods: { splash: 28, damage: 6 } },
-          pathB: { name: "Acid Rain", desc: "Splash + burn DoT", mods: { burn: 4, damage: 5 } }
-        },
-        chill: {
-          id: "chill", name: "Jungle Chill", icon: "🧊", unlock: null,
-          desc: "Slows targets on hit.",
-          cost: 85, range: 100, damage: 7, rate: 0.65, color: "#67e8f9",
-          proj: "frost", splash: 0, slow: 0.4, burn: 0, chain: 0, crit: 0,
-          pathA: { name: "Deep Freeze", desc: "Stronger slow, small splash", mods: { slow: 0.2, splash: 30 } },
-          pathB: { name: "Cryo Spikes", desc: "Slow + big damage", mods: { damage: 16, slow: 0.1 } }
-        },
-        cannon: {
-          id: "cannon", name: "Kalium Cannon", icon: "💥", unlock: "tech_cannon",
-          desc: "Heavy ordinance. Unlocks via R&D.",
-          cost: 150, range: 115, damage: 60, rate: 1.35, color: "#fb923c",
-          proj: "shell", splash: 32, slow: 0, burn: 0, chain: 0, crit: 0,
-          pathA: { name: "Cluster", desc: "Wider blast", mods: { splash: 26, damage: 15 } },
-          pathB: { name: "AP Shells", desc: "Armor shred damage", mods: { damage: 45, crit: 0.15 } }
-        },
-        sniper: {
-          id: "sniper", name: "Leaf Sniper", icon: "🎯", unlock: "tech_sniper",
-          desc: "Long-range precision.",
-          cost: 170, range: 195, damage: 48, rate: 1.1, color: "#a3e635",
-          proj: "dart", splash: 0, slow: 0, burn: 0, chain: 0, crit: 0.1, preferTank: true,
-          pathA: { name: "Railshot", desc: "Huge range + crit", mods: { range: 50, crit: 0.25, damage: 20 } },
-          pathB: { name: "Execute", desc: "Bonus vs low-HP", mods: { damage: 35, execute: 0.25 } }
-        },
-        tesla: {
-          id: "tesla", name: "Potassium Coil", icon: "⚡", unlock: "tech_tesla",
-          desc: "Chain lightning between foes.",
-          cost: 200, range: 100, damage: 18, rate: 0.9, color: "#c084fc",
-          proj: "bolt", splash: 0, slow: 0, burn: 0, chain: 3, crit: 0,
-          pathA: { name: "Storm Net", desc: "More chain jumps", mods: { chain: 3, damage: 8 } },
-          pathB: { name: "Overload", desc: "Harder hits, mild slow", mods: { damage: 22, slow: 0.15 } }
-        },
-        farm: {
-          id: "farm", name: "BAN Farm", icon: "🏭", unlock: "tech_farm",
-          desc: "Generates BAN each wave clear.",
-          cost: 120, range: 0, damage: 0, rate: 99, color: "#86efac",
-          proj: "none", splash: 0, slow: 0, burn: 0, chain: 0, crit: 0, economy: true,
-          pathA: { name: "Interest Hub", desc: "+passive BAN / wave", mods: { income: 18 } },
-          pathB: { name: "Mint Press", desc: "Bigger payouts", mods: { income: 32 } }
-        },
-        beacon: {
-          id: "beacon", name: "Buff Beacon", icon: "📡", unlock: "tech_beacon",
-          desc: "Buffs nearby towers' damage.",
-          cost: 180, range: 130, damage: 0, rate: 99, color: "#f472b6",
-          proj: "none", splash: 0, slow: 0, burn: 0, chain: 0, crit: 0, support: true,
-          pathA: { name: "Damage Aura", desc: "Stronger dmg buff", mods: { auraDmg: 0.2 } },
-          pathB: { name: "Overclock", desc: "Faster nearby fire rate", mods: { auraRate: 0.18 } }
+    // State
+    var ban = 650, lives = 200, wave = 0, pops = 0, banEarned = 0;
+    var MAX_WAVE = 40;
+    var running = false, paused = false, gameOver = false;
+    var speed = 1;
+    var selectedShop = "dart";
+    var selectedTower = null;
+    var towers = [];
+    var threats = [];
+    var projectiles = [];
+    var particles = [];
+    var floats = [];
+    var decor = [];
+    var spawnQueue = [];
+    var spawnTimer = 0;
+    var waveActive = false;
+    var hover = null;
+    var lastTs = 0;
+    var animT = 0;
+    var toastT = 0;
+    var airdropT = 0;
+    var totalBuilt = 0;
+
+    // Audio
+    var actx = null;
+    function ensureAudio() {
+      if (!actx) {
+        try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
+      }
+      if (actx && actx.state === "suspended") actx.resume();
+    }
+    function beep(f, d, type, v) {
+      if (!actx) return;
+      var t = actx.currentTime, o = actx.createOscillator(), g = actx.createGain();
+      o.type = type || "square";
+      o.frequency.value = f;
+      g.gain.setValueAtTime(v || 0.04, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + d);
+      o.connect(g); g.connect(actx.destination);
+      o.start(t); o.stop(t + d + 0.02);
+    }
+    function sfxPop() { beep(600 + Math.random() * 400, 0.04, "square", 0.03); }
+    function sfxPlace() { beep(320, 0.06, "triangle", 0.045); beep(480, 0.08, "triangle", 0.03); }
+    function sfxUp() { beep(520, 0.05, "square", 0.04); beep(780, 0.1, "sine", 0.035); }
+    function sfxWave() { beep(240, 0.1, "sawtooth", 0.035); }
+    function sfxLeak() { beep(110, 0.18, "sawtooth", 0.05); }
+    function sfxWin() { beep(523, 0.1, "square", 0.04); beep(659, 0.12, "square", 0.04); beep(784, 0.2, "triangle", 0.045); }
+
+    function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
+    function dist(ax, ay, bx, by) { var dx = ax - bx, dy = ay - by; return Math.sqrt(dx * dx + dy * dy); }
+    function isPath(c, r) { return !!pathSet[c + "," + r]; }
+    function inBounds(c, r) { return c >= 0 && r >= 0 && c < COLS && r < ROWS; }
+
+    function posAlong(distAlong) {
+      distAlong = clamp(distAlong, 0, pathLen);
+      for (var i = 1; i < segLens.length; i++) {
+        if (distAlong <= segLens[i]) {
+          var segStart = segLens[i - 1];
+          var seg = segLens[i] - segStart;
+          var t = seg > 0 ? (distAlong - segStart) / seg : 0;
+          var a = waypoints[i - 1], b = waypoints[i];
+          return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t, t: t, i: i };
         }
+      }
+      var last = waypoints[waypoints.length - 1];
+      return { x: last.x, y: last.y, t: 1, i: waypoints.length - 1 };
+    }
+
+    function towerAt(c, r) {
+      for (var i = 0; i < towers.length; i++) if (towers[i].c === c && towers[i].r === r) return towers[i];
+      return null;
+    }
+
+    function burst(x, y, color, n) {
+      for (var i = 0; i < n; i++) {
+        var a = Math.random() * Math.PI * 2, s = 40 + Math.random() * 160;
+        particles.push({
+          x: x, y: y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 30,
+          life: 0.25 + Math.random() * 0.4, age: 0, color: color, size: 2 + Math.random() * 4,
+          kind: Math.random() < 0.3 ? "peel" : "spark"
+        });
+      }
+    }
+    function floatTxt(x, y, text, color, size) {
+      floats.push({ x: x, y: y, text: text, color: color || "#ffe566", size: size || 13, life: 0.7, age: 0 });
+    }
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.classList.add("show");
+      toastT = 1.5;
+    }
+
+    function confettiBurst() {
+      for (var i = 0; i < 50; i++) {
+        particles.push({
+          x: W * 0.5 + (Math.random() - 0.5) * 200,
+          y: H * 0.35,
+          vx: (Math.random() - 0.5) * 260,
+          vy: -80 - Math.random() * 200,
+          life: 0.8 + Math.random() * 0.6,
+          age: 0,
+          color: ["#f5d041", "#86efac", "#f472b6", "#67e8f9", "#fb923c"][i % 5],
+          size: 3 + Math.random() * 4,
+          kind: "spark"
+        });
+      }
+    }
+
+    // Decor banana trees
+    function initDecor() {
+      decor = [];
+      for (var i = 0; i < 28; i++) {
+        var c = (Math.random() * COLS) | 0, r = (Math.random() * ROWS) | 0;
+        if (isPath(c, r)) continue;
+        decor.push({
+          x: c * TW + TW * 0.5 + (Math.random() - 0.5) * 8,
+          y: r * TH + TH * 0.5,
+          kind: Math.random() < 0.5 ? "tree" : "orb",
+          phase: Math.random() * Math.PI * 2
+        });
+      }
+    }
+
+    function getStats(t) {
+      var d = t.def;
+      var range = d.range;
+      var rof = d.rof;
+      var pierce = d.pierce;
+      var pop = d.pop;
+      var splash = d.splash;
+      var slow = d.slow;
+      var camo = d.camo;
+      var lead = d.lead;
+      var multishot = d.multishot || 0;
+      var auraRof = 0;
+      var auraCamo = false;
+      var income = 0;
+
+      for (var i = 0; i < t.tier; i++) {
+        var u = d.ups[i];
+        if (!u) continue;
+        if (u.range) range += u.range;
+        if (u.rof) rof += u.rof;
+        if (u.pierce) pierce += u.pierce;
+        if (u.pop) pop += u.pop;
+        if (u.splash) splash += u.splash;
+        if (u.slow) slow += u.slow;
+        if (u.camo || u.lead) { if (u.camo) camo = true; if (u.lead) lead = true; }
+        if (u.lead) lead = true;
+        if (u.multishot) multishot += u.multishot;
+        if (u.auraRof) auraRof += u.auraRof;
+        if (u.auraCamo) auraCamo = true;
+        if (u.income) income += u.income;
+      }
+      // Village auras
+      var rofMul = 1;
+      for (var j = 0; j < towers.length; j++) {
+        var v = towers[j];
+        if (!v.def.support || v === t) continue;
+        var vs = getStatsNoAura(v);
+        if (dist(t.x, t.y, v.x, v.y) <= vs.range) {
+          rofMul += vs.auraRof;
+          if (vs.auraCamo) camo = true;
+        }
+      }
+      rof = Math.max(0.05, rof / rofMul);
+      return {
+        range: range, rof: rof, pierce: pierce, pop: Math.max(0, pop),
+        splash: splash, slow: slow, camo: camo, lead: lead,
+        multishot: multishot, auraRof: auraRof, auraCamo: auraCamo, income: income
       };
-      var TOWER_ORDER = ["peeler", "rain", "chill", "cannon", "sniper", "tesla", "farm", "beacon"];
+    }
+    function getStatsNoAura(t) {
+      var d = t.def;
+      var range = d.range, auraRof = 0, auraCamo = false, income = 0;
+      for (var i = 0; i < t.tier; i++) {
+        var u = d.ups[i];
+        if (!u) continue;
+        if (u.range) range += u.range;
+        if (u.auraRof) auraRof += u.auraRof;
+        if (u.auraCamo) auraCamo = true;
+        if (u.income) income += u.income;
+      }
+      return { range: range, auraRof: auraRof, auraCamo: auraCamo, income: income };
+    }
 
-      // ── Research tree ──
-      var RESEARCH = [
-        { id: "tech_cannon", name: "Kalium Ordnance", icon: "💥", cost: 2, desc: "Unlock Kalium Cannon.", req: null },
-        { id: "tech_sniper", name: "Optics Lab", icon: "🎯", cost: 3, desc: "Unlock Leaf Sniper.", req: null },
-        { id: "tech_tesla", name: "Coil Engineering", icon: "⚡", cost: 4, desc: "Unlock Potassium Coil.", req: "tech_cannon" },
-        { id: "tech_farm", name: "Yield Protocols", icon: "🏭", cost: 3, desc: "Unlock BAN Farm.", req: null },
-        { id: "tech_beacon", name: "Telemetry Array", icon: "📡", cost: 5, desc: "Unlock Buff Beacon.", req: "tech_sniper" },
-        { id: "eco_interest", name: "Feeless Yield", icon: "📈", cost: 2, desc: "+8% BAN interest between waves.", req: null },
-        { id: "eco_interest2", name: "Compound Rain", icon: "💹", cost: 4, desc: "Interest becomes +15%.", req: "eco_interest" },
-        { id: "eco_wavepay", name: "Wave Bounties", icon: "🎁", cost: 3, desc: "+40% wave clear bonus BAN.", req: null },
-        { id: "vault_armor", name: "Vault Plating", icon: "🛡️", cost: 2, desc: "+8 vault HP.", req: null },
-        { id: "vault_armor2", name: "Fortified Vault", icon: "🏰", cost: 4, desc: "+12 more vault HP.", req: "vault_armor" },
-        { id: "glob_dmg", name: "Hot Potassium", icon: "🔥", cost: 3, desc: "All towers +12% damage.", req: null },
-        { id: "glob_dmg2", name: "Superhot BAN", icon: "🌶️", cost: 5, desc: "All towers +18% more damage.", req: "glob_dmg" },
-        { id: "glob_range", name: "Long Lens", icon: "🔭", cost: 3, desc: "All towers +10% range.", req: null },
-        { id: "glob_rate", name: "Overclock Grid", icon: "⚙️", cost: 4, desc: "All towers +10% fire rate.", req: "glob_dmg" },
-        { id: "glob_crit", name: "Lucky Peels", icon: "🍀", cost: 4, desc: "Global +10% crit chance.", req: "glob_dmg" },
-        { id: "glob_discount", name: "Builder Grant", icon: "🧱", cost: 3, desc: "Towers cost 12% less.", req: "eco_interest" },
-        { id: "abil_strike", name: "Orbital Banana", icon: "☄️", cost: 3, desc: "Unlock orbital strike ability.", req: null },
-        { id: "abil_freeze", name: "Cryo Blanket", icon: "❄️", cost: 3, desc: "Unlock global freeze ability.", req: "tech_cannon" },
-        { id: "abil_cash", name: "Airdrop BAN", icon: "💸", cost: 2, desc: "Unlock emergency BAN drop.", req: "eco_wavepay" },
-        { id: "abil_stun", name: "EMP Peel", icon: "🌀", cost: 4, desc: "Unlock EMP stun pulse.", req: "tech_tesla" },
-        { id: "abil_boost", name: "Monkey Mode", icon: "🐵", cost: 5, desc: "Unlock 8s global damage buff.", req: "glob_dmg2" },
-        { id: "start_ban", name: "Seed Round", icon: "🌱", cost: 2, desc: "+80 starting BAN (next run n/a — instant +80).", req: null, instantBan: 80 },
-        { id: "sci_boost", name: "Lab Grants", icon: "🔬", cost: 3, desc: "+1 Sci each wave clear.", req: null }
-      ];
+    function spentOn(t) {
+      var s = t.def.cost;
+      for (var i = 0; i < t.tier; i++) s += t.def.upCost[i];
+      return s;
+    }
 
-      // ── Abilities ──
-      var ABILITIES = {
-        strike: { id: "strike", name: "Orbital Banana", icon: "☄️", unlock: "abil_strike", cd: 28, desc: "Nuke the densest pack (big AoE)." },
-        freeze: { id: "freeze", name: "Cryo Blanket", icon: "❄️", unlock: "abil_freeze", cd: 32, desc: "Freeze all enemies 3.5s." },
-        cash: { id: "cash", name: "Airdrop BAN", icon: "💸", unlock: "abil_cash", cd: 40, desc: "Gain 60–120 BAN instantly." },
-        stun: { id: "stun", name: "EMP Peel", icon: "🌀", unlock: "abil_stun", cd: 35, desc: "Stun all enemies 2s." },
-        boost: { id: "boost", name: "Monkey Mode", icon: "🐵", unlock: "abil_boost", cd: 45, desc: "All towers +60% dmg for 8s." }
+    // ── Threat factory ──
+    function makeLayerThreat(layerId, distAlong, flags) {
+      flags = flags || {};
+      var L = LAYERS[layerId];
+      if (!L) L = LAYERS.red;
+      return {
+        kind: "layer",
+        layer: L.id,
+        dist: distAlong,
+        x: 0, y: 0,
+        r: L.r,
+        speed: L.speed * (flags.speedMul || 1),
+        camo: !!flags.camo,
+        regrow: !!flags.regrow,
+        lead: !!flags.lead,
+        regrowT: 0,
+        alive: true,
+        hp: 1,
+        maxHp: 1,
+        value: L.value,
+        freezeT: 0,
+        slowMul: 1
       };
+    }
 
-      // State
-      var ban = 200, sci = 0, lives = 25, wave = 0, kills = 0, score = 0;
-      var running = false, gameOver = false;
-      var selectedType = "peeler", selectedTower = null;
-      var towers = [], enemies = [], projectiles = [], particles = [], floats = [], beams = [];
-      var spawnQueue = [], spawnTimer = 0, waveActive = false;
-      var hoverCell = null, lastTs = 0, animT = 0, bannerT = 0;
-      var researchOwned = {};
-      var abilityCD = { strike: 0, freeze: 0, cash: 0, stun: 0, boost: 0 };
-      var globalBoostT = 0;
-      var interestRate = 0;
-      var wavePayMul = 1;
-      var globalDmg = 1, globalRange = 1, globalRate = 1, globalCrit = 0;
-      var buildDiscount = 1;
-      var sciPerWave = 1;
-      var totalIncome = 0;
-
-      function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
-      function dist(ax, ay, bx, by) { var dx = ax - bx, dy = ay - by; return Math.sqrt(dx * dx + dy * dy); }
-      function isPath(c, r) { return !!pathSet[c + "," + r]; }
-      function inBounds(c, r) { return c >= 0 && r >= 0 && c < COLS && r < ROWS; }
-      function owned(id) { return !!researchOwned[id]; }
-      function unlockedTower(def) { return !def.unlock || owned(def.unlock); }
-
-      // Audio
-      var audioCtx = null;
-      function ensureAudio() {
-        if (!audioCtx) { try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} }
-        if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
-      }
-      function beep(freq, dur, type, vol) {
-        if (!audioCtx) return;
-        var t0 = audioCtx.currentTime, o = audioCtx.createOscillator(), g = audioCtx.createGain();
-        o.type = type || "square"; o.frequency.value = freq;
-        g.gain.setValueAtTime(vol || 0.045, t0);
-        g.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
-        o.connect(g); g.connect(audioCtx.destination);
-        o.start(t0); o.stop(t0 + dur + 0.02);
-      }
-
-      function burst(x, y, color, n) {
-        for (var i = 0; i < n; i++) {
-          var a = Math.random() * Math.PI * 2, s = 50 + Math.random() * 140;
-          particles.push({ x: x, y: y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, life: 0.3 + Math.random() * 0.4, age: 0, color: color, size: 2 + Math.random() * 3.5 });
-        }
-      }
-      function floatText(x, y, text, color) {
-        floats.push({ x: x, y: y, text: text, color: color || "#f5d041", life: 0.85, age: 0 });
-      }
-      function showBanner(t) {
-        waveBanner.textContent = t;
-        waveBanner.classList.add("show");
-        bannerT = 1.7;
-      }
-
-      function towerAt(c, r) {
-        for (var i = 0; i < towers.length; i++) if (towers[i].c === c && towers[i].r === r) return towers[i];
-        return null;
-      }
-
-      function towerCost(def) {
-        return Math.floor(def.cost * buildDiscount);
-      }
-
-      function getTowerStats(t) {
-        var d = t.def;
-        var levelMul = 1 + (t.level - 1) * 0.28;
-        var dmg = d.damage * levelMul * globalDmg;
-        var range = d.range * (1 + (t.level - 1) * 0.07) * globalRange;
-        var rate = d.rate * (1 - (t.level - 1) * 0.06) / globalRate;
-        var splash = d.splash;
-        var slow = d.slow;
-        var burn = d.burn;
-        var chain = d.chain;
-        var crit = d.crit + globalCrit;
-        var pierce = 0;
-        var execute = 0;
-        var income = t.def.economy ? (12 + t.level * 8) : 0;
-        var auraDmg = t.def.support ? 0.12 + t.level * 0.03 : 0;
-        var auraRate = 0;
-
-        if (t.path === "A" && d.pathA) {
-          var m = d.pathA.mods;
-          if (m.damage) dmg += m.damage * (1 + (t.level - 3) * 0.25);
-          if (m.rate) rate = Math.max(0.15, rate + m.rate);
-          if (m.range) range += m.range;
-          if (m.splash) splash += m.splash;
-          if (m.slow) slow += m.slow;
-          if (m.burn) burn += m.burn;
-          if (m.chain) chain += m.chain;
-          if (m.crit) crit += m.crit;
-          if (m.pierce) pierce += m.pierce;
-          if (m.execute) execute += m.execute;
-          if (m.income) income += m.income;
-          if (m.auraDmg) auraDmg += m.auraDmg;
-          if (m.auraRate) auraRate += m.auraRate;
-        }
-        if (t.path === "B" && d.pathB) {
-          var m2 = d.pathB.mods;
-          if (m2.damage) dmg += m2.damage * (1 + (t.level - 3) * 0.25);
-          if (m2.rate) rate = Math.max(0.15, rate + m2.rate);
-          if (m2.range) range += m2.range;
-          if (m2.splash) splash += m2.splash;
-          if (m2.slow) slow += m2.slow;
-          if (m2.burn) burn += m2.burn;
-          if (m2.chain) chain += m2.chain;
-          if (m2.crit) crit += m2.crit;
-          if (m2.pierce) pierce += m2.pierce;
-          if (m2.execute) execute += m2.execute;
-          if (m2.income) income += m2.income;
-          if (m2.auraDmg) auraDmg += m2.auraDmg;
-          if (m2.auraRate) auraRate += m2.auraRate;
-        }
-
-        // Beacon auras from nearby beacons
-        var auraD = 1, auraR = 1;
-        for (var i = 0; i < towers.length; i++) {
-          var b = towers[i];
-          if (!b.def.support || b === t) continue;
-          var bs = getTowerStatsSimple(b);
-          if (dist(t.x, t.y, b.x, b.y) <= bs.range) {
-            auraD += bs.auraDmg;
-            auraR += bs.auraRate;
-          }
-        }
-        dmg *= auraD;
-        rate = rate / Math.max(0.5, auraR);
-        if (globalBoostT > 0) dmg *= 1.6;
-
+    function makeSpecial(kind, distAlong) {
+      if (kind === "ceramic") {
         return {
-          damage: dmg, range: range, rate: Math.max(0.12, rate),
-          splash: splash, slow: slow, burn: burn, chain: chain, crit: clamp(crit, 0, 0.75),
-          pierce: pierce, execute: execute, income: income, auraDmg: auraDmg, auraRate: auraRate
+          kind: "ceramic", layer: null, dist: distAlong, x: 0, y: 0,
+          r: 18, speed: 48, camo: false, regrow: false, lead: false,
+          alive: true, hp: 10, maxHp: 10, value: 12, freezeT: 0, slowMul: 1,
+          children: "pink", childCount: 2
         };
       }
-
-      // Avoid recursion for beacons — simple stats without aura loop
-      function getTowerStatsSimple(t) {
-        var d = t.def;
-        var levelMul = 1 + (t.level - 1) * 0.28;
-        var range = d.range * (1 + (t.level - 1) * 0.07) * globalRange;
-        var auraDmg = t.def.support ? 0.12 + t.level * 0.03 : 0;
-        var auraRate = 0;
-        if (t.path === "A" && d.pathA && d.pathA.mods.auraDmg) auraDmg += d.pathA.mods.auraDmg;
-        if (t.path === "B" && d.pathB && d.pathB.mods.auraRate) auraRate += d.pathB.mods.auraRate;
-        if (t.path === "A" && d.pathA && d.pathA.mods.range) range += d.pathA.mods.range;
-        if (t.path === "B" && d.pathB && d.pathB.mods.range) range += d.pathB.mods.range;
-        return { range: range, auraDmg: auraDmg, auraRate: auraRate };
+      if (kind === "boss") {
+        return {
+          kind: "boss", layer: null, dist: distAlong, x: 0, y: 0,
+          r: 28, speed: 28, camo: false, regrow: false, lead: true,
+          alive: true, hp: 200, maxHp: 200, value: 100, freezeT: 0, slowMul: 1,
+          children: "ceramic", childCount: 4
+        };
       }
-
-      function upgradeCost(t) {
-        return Math.floor(towerCost(t.def) * (0.55 + t.level * 0.5));
+      if (kind === "whale") {
+        return {
+          kind: "whale", layer: null, dist: distAlong, x: 0, y: 0,
+          r: 34, speed: 22, camo: false, regrow: false, lead: true,
+          alive: true, hp: 500, maxHp: 500, value: 250, freezeT: 0, slowMul: 1,
+          children: "boss", childCount: 2
+        };
       }
-      function sellValue(t) {
-        var spent = towerCost(t.def);
-        for (var i = 1; i < t.level; i++) spent += Math.floor(towerCost(t.def) * (0.55 + i * 0.5));
-        if (t.path) spent += Math.floor(towerCost(t.def) * 0.4);
-        return Math.floor(spent * 0.6);
-      }
+      return makeLayerThreat("red", distAlong, {});
+    }
 
-      function recomputeGlobals() {
-        interestRate = owned("eco_interest2") ? 0.15 : owned("eco_interest") ? 0.08 : 0;
-        wavePayMul = owned("eco_wavepay") ? 1.4 : 1;
-        globalDmg = 1;
-        if (owned("glob_dmg")) globalDmg += 0.12;
-        if (owned("glob_dmg2")) globalDmg += 0.18;
-        globalRange = owned("glob_range") ? 1.1 : 1;
-        globalRate = owned("glob_rate") ? 1.1 : 1;
-        globalCrit = owned("glob_crit") ? 0.1 : 0;
-        buildDiscount = owned("glob_discount") ? 0.88 : 1;
-        sciPerWave = owned("sci_boost") ? 2 : 1;
-      }
+    function syncThreatPos(th) {
+      var p = posAlong(th.dist);
+      th.x = p.x;
+      th.y = p.y;
+    }
 
-      function enemyStats(type, w) {
-        w = Math.max(1, w);
-        if (type === "rat") return { hp: 30 + w * 10, speed: 50 + w * 1.1, reward: 5 + Math.floor(w / 3), armor: 0, color: "#fbbf24", r: 10, icon: "🐀" };
-        if (type === "bot") return { hp: 60 + w * 16, speed: 38 + w * 0.7, reward: 9 + Math.floor(w / 2), armor: 2, color: "#f87171", r: 12, icon: "🤖" };
-        if (type === "whale") return { hp: 180 + w * 32, speed: 26 + w * 0.35, reward: 20 + w, armor: 5, color: "#60a5fa", r: 16, icon: "🐋" };
-        if (type === "swift") return { hp: 40 + w * 8, speed: 78 + w * 1.5, reward: 8 + Math.floor(w / 2), armor: 0, color: "#a3e635", r: 10, icon: "🦇" };
-        if (type === "tank") return { hp: 320 + w * 40, speed: 20, reward: 28 + w, armor: 10, color: "#94a3b8", r: 18, icon: "🦾" };
-        if (type === "boss") return { hp: 700 + w * 100, speed: 22, reward: 100 + w * 6, armor: 12, color: "#c084fc", r: 22, icon: "👾" };
-        if (type === "mega") return { hp: 1600 + w * 140, speed: 18, reward: 200 + w * 8, armor: 18, color: "#f472b6", r: 26, icon: "🛸" };
-        return enemyStats("rat", w);
-      }
+    function addBan(n, x, y) {
+      ban += n;
+      banEarned += n;
+      if (x != null) floatTxt(x, y, "+" + n, "#ffe566", 12);
+    }
 
-      function buildWave(n) {
-        var list = [];
-        var count = 8 + Math.floor(n * 1.8);
-        for (var i = 0; i < count; i++) {
-          var type = "rat";
-          if (n >= 2 && i % 5 === 0) type = "bot";
-          if (n >= 5 && i % 4 === 1) type = "swift";
-          if (n >= 7 && i % 6 === 0) type = "whale";
-          if (n >= 12 && i % 7 === 0) type = "tank";
-          if (n >= 18 && i % 3 === 0) type = "bot";
-          if (n >= 25 && i % 5 === 0) type = "whale";
-          list.push(type);
-        }
-        if (n % 5 === 0) list.push("boss");
-        if (n === 20 || n === 30 || n === 40) list.push("mega");
-        if (n >= 35) { list.push("tank"); list.push("whale"); list.push("boss"); }
-        return list;
-      }
+    function popLayerEntity(th, popsLeft, canLead) {
+      // Returns remaining pop power after processing this threat's layers
+      if (!th.alive) return popsLeft;
 
-      // ── UI builders ──
-      function buildTowerButtons() {
-        towerBtnsEl.innerHTML = "";
-        for (var i = 0; i < TOWER_ORDER.length; i++) {
-          var def = TOWERS[TOWER_ORDER[i]];
-          var btn = document.createElement("button");
-          btn.type = "button";
-          var lock = !unlockedTower(def);
-          btn.className = "tower-btn" + (selectedType === def.id ? " active" : "") + (lock ? " locked" : "");
-          btn.setAttribute("data-id", def.id);
-          btn.innerHTML = '<span class="ico">' + def.icon + '</span><span class="meta">' +
-            '<span class="name">' + def.name + '</span>' +
-            (lock ? '<span class="lock">🔒 research</span>' : '<span class="cost">' + towerCost(def) + ' BAN</span>') +
-            "</span>";
-          btn.disabled = lock || !running || gameOver;
-          btn.addEventListener("click", (function (id) {
-            return function () {
-              if (!unlockedTower(TOWERS[id])) return;
-              selectedType = id;
-              selectedTower = null;
-              refreshHud();
-            };
-          })(def.id));
-          towerBtnsEl.appendChild(btn);
-        }
-      }
-
-      function buildResearchUI() {
-        researchList.innerHTML = "";
-        for (var i = 0; i < RESEARCH.length; i++) {
-          var r = RESEARCH[i];
-          var isOwned = owned(r.id);
-          var reqOk = !r.req || owned(r.req);
-          var div = document.createElement("div");
-          div.className = "res-item" + (isOwned ? " owned" : "");
-          var canBuy = running && !gameOver && !isOwned && reqOk && sci >= r.cost;
-          div.innerHTML =
-            '<span class="ico">' + r.icon + '</span>' +
-            '<div class="body"><div class="title">' + r.name + '</div>' +
-            '<div class="desc">' + r.desc + (!reqOk ? " · needs prior tech" : "") + (isOwned ? " · OWNED" : " · " + r.cost + " Sci") + "</div></div>";
-          var b = document.createElement("button");
-          b.textContent = isOwned ? "✓" : r.cost + "🔬";
-          b.disabled = !canBuy;
-          b.addEventListener("click", (function (id) {
-            return function () { buyResearch(id); };
-          })(r.id));
-          div.appendChild(b);
-          researchList.appendChild(div);
-        }
-      }
-
-      function buildAbilityUI() {
-        abilityList.innerHTML = "";
-        abilityBar.innerHTML = "";
-        var keys = Object.keys(ABILITIES);
-        for (var i = 0; i < keys.length; i++) {
-          var a = ABILITIES[keys[i]];
-          var un = owned(a.unlock);
-          var cd = abilityCD[a.id] || 0;
-          var div = document.createElement("div");
-          div.className = "abil-item";
-          div.innerHTML =
-            '<span class="ico">' + a.icon + '</span>' +
-            '<div class="body"><div class="title">' + a.name + '</div>' +
-            '<div class="desc">' + a.desc + (un ? "" : " · locked in R&D") + "</div></div>";
-          var b = document.createElement("button");
-          if (!un) {
-            b.textContent = "🔒";
-            b.disabled = true;
-          } else if (cd > 0) {
-            b.textContent = Math.ceil(cd) + "s";
-            b.className = "cd";
-            b.disabled = true;
-          } else {
-            b.textContent = "FIRE";
-            b.className = "ready";
-            b.disabled = !running || gameOver;
-            b.addEventListener("click", (function (id) {
-              return function () { useAbility(id); };
-            })(a.id));
+      if (th.kind === "ceramic" || th.kind === "boss" || th.kind === "whale") {
+        if (th.lead && !canLead) return 0;
+        var dmg = popsLeft;
+        th.hp -= dmg;
+        pops += dmg;
+        burst(th.x, th.y, "#f5d041", 4);
+        if (th.hp <= 0) {
+          th.alive = false;
+          addBan(th.value, th.x, th.y - 10);
+          sfxPop();
+          // spawn children
+          var childKind = th.children;
+          var n = th.childCount || 1;
+          for (var i = 0; i < n; i++) {
+            var child;
+            if (childKind === "ceramic") child = makeSpecial("ceramic", Math.max(0, th.dist - i * 8));
+            else if (childKind === "boss") child = makeSpecial("boss", Math.max(0, th.dist - i * 10));
+            else child = makeLayerThreat(childKind || "pink", Math.max(0, th.dist - i * 6), {});
+            syncThreatPos(child);
+            threats.push(child);
           }
-          div.appendChild(b);
-          abilityList.appendChild(div);
-
-          if (un) {
-            var chip = document.createElement("button");
-            chip.type = "button";
-            chip.className = "ability-chip" + (cd <= 0 ? " ready" : "");
-            chip.disabled = !running || gameOver || cd > 0;
-            chip.textContent = a.icon + " " + (cd > 0 ? Math.ceil(cd) + "s" : a.name);
-            chip.addEventListener("click", (function (id) {
-              return function () { useAbility(id); };
-            })(a.id));
-            abilityBar.appendChild(chip);
-          }
+          burst(th.x, th.y, th.kind === "whale" ? "#f472b6" : "#fb923c", 20);
+          floatTxt(th.x, th.y, "POP!", "#fff", 16);
         }
-        if (!abilityBar.children.length) {
-          abilityBar.innerHTML = '<span style="font-size:0.72rem;color:rgba(232,245,216,0.5);padding:0.2rem 0.4rem;">Unlock orbitals in Research</span>';
-        }
+        return 0;
       }
 
-      function buildIntel() {
-        intelList.innerHTML =
-          '<div class="res-item"><div class="body">' +
-          '<div class="title">Campaign status</div>' +
-          '<div class="desc">Wave ' + wave + '/' + MAX_WAVES + ' · Score ' + score + ' · Income farms total ~' + totalIncome + ' BAN/wave</div>' +
-          '<div class="desc" style="margin-top:0.35rem;">Globals: dmg ×' + globalDmg.toFixed(2) +
-          ' · range ×' + globalRange.toFixed(2) +
-          ' · rate ×' + globalRate.toFixed(2) +
-          ' · crit +' + Math.round(globalCrit * 100) + '%' +
-          ' · interest ' + Math.round(interestRate * 100) + '%</div>' +
-          '<div class="desc" style="margin-top:0.35rem;">Research owned: ' + Object.keys(researchOwned).length + '/' + RESEARCH.length +
-          ' · Towers built: ' + towers.length + '</div>' +
-          '</div></div>' +
-          '<div class="res-item"><div class="body"><div class="title">Enemy roster</div>' +
-          '<div class="desc">🐀 Peel Rat · 🤖 Scam Bot · 🦇 Swift · 🐋 Whale · 🦾 Tank · 👾 Boss · 🛸 Mega (20/30/40)</div></div></div>' +
-          '<div class="res-item"><div class="body"><div class="title">Specialization</div>' +
-          '<div class="desc">At tower level 3, pick Path A or B. Levels 4–5 amplify that path. Max level 5.</div></div></div>';
-      }
+      // Layered bloon
+      if (th.lead && !canLead) return popsLeft;
 
-      function refreshHud() {
-        elBan.textContent = String(Math.floor(ban));
-        elSci.textContent = String(sci);
-        elLives.textContent = String(lives);
-        elWave.textContent = String(wave);
-        elScore.textContent = String(score);
-        elKills.textContent = String(kills);
-
-        buildTowerButtons();
-        buildResearchUI();
-        buildAbilityUI();
-        buildIntel();
-
-        // Selected panel
-        pathBtns.style.display = "none";
-        if (selectedTower) {
-          var t = selectedTower;
-          var st = getTowerStats(t);
-          var html = "<strong>" + t.def.icon + " " + t.def.name + "</strong> · Lv " + t.level + "/5";
-          if (t.path) html += " · Path " + t.path + " (" + (t.path === "A" ? t.def.pathA.name : t.def.pathB.name) + ")";
-          html += "<br>";
-          if (t.def.economy) {
-            html += "Income <strong>" + Math.floor(st.income) + " BAN</strong>/wave clear";
-          } else if (t.def.support) {
-            html += "Aura range " + Math.floor(st.range) + " · buffs nearby towers";
-          } else {
-            html += "DMG " + Math.floor(st.damage) + " · RNG " + Math.floor(st.range) +
-              " · Rate " + st.rate.toFixed(2) + "s";
-            if (st.splash) html += " · Splash " + Math.floor(st.splash);
-            if (st.slow) html += " · Slow";
-            if (st.chain) html += " · Chain " + st.chain;
-            if (st.crit) html += " · Crit " + Math.round(st.crit * 100) + "%";
-          }
-          html += "<br>Sell value " + sellValue(t) + " BAN";
-          elSelected.innerHTML = html;
-
-          if (t.level === 3 && !t.path) {
-            pathBtns.style.display = "grid";
-            pathA.textContent = "Path A: " + t.def.pathA.name + " — " + t.def.pathA.desc;
-            pathB.textContent = "Path B: " + t.def.pathB.name + " — " + t.def.pathB.desc;
-            pathA.disabled = false;
-            pathB.disabled = false;
-            pathA.className = "path-btn";
-            pathB.className = "path-btn";
-          } else if (t.path) {
-            pathBtns.style.display = "grid";
-            pathA.textContent = "Path A: " + t.def.pathA.name;
-            pathB.textContent = "Path B: " + t.def.pathB.name;
-            pathA.disabled = true;
-            pathB.disabled = true;
-            pathA.className = "path-btn" + (t.path === "A" ? " picked" : "");
-            pathB.className = "path-btn" + (t.path === "B" ? " picked" : "");
-          }
-
-          var needPath = t.level >= 3 && !t.path;
-          var maxed = t.level >= 5;
-          var ucost = upgradeCost(t);
-          btnUpgrade.disabled = gameOver || maxed || needPath || ban < ucost;
-          btnUpgrade.textContent = maxed ? "Max level" : needPath ? "Choose a path first" : "Upgrade (" + ucost + " BAN)";
-          btnSell.disabled = gameOver;
-          btnSell.textContent = "Sell (+" + sellValue(t) + ")";
-        } else if (selectedType && TOWERS[selectedType]) {
-          var def = TOWERS[selectedType];
-          elSelected.innerHTML = "<strong>" + def.icon + " " + def.name + "</strong> · " + towerCost(def) + " BAN<br>" + def.desc +
-            (unlockedTower(def) ? "" : "<br>🔒 Research required");
-          btnUpgrade.disabled = true;
-          btnUpgrade.textContent = "Upgrade";
-          btnSell.disabled = true;
-          btnSell.textContent = "Sell";
+      while (popsLeft > 0 && th.alive) {
+        var L = LAYERS[th.layer];
+        if (!L) { th.alive = false; break; }
+        addBan(L.value, null, null);
+        pops += 1;
+        popsLeft -= 1;
+        sfxPop();
+        burst(th.x, th.y, L.color, 6);
+        if (L.next) {
+          th.layer = L.next;
+          var N = LAYERS[th.layer];
+          th.r = N.r;
+          th.speed = N.speed * (th.regrow ? 0.95 : 1);
+          th.value = N.value;
         } else {
-          elSelected.textContent = "Select a blueprint, plant on grass. Click towers to specialize.";
-          btnUpgrade.disabled = true;
-          btnSell.disabled = true;
+          th.alive = false;
+          floatTxt(th.x, th.y - 8, "POP", L.color, 11);
         }
-        btnWave.disabled = !running || gameOver || waveActive || wave >= MAX_WAVES;
       }
+      return popsLeft;
+    }
 
-      function buyResearch(id) {
-        if (!running || gameOver || owned(id)) return;
-        var r = null;
-        for (var i = 0; i < RESEARCH.length; i++) if (RESEARCH[i].id === id) r = RESEARCH[i];
-        if (!r || (r.req && !owned(r.req)) || sci < r.cost) return;
-        sci -= r.cost;
-        researchOwned[id] = true;
-        recomputeGlobals();
-        if (r.instantBan) {
-          ban += r.instantBan;
-          floatText(canvas.width / 2, 100, "+" + r.instantBan + " BAN", "#86efac");
+    function damageAt(x, y, popPower, pierce, splash, slow, canCamo, canLead, preferFirst) {
+      // Find targets
+      var hits = 0;
+      var targets = [];
+      for (var i = 0; i < threats.length; i++) {
+        var th = threats[i];
+        if (!th.alive) continue;
+        if (th.camo && !canCamo) continue;
+        var d = dist(x, y, th.x, th.y);
+        if (splash > 0) {
+          if (d <= splash) targets.push({ th: th, d: d, dist: th.dist });
+        } else {
+          if (d <= th.r + 10) targets.push({ th: th, d: d, dist: th.dist });
         }
-        if (id === "vault_armor") lives += 8;
-        if (id === "vault_armor2") lives += 12;
-        beep(660, 0.08, "triangle", 0.05);
-        showBanner("RESEARCHED: " + r.name.toUpperCase());
-        refreshHud();
       }
+      if (!targets.length) return 0;
 
-      function useAbility(id) {
-        if (!running || gameOver) return;
-        var a = ABILITIES[id];
-        if (!a || !owned(a.unlock) || abilityCD[id] > 0) return;
-        ensureAudio();
-        abilityCD[id] = a.cd;
-
-        if (id === "strike") {
-          // Find densest cluster
-          var best = null, bestN = 0, bx = canvas.width / 2, by = canvas.height / 2;
-          for (var i = 0; i < enemies.length; i++) {
-            if (!enemies[i].alive) continue;
-            var n = 0;
-            for (var j = 0; j < enemies.length; j++) {
-              if (enemies[j].alive && dist(enemies[i].x, enemies[i].y, enemies[j].x, enemies[j].y) < 90) n++;
-            }
-            if (n > bestN) { bestN = n; best = enemies[i]; }
+      if (splash > 0) {
+        for (var j = 0; j < targets.length; j++) {
+          popLayerEntity(targets[j].th, popPower, canLead);
+          if (slow > 0) {
+            targets[j].th.slowMul = Math.min(targets[j].th.slowMul, 1 - slow);
+            targets[j].th.freezeT = Math.max(targets[j].th.freezeT, 1.2);
           }
-          if (best) { bx = best.x; by = best.y; }
-          for (var k = 0; k < enemies.length; k++) {
-            var e = enemies[k];
-            if (!e.alive) continue;
-            if (dist(bx, by, e.x, e.y) < 100) damageEnemy(e, 80 + wave * 12, 0, 0, true);
-          }
-          burst(bx, by, "#f5d041", 40);
-          burst(bx, by, "#fb923c", 24);
-          showBanner("ORBITAL BANANA");
-          floatText(bx, by - 20, "☄️ STRIKE", "#f5d041");
-          beep(80, 0.2, "sawtooth", 0.06);
-        } else if (id === "freeze") {
-          for (var f = 0; f < enemies.length; f++) {
-            if (!enemies[f].alive) continue;
-            enemies[f].freezeT = Math.max(enemies[f].freezeT, 3.5);
-            enemies[f].slowMul = 0;
-          }
-          showBanner("CRYO BLANKET");
-          beep(900, 0.15, "sine", 0.05);
-        } else if (id === "cash") {
-          var gain = 60 + Math.floor(Math.random() * 61) + wave;
-          ban += gain;
-          floatText(canvas.width / 2, 90, "+" + gain + " BAN AIRDROP", "#86efac");
-          showBanner("BAN AIRDROP");
-          beep(520, 0.1, "square", 0.05);
-        } else if (id === "stun") {
-          for (var s = 0; s < enemies.length; s++) {
-            if (!enemies[s].alive) continue;
-            enemies[s].stunT = Math.max(enemies[s].stunT, 2);
-          }
-          showBanner("EMP PEEL");
-          beep(200, 0.12, "square", 0.05);
-        } else if (id === "boost") {
-          globalBoostT = 8;
-          showBanner("MONKEY MODE");
-          beep(400, 0.08, "square", 0.05);
-          beep(800, 0.12, "triangle", 0.04);
+          hits++;
         }
-        refreshHud();
+        burst(x, y, "#fb923c", 14);
+        return hits;
       }
 
-      function resetGame() {
-        ban = 200; sci = 0; lives = 25; wave = 0; kills = 0; score = 0;
-        running = true; gameOver = false;
-        selectedType = "peeler"; selectedTower = null;
-        towers = []; enemies = []; projectiles = []; particles = []; floats = []; beams = [];
-        spawnQueue = []; spawnTimer = 0; waveActive = false;
-        researchOwned = {};
-        abilityCD = { strike: 0, freeze: 0, cash: 0, stun: 0, boost: 0 };
-        globalBoostT = 0; totalIncome = 0;
-        recomputeGlobals();
-        startOverlay.classList.add("hidden");
-        winOverlay.classList.add("hidden");
-        loseOverlay.classList.add("hidden");
-        refreshHud();
-        showBanner("MISSION ONLINE");
-        beep(440, 0.08, "square", 0.05);
-        beep(660, 0.1, "square", 0.04);
-      }
-
-      function endLose() {
-        gameOver = true; running = false; waveActive = false;
-        document.getElementById("loseText").textContent =
-          "Wave " + wave + " · Score " + score + " · Kills " + kills + " · Sci researched " + Object.keys(researchOwned).length;
-        loseOverlay.classList.remove("hidden");
-        beep(100, 0.3, "sawtooth", 0.06);
-      }
-      function endWin() {
-        gameOver = true; running = false;
-        score += 5000 + ban * 2 + lives * 50;
-        document.getElementById("winText").textContent =
-          "40 waves cleared · Score " + score + " · Kills " + kills + " · BAN left " + Math.floor(ban);
-        winOverlay.classList.remove("hidden");
-        beep(520, 0.1, "square", 0.05);
-        beep(780, 0.2, "triangle", 0.05);
-      }
-
-      function startWave() {
-        if (!running || gameOver || waveActive || wave >= MAX_WAVES) return;
-        // Interest
-        if (interestRate > 0 && wave > 0) {
-          var interest = Math.floor(ban * interestRate);
-          if (interest > 0) {
-            ban += interest;
-            floatText(canvas.width / 2, 70, "INTEREST +" + interest, "#67e8f9");
-          }
+      // Sort by furthest along path
+      targets.sort(function (a, b) { return b.dist - a.dist; });
+      var remainingPierce = pierce;
+      for (var k = 0; k < targets.length && remainingPierce > 0; k++) {
+        popLayerEntity(targets[k].th, popPower, canLead);
+        if (slow > 0) {
+          targets[k].th.slowMul = Math.min(targets[k].th.slowMul, 1 - slow);
+          targets[k].th.freezeT = Math.max(targets[k].th.freezeT, 1.0);
         }
-        wave += 1;
-        spawnQueue = buildWave(wave);
-        spawnTimer = 0.25;
-        waveActive = true;
-        selectedTower = null;
-        var label = "WAVE " + wave;
-        if (wave % 5 === 0) label = "BOSS WAVE " + wave;
-        if (wave === 20 || wave === 30 || wave === 40) label = "MEGA THREAT " + wave;
-        showBanner(label);
-        refreshHud();
-        beep(280 + wave * 4, 0.1, "square", 0.045);
+        remainingPierce--;
+        hits++;
+      }
+      return hits;
+    }
+
+    // ── Waves ──
+    function buildWave(n) {
+      var q = [];
+      function add(layer, count, gap, flags) {
+        for (var i = 0; i < count; i++) q.push({ t: layer, gap: gap, flags: flags || {} });
+      }
+      function addSpecial(kind, count, gap) {
+        for (var i = 0; i < count; i++) q.push({ t: kind, special: true, gap: gap });
       }
 
-      function spawnEnemy(type) {
-        var st = enemyStats(type, wave);
-        enemies.push({
-          type: type, hp: st.hp, maxHp: st.hp, speed: st.speed, baseSpeed: st.speed,
-          reward: st.reward, armor: st.armor, color: st.color, r: st.r, icon: st.icon,
-          pathIndex: 0, x: waypoints[0].x, y: waypoints[0].y,
-          slowT: 0, slowMul: 1, freezeT: 0, stunT: 0, burnT: 0, burnDps: 0,
-          alive: true, progress: 0
-        });
+      if (n <= 3) add("red", 8 + n * 4, 0.55);
+      else if (n <= 6) { add("red", 10, 0.4); add("blue", 8 + n, 0.45); }
+      else if (n <= 10) { add("blue", 12, 0.35); add("green", 10, 0.4); add("yellow", n, 0.5); }
+      else if (n <= 15) {
+        add("green", 15, 0.3); add("yellow", 12, 0.35); add("pink", 6, 0.4);
+        if (n >= 12) add("blue", 8, 0.3, { camo: true });
+      } else if (n <= 20) {
+        add("pink", 14, 0.28); add("yellow", 16, 0.3);
+        add("green", 10, 0.25, { camo: true });
+        add("blue", 8, 0.35, { regrow: true });
+        if (n === 20) addSpecial("boss", 1, 1.2);
+      } else if (n <= 28) {
+        add("pink", 20, 0.22); addSpecial("ceramic", 3 + (n - 20), 0.8);
+        add("yellow", 12, 0.25, { camo: true });
+        add("pink", 8, 0.3, { regrow: true });
+        if (n % 5 === 0) addSpecial("boss", 1, 1);
+      } else if (n <= 35) {
+        addSpecial("ceramic", 8, 0.55);
+        add("pink", 25, 0.18, { regrow: true });
+        add("yellow", 15, 0.2, { camo: true });
+        if (n === 30) addSpecial("whale", 1, 1.5);
+        if (n % 5 === 0) addSpecial("boss", 1, 1);
+      } else {
+        addSpecial("ceramic", 12, 0.4);
+        add("pink", 30, 0.15, { camo: true, regrow: true });
+        addSpecial("boss", 2, 1.2);
+        if (n === 40) addSpecial("whale", 2, 1.5);
       }
 
-      function placeTower(c, r) {
-        if (!running || gameOver) return;
-        if (!inBounds(c, r) || isPath(c, r) || towerAt(c, r)) return;
-        var def = TOWERS[selectedType];
-        if (!def || !unlockedTower(def)) return;
-        var cost = towerCost(def);
-        if (ban < cost) return;
-        ban -= cost;
-        var t = {
-          c: c, r: r, x: c * CW + CW / 2, y: r * CH + CH / 2,
-          def: def, level: 1, path: null, cooldown: 0, angle: -Math.PI / 2
-        };
-        towers.push(t);
-        selectedTower = t;
-        burst(t.x, t.y, def.color, 12);
-        floatText(t.x, t.y - 14, "-" + cost, "#f5d041");
-        beep(500, 0.05, "triangle", 0.04);
-        refreshHud();
+      // lead intros
+      if (n >= 18 && n % 4 === 0) {
+        for (var L = 0; L < 4; L++) q.push({ t: "green", gap: 0.5, flags: { lead: true } });
       }
+      return q;
+    }
 
-      function upgradeSelected() {
-        if (!selectedTower || gameOver) return;
-        var t = selectedTower;
-        if (t.level >= 5) return;
-        if (t.level >= 3 && !t.path) return;
-        var cost = upgradeCost(t);
-        if (ban < cost) return;
-        ban -= cost;
-        t.level += 1;
-        burst(t.x, t.y, t.def.color, 16);
-        floatText(t.x, t.y - 16, "LV " + t.level, "#a3e635");
-        score += 20;
-        beep(620, 0.07, "square", 0.04);
-        refreshHud();
+    function startWave() {
+      if (!running || gameOver || paused || waveActive || wave >= MAX_WAVE) return;
+      wave += 1;
+      spawnQueue = buildWave(wave);
+      spawnTimer = 0.4;
+      waveActive = true;
+      airdropT = 4 + Math.random() * 8;
+      var label = "WAVE " + wave;
+      if (wave === 20 || wave === 30) label = "BOSS WAVE " + wave;
+      if (wave === 40) label = "FINAL WAVE — MEGA DUMP!";
+      showToast(label);
+      sfxWave();
+      refreshUI();
+    }
+
+    function spawnOne(item) {
+      var th;
+      if (item.special) th = makeSpecial(item.t, 0);
+      else th = makeLayerThreat(item.t, 0, item.flags || {});
+      // lead flag on layer
+      if (item.flags && item.flags.lead) th.lead = true;
+      if (item.flags && item.flags.camo) th.camo = true;
+      if (item.flags && item.flags.regrow) th.regrow = true;
+      syncThreatPos(th);
+      threats.push(th);
+    }
+
+    function placeTower(c, r) {
+      if (!running || gameOver || paused) return;
+      if (!inBounds(c, r) || isPath(c, r) || towerAt(c, r)) return;
+      var def = TOWER_BY_ID[selectedShop];
+      if (!def || ban < def.cost) return;
+      ban -= def.cost;
+      var t = {
+        c: c, r: r,
+        x: c * TW + TW / 2,
+        y: r * TH + TH / 2,
+        def: def,
+        tier: 0,
+        cd: 0,
+        angle: 0
+      };
+      towers.push(t);
+      selectedTower = t;
+      totalBuilt++;
+      sfxPlace();
+      burst(t.x, t.y, def.color, 10);
+      floatTxt(t.x, t.y - 16, "-" + def.cost, "#f5d041");
+      refreshUI();
+    }
+
+    function upgradeTower() {
+      if (!selectedTower || gameOver) return;
+      var t = selectedTower;
+      if (t.tier >= 3) return;
+      var cost = t.def.upCost[t.tier];
+      if (ban < cost) return;
+      ban -= cost;
+      t.tier++;
+      sfxUp();
+      burst(t.x, t.y, t.def.color, 14);
+      floatTxt(t.x, t.y - 18, t.def.ups[t.tier - 1].name, "#86efac", 12);
+      refreshUI();
+    }
+
+    function sellTower() {
+      if (!selectedTower || gameOver) return;
+      var val = Math.floor(spentOn(selectedTower) * 0.7);
+      ban += val;
+      burst(selectedTower.x, selectedTower.y, "#f87171", 12);
+      floatTxt(selectedTower.x, selectedTower.y, "+" + val, "#86efac");
+      towers = towers.filter(function (x) { return x !== selectedTower; });
+      selectedTower = null;
+      beep(200, 0.08, "triangle", 0.04);
+      refreshUI();
+    }
+
+    function findTarget(tower, st) {
+      var best = null, bestScore = -1;
+      for (var i = 0; i < threats.length; i++) {
+        var th = threats[i];
+        if (!th.alive) continue;
+        if (th.camo && !st.camo) continue;
+        if (th.lead && !st.lead && th.kind === "layer") continue;
+        // lead ceramics need lead pop
+        if ((th.kind === "ceramic" || th.kind === "boss" || th.kind === "whale") && th.lead && !st.lead) continue;
+        var d = dist(tower.x, tower.y, th.x, th.y);
+        if (d > st.range) continue;
+        var score = th.dist;
+        if (tower.def.preferStrong) score += th.hp * 5 + (LAYERS[th.layer] ? 20 : 50);
+        if (score > bestScore) { bestScore = score; best = th; }
       }
+      return best;
+    }
 
-      function pickPath(path) {
-        if (!selectedTower || selectedTower.level < 3 || selectedTower.path) return;
-        selectedTower.path = path;
-        // free path unlock juice, then can continue upgrading
-        burst(selectedTower.x, selectedTower.y, "#67e8f9", 18);
-        floatText(selectedTower.x, selectedTower.y - 18, "PATH " + path, "#67e8f9");
-        showBanner("SPECIALIZED: " + (path === "A" ? selectedTower.def.pathA.name : selectedTower.def.pathB.name).toUpperCase());
-        beep(700, 0.1, "triangle", 0.05);
-        refreshHud();
-      }
-
-      function sellSelected() {
-        if (!selectedTower || gameOver) return;
-        var val = sellValue(selectedTower);
-        ban += val;
-        burst(selectedTower.x, selectedTower.y, "#f87171", 12);
-        floatText(selectedTower.x, selectedTower.y - 14, "+" + val, "#86efac");
-        towers = towers.filter(function (x) { return x !== selectedTower; });
-        selectedTower = null;
-        beep(200, 0.07, "triangle", 0.04);
-        refreshHud();
-      }
-
-      function damageEnemy(e, dmg, slowAmt, burnAmt, isCrit) {
-        if (!e.alive) return;
-        var dealt = Math.max(1, dmg - e.armor * 0.5);
-        if (isCrit) {
-          dealt *= 1.85;
-          floatText(e.x, e.y - e.r - 8, "CRIT!", "#fbbf24");
+    function fire(tower, target, st) {
+      var shots = 1 + (st.multishot || 0);
+      for (var s = 0; s < shots; s++) {
+        var ang = Math.atan2(target.y - tower.y, target.x - tower.x) + (s - (shots - 1) / 2) * 0.12;
+        tower.angle = ang;
+        if (tower.def.freezePulse) {
+          // instant aura pulse
+          damageAt(tower.x, tower.y, st.pop, 99, st.splash || st.range * 0.7, st.slow, st.camo, st.lead);
+          burst(tower.x, tower.y, "#67e8f9", 10);
+          continue;
         }
-        e.hp -= dealt;
-        if (slowAmt > 0) {
-          e.slowT = Math.max(e.slowT, 1.5);
-          e.slowMul = Math.min(e.slowMul === 0 ? 0 : e.slowMul, 1 - slowAmt);
-          if (e.slowMul < 0) e.slowMul = 0;
-        }
-        if (burnAmt > 0) {
-          e.burnT = Math.max(e.burnT, 2.5);
-          e.burnDps = Math.max(e.burnDps, burnAmt);
-        }
-        score += Math.floor(dealt * 0.15);
-        if (e.hp <= 0) {
-          e.alive = false;
-          kills += 1;
-          ban += e.reward;
-          score += e.reward * 3;
-          burst(e.x, e.y, e.color, 14);
-          floatText(e.x, e.y - 8, "+" + e.reward, "#f5d041");
-          beep(750, 0.03, "square", 0.025);
-        }
-      }
-
-      function findTarget(tower, st) {
-        if (tower.def.economy || tower.def.support) return null;
-        var best = null, bestScore = -1;
-        for (var i = 0; i < enemies.length; i++) {
-          var e = enemies[i];
-          if (!e.alive) continue;
-          if (dist(tower.x, tower.y, e.x, e.y) > st.range) continue;
-          var sc = e.progress * 10;
-          if (tower.def.preferTank) sc += e.hp * 0.04 + e.armor;
-          if (sc > bestScore) { bestScore = sc; best = e; }
-        }
-        return best;
-      }
-
-      function fireTower(tower, target, st) {
-        var dmg = st.damage;
-        var isCrit = Math.random() < st.crit;
-        if (st.execute && target.hp / target.maxHp < 0.3) dmg *= 1 + st.execute * 3;
-        tower.angle = Math.atan2(target.y - tower.y, target.x - tower.x);
-
-        if (tower.def.proj === "bolt" || st.chain > 0 && tower.def.id === "tesla") {
-          // Instant chain
-          var hit = [target];
-          damageEnemy(target, dmg, st.slow, st.burn, isCrit);
-          beams.push({ x: tower.x, y: tower.y, x2: target.x, y2: target.y, life: 0.12, age: 0, color: tower.def.color });
-          var last = target;
-          for (var c = 0; c < st.chain; c++) {
-            var next = null, nd = 1e9;
-            for (var i = 0; i < enemies.length; i++) {
-              var e = enemies[i];
-              if (!e.alive || hit.indexOf(e) >= 0) continue;
-              var d = dist(last.x, last.y, e.x, e.y);
-              if (d < 95 && d < nd) { nd = d; next = e; }
-            }
-            if (!next) break;
-            hit.push(next);
-            damageEnemy(next, dmg * (0.7 - c * 0.1), st.slow * 0.5, st.burn * 0.5, false);
-            beams.push({ x: last.x, y: last.y, x2: next.x, y2: next.y, life: 0.12, age: 0, color: tower.def.color });
-            last = next;
-          }
-          beep(880, 0.03, "square", 0.02);
-          return;
-        }
-
         projectiles.push({
-          x: tower.x, y: tower.y, target: target,
-          speed: tower.def.proj === "dart" ? 460 : 300,
-          damage: dmg, splash: st.splash, slow: st.slow, burn: st.burn,
-          pierce: st.pierce, crit: isCrit, color: tower.def.color,
-          kind: tower.def.proj, dead: false, hitSet: []
+          x: tower.x, y: tower.y,
+          vx: Math.cos(ang) * (tower.def.boomerang ? 220 : 380),
+          vy: Math.sin(ang) * (tower.def.boomerang ? 220 : 380),
+          life: tower.def.boomerang ? 1.4 : 0.9,
+          age: 0,
+          pierceLeft: st.pierce,
+          pop: st.pop,
+          splash: st.splash,
+          slow: st.slow,
+          camo: st.camo,
+          lead: st.lead,
+          color: tower.def.color,
+          boomer: !!tower.def.boomerang,
+          home: tower.def.boomerang ? { x: tower.x, y: tower.y } : null,
+          phase: 0,
+          hitIds: {},
+          kind: tower.def.id
         });
       }
+      beep(tower.def.id === "bomb" ? 120 : 400, 0.03, "square", 0.02);
+    }
 
-      function waveClearRewards() {
-        var bonus = Math.floor((20 + wave * 5) * wavePayMul);
-        // Farms
-        var farmPay = 0;
-        for (var i = 0; i < towers.length; i++) {
-          if (!towers[i].def.economy) continue;
-          var st = getTowerStats(towers[i]);
-          farmPay += Math.floor(st.income);
+    function update(dt) {
+      animT += dt;
+      if (toastT > 0) {
+        toastT -= dt;
+        if (toastT <= 0) toast.classList.remove("show");
+      }
+      if (!running || gameOver || paused) return;
+
+      var d = dt * speed;
+
+      // Spawn
+      if (waveActive && spawnQueue.length) {
+        spawnTimer -= d;
+        if (spawnTimer <= 0) {
+          var item = spawnQueue.shift();
+          spawnOne(item);
+          spawnTimer = item.gap || 0.4;
         }
-        totalIncome = farmPay;
-        ban += bonus + farmPay;
-        sci += sciPerWave;
-        if (wave % 5 === 0) sci += 1;
-        score += 100 + wave * 25;
-        floatText(canvas.width / 2, 85, "CLEAR +" + bonus + (farmPay ? " · FARM +" + farmPay : "") + " · +" + sciPerWave + " Sci", "#86efac");
       }
 
-      function update(dt) {
-        animT += dt;
-        if (bannerT > 0) { bannerT -= dt; if (bannerT <= 0) waveBanner.classList.remove("show"); }
-        if (!running || gameOver) return;
-
-        // Ability CDs
-        var abids = Object.keys(abilityCD);
-        var cdDirty = false;
-        for (var a = 0; a < abids.length; a++) {
-          if (abilityCD[abids[a]] > 0) {
-            abilityCD[abids[a]] = Math.max(0, abilityCD[abids[a]] - dt);
-            cdDirty = true;
+      // Airdrop
+      if (waveActive && airdropT > 0) {
+        airdropT -= d;
+        if (airdropT <= 0) {
+          var drop = 25 + ((Math.random() * 55) | 0);
+          // village income bonus
+          for (var vi = 0; vi < towers.length; vi++) {
+            if (towers[vi].def.support) {
+              var vs = getStats(towers[vi]);
+              drop += vs.income || 15;
+            }
           }
+          addBan(drop, W / 2, 80);
+          showToast("🪂 AIRDROP +" + drop + " BAN");
+          confettiBurst();
         }
-        if (globalBoostT > 0) globalBoostT = Math.max(0, globalBoostT - dt);
+      }
 
-        // Spawn
-        if (waveActive && spawnQueue.length) {
-          spawnTimer -= dt;
-          if (spawnTimer <= 0) {
-            spawnEnemy(spawnQueue.shift());
-            spawnTimer = Math.max(0.2, 0.65 - wave * 0.008);
-          }
-        }
+      // Threats move
+      for (var i = threats.length - 1; i >= 0; i--) {
+        var th = threats[i];
+        if (!th.alive) { threats.splice(i, 1); continue; }
 
-        // Enemies
-        for (var i = enemies.length - 1; i >= 0; i--) {
-          var e = enemies[i];
-          if (!e.alive) { enemies.splice(i, 1); continue; }
+        if (th.freezeT > 0) th.freezeT -= d;
+        var spd = th.speed * (th.freezeT > 0 ? th.slowMul : 1);
+        if (th.freezeT <= 0) th.slowMul = 1;
 
-          if (e.burnT > 0) {
-            e.burnT -= dt;
-            damageEnemy(e, e.burnDps * dt, 0, 0, false);
-            if (!e.alive) { enemies.splice(i, 1); continue; }
-          }
-          if (e.freezeT > 0) e.freezeT -= dt;
-          if (e.stunT > 0) e.stunT -= dt;
-          if (e.slowT > 0) {
-            e.slowT -= dt;
-            if (e.slowT <= 0 && e.freezeT <= 0) e.slowMul = 1;
-          }
+        th.dist += spd * d;
+        syncThreatPos(th);
 
-          var frozen = e.freezeT > 0 || e.stunT > 0;
-          var spd = frozen ? 0 : e.baseSpeed * (e.slowMul < 0 ? 0 : e.slowMul);
-          var wp = waypoints[e.pathIndex];
-          if (!wp) {
-            e.alive = false;
-            enemies.splice(i, 1);
-            var loss = e.type === "mega" ? 8 : e.type === "boss" ? 5 : e.type === "tank" || e.type === "whale" ? 2 : 1;
-            lives -= loss;
-            burst(e.x, e.y, "#f87171", 12);
-            refreshHud();
-            if (lives <= 0) { lives = 0; endLose(); return; }
-            continue;
-          }
-          var dx = wp.x - e.x, dy = wp.y - e.y;
-          var d = Math.sqrt(dx * dx + dy * dy) || 1;
-          var step = spd * dt;
-          if (step >= d) {
-            e.x = wp.x; e.y = wp.y; e.pathIndex++; e.progress = e.pathIndex;
-          } else {
-            e.x += (dx / d) * step; e.y += (dy / d) * step;
-            e.progress = e.pathIndex + 0.5;
-          }
-        }
-
-        // Towers
-        for (var t = 0; t < towers.length; t++) {
-          var tower = towers[t];
-          var st = getTowerStats(tower);
-          if (tower.def.economy || tower.def.support) continue;
-          if (tower.cooldown > 0) tower.cooldown -= dt;
-          if (tower.cooldown <= 0) {
-            var target = findTarget(tower, st);
-            if (target) {
-              fireTower(tower, target, st);
-              tower.cooldown = st.rate;
+        // regrow
+        if (th.regrow && th.kind === "layer" && th.layer !== "pink") {
+          th.regrowT += d;
+          if (th.regrowT > 3.5) {
+            th.regrowT = 0;
+            var order = ["red", "blue", "green", "yellow", "pink"];
+            var idx = order.indexOf(th.layer);
+            if (idx >= 0 && idx < order.length - 1) {
+              th.layer = order[idx + 1];
+              var L = LAYERS[th.layer];
+              th.r = L.r; th.speed = L.speed; th.value = L.value;
             }
           }
         }
 
-        // Projectiles
-        for (var p = projectiles.length - 1; p >= 0; p--) {
-          var pr = projectiles[p];
-          if (pr.dead) { projectiles.splice(p, 1); continue; }
-          var aimX = pr.target && pr.target.alive ? pr.target.x : pr.x + 10;
-          var aimY = pr.target && pr.target.alive ? pr.target.y : pr.y;
-          var pdx = aimX - pr.x, pdy = aimY - pr.y;
-          var pd = Math.sqrt(pdx * pdx + pdy * pdy) || 1;
-          var pstep = pr.speed * dt;
-          if (pstep >= pd) {
-            pr.x = aimX; pr.y = aimY;
+        if (th.dist >= pathLen) {
+          th.alive = false;
+          threats.splice(i, 1);
+          var loss = th.kind === "whale" ? 50 : th.kind === "boss" ? 25 : th.kind === "ceramic" ? 10 : 1;
+          // layer leaks: red=1 ... pink=5 approx
+          if (th.kind === "layer") {
+            var order2 = ["red", "blue", "green", "yellow", "pink"];
+            loss = order2.indexOf(th.layer) + 1;
+          }
+          lives -= loss;
+          sfxLeak();
+          floatTxt(th.x, th.y, "-" + loss + " ❤️", "#f87171", 14);
+          if (lives <= 0) {
+            lives = 0;
+            endLose();
+            return;
+          }
+          refreshUI();
+        }
+      }
+
+      // Towers
+      for (var t = 0; t < towers.length; t++) {
+        var tower = towers[t];
+        if (tower.def.support) continue;
+        var st = getStats(tower);
+        if (tower.cd > 0) tower.cd -= d;
+        if (tower.cd <= 0) {
+          var target = findTarget(tower, st);
+          if (target) {
+            fire(tower, target, st);
+            tower.cd = st.rof;
+          }
+        }
+      }
+
+      // Projectiles
+      for (var p = projectiles.length - 1; p >= 0; p--) {
+        var pr = projectiles[p];
+        pr.age += d;
+        if (pr.boomer) {
+          pr.phase += d;
+          // outbound then return
+          if (pr.phase < 0.55) {
+            pr.x += pr.vx * d;
+            pr.y += pr.vy * d;
+          } else {
+            var hx = pr.home.x - pr.x, hy = pr.home.y - pr.y;
+            var hd = Math.sqrt(hx * hx + hy * hy) || 1;
+            pr.x += (hx / hd) * 280 * d;
+            pr.y += (hy / hd) * 280 * d;
+            if (hd < 12) pr.age = pr.life;
+          }
+        } else {
+          pr.x += pr.vx * d;
+          pr.y += pr.vy * d;
+        }
+
+        // collide
+        for (var ti = 0; ti < threats.length; ti++) {
+          var th2 = threats[ti];
+          if (!th2.alive) continue;
+          if (th2.camo && !pr.camo) continue;
+          var id = th2.x.toFixed(1) + "," + th2.dist.toFixed(1) + "," + ti;
+          if (pr.hitIds[ti]) continue;
+          if (dist(pr.x, pr.y, th2.x, th2.y) <= th2.r + 8) {
+            pr.hitIds[ti] = true;
             if (pr.splash > 0) {
-              for (var ei = 0; ei < enemies.length; ei++) {
-                var en = enemies[ei];
-                if (!en.alive) continue;
-                var ed = dist(pr.x, pr.y, en.x, en.y);
-                if (ed <= pr.splash) {
-                  damageEnemy(en, pr.damage * (1 - ed / pr.splash * 0.35), pr.slow, pr.burn, pr.crit && en === pr.target);
-                }
-              }
-              burst(pr.x, pr.y, pr.color, 18);
+              damageAt(pr.x, pr.y, pr.pop, 99, pr.splash, pr.slow, pr.camo, pr.lead);
+              pr.age = pr.life;
+              break;
             } else {
-              if (pr.target && pr.target.alive) {
-                damageEnemy(pr.target, pr.damage, pr.slow, pr.burn, pr.crit);
+              popLayerEntity(th2, pr.pop, pr.lead);
+              if (pr.slow > 0) {
+                th2.slowMul = Math.min(th2.slowMul, 1 - pr.slow);
+                th2.freezeT = Math.max(th2.freezeT, 0.8);
               }
-              if (pr.pierce > 0) {
-                // continue through — find next
-                pr.pierce--;
-                pr.crit = false;
-                var nxt = null, nd2 = 1e9;
-                for (var pj = 0; pj < enemies.length; pj++) {
-                  var ee = enemies[pj];
-                  if (!ee.alive || ee === pr.target) continue;
-                  var dd = dist(pr.x, pr.y, ee.x, ee.y);
-                  if (dd < 120 && dd < nd2) { nd2 = dd; nxt = ee; }
-                }
-                if (nxt) { pr.target = nxt; continue; }
-              }
-              burst(pr.x, pr.y, pr.color, 8);
-            }
-            pr.dead = true;
-            projectiles.splice(p, 1);
-          } else {
-            pr.x += (pdx / pd) * pstep;
-            pr.y += (pdy / pd) * pstep;
-          }
-        }
-
-        // Beams
-        for (var b = beams.length - 1; b >= 0; b--) {
-          beams[b].age += dt;
-          if (beams[b].age >= beams[b].life) beams.splice(b, 1);
-        }
-
-        // FX
-        for (var n = particles.length - 1; n >= 0; n--) {
-          var pt = particles[n];
-          pt.age += dt; pt.x += pt.vx * dt; pt.y += pt.vy * dt; pt.vy += 160 * dt;
-          if (pt.age >= pt.life) particles.splice(n, 1);
-        }
-        for (var f = floats.length - 1; f >= 0; f--) {
-          floats[f].age += dt; floats[f].y -= 26 * dt;
-          if (floats[f].age >= floats[f].life) floats.splice(f, 1);
-        }
-
-        // Wave clear
-        if (waveActive && spawnQueue.length === 0 && enemies.length === 0) {
-          waveActive = false;
-          waveClearRewards();
-          showBanner("WAVE CLEAR");
-          refreshHud();
-          if (wave >= MAX_WAVES) endWin();
-        }
-
-        // periodic ability bar refresh when CDs tick
-        if (cdDirty && Math.floor(animT * 4) !== Math.floor((animT - dt) * 4)) {
-          buildAbilityUI();
-        }
-      }
-
-      // ── Draw ──
-      function drawMap() {
-        for (var r = 0; r < ROWS; r++) {
-          for (var c = 0; c < COLS; c++) {
-            var x = c * CW, y = r * CH;
-            if (isPath(c, r)) {
-              var g = ctx.createLinearGradient(x, y, x + CW, y + CH);
-              g.addColorStop(0, "#2a1c10"); g.addColorStop(1, "#4a3220");
-              ctx.fillStyle = g;
-              ctx.fillRect(x, y, CW + 0.5, CH + 0.5);
-              ctx.fillStyle = "rgba(245,208,65,0.04)";
-              ctx.fillRect(x, y, CW, CH);
-            } else {
-              ctx.fillStyle = ((c + r) % 2 === 0) ? "#0a1a14" : "#081610";
-              ctx.fillRect(x, y, CW + 0.5, CH + 0.5);
-              // tech grid dots
-              ctx.fillStyle = "rgba(103,232,249,0.06)";
-              ctx.fillRect(x + CW / 2 - 1, y + CH / 2 - 1, 2, 2);
+              pr.pierceLeft--;
+              if (pr.pierceLeft <= 0) { pr.age = pr.life; break; }
             }
           }
         }
-        // path line
-        ctx.strokeStyle = "rgba(245,208,65,0.2)";
-        ctx.lineWidth = 4;
-        ctx.lineJoin = "round";
-        ctx.beginPath();
-        for (var i = 0; i < waypoints.length; i++) {
-          if (i === 0) ctx.moveTo(waypoints[i].x, waypoints[i].y);
-          else ctx.lineTo(waypoints[i].x, waypoints[i].y);
-        }
-        ctx.stroke();
-        ctx.font = "18px serif";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText("🚀", waypoints[0].x, waypoints[0].y);
-        ctx.fillText("🏦", waypoints[waypoints.length - 1].x, waypoints[waypoints.length - 1].y);
 
-        // mission boost overlay tint
-        if (globalBoostT > 0) {
-          ctx.fillStyle = "rgba(244,114,182," + (0.04 + 0.03 * Math.sin(animT * 8)) + ")";
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
+        if (pr.age >= pr.life || pr.x < -40 || pr.y < -40 || pr.x > W + 40 || pr.y > H + 40) {
+          projectiles.splice(p, 1);
         }
       }
 
-      function drawHover() {
-        if (!hoverCell || !running || gameOver || selectedTower) return;
-        var c = hoverCell.c, r = hoverCell.r;
-        if (!inBounds(c, r)) return;
-        var def = TOWERS[selectedType];
-        if (!def || !unlockedTower(def)) return;
-        var valid = !isPath(c, r) && !towerAt(c, r);
-        var x = c * CW, y = r * CH;
-        ctx.fillStyle = valid ? "rgba(103,232,249,0.18)" : "rgba(248,113,113,0.22)";
-        ctx.fillRect(x + 2, y + 2, CW - 4, CH - 4);
-        if (valid && def.range > 0) {
-          var cx = x + CW / 2, cy = y + CH / 2;
-          var range = def.range * globalRange;
-          ctx.beginPath();
-          ctx.arc(cx, cy, range, 0, Math.PI * 2);
-          ctx.strokeStyle = "rgba(245,208,65,0.3)";
-          ctx.stroke();
-        }
+      // FX
+      for (var n = particles.length - 1; n >= 0; n--) {
+        var pt = particles[n];
+        pt.age += d;
+        pt.x += pt.vx * d;
+        pt.y += pt.vy * d;
+        pt.vy += 220 * d;
+        if (pt.age >= pt.life) particles.splice(n, 1);
+      }
+      for (var f = floats.length - 1; f >= 0; f--) {
+        floats[f].age += d;
+        floats[f].y -= 30 * d;
+        if (floats[f].age >= floats[f].life) floats.splice(f, 1);
       }
 
-      function drawTowers() {
-        for (var i = 0; i < towers.length; i++) {
-          var t = towers[i];
-          var st = getTowerStats(t);
-          var sel = t === selectedTower;
-          if (sel && st.range > 0) {
-            ctx.beginPath();
-            ctx.arc(t.x, t.y, st.range, 0, Math.PI * 2);
-            ctx.fillStyle = "rgba(103,232,249,0.06)";
-            ctx.fill();
-            ctx.strokeStyle = "rgba(103,232,249,0.4)";
-            ctx.stroke();
-          }
-          // support aura ring
-          if (t.def.support) {
-            ctx.beginPath();
-            ctx.arc(t.x, t.y, st.range, 0, Math.PI * 2);
-            ctx.strokeStyle = "rgba(244,114,182,0.2)";
-            ctx.setLineDash([4, 4]);
-            ctx.stroke();
-            ctx.setLineDash([]);
-          }
-
-          ctx.beginPath();
-          ctx.arc(t.x, t.y + 5, 14, 0, Math.PI * 2);
-          ctx.fillStyle = "rgba(0,0,0,0.35)";
-          ctx.fill();
-
-          ctx.beginPath();
-          ctx.arc(t.x, t.y, 14 + t.level * 0.8, 0, Math.PI * 2);
-          ctx.fillStyle = "#0c1210";
-          ctx.fill();
-          ctx.strokeStyle = t.def.color;
-          ctx.lineWidth = sel ? 3 : 2;
-          ctx.stroke();
-
-          // path badge
-          if (t.path) {
-            ctx.fillStyle = t.path === "A" ? "#67e8f9" : "#f472b6";
-            ctx.font = "700 9px Syne,sans-serif";
-            ctx.textAlign = "center";
-            ctx.fillText(t.path, t.x + 12, t.y - 12);
-          }
-
-          for (var lv = 0; lv < t.level; lv++) {
-            ctx.beginPath();
-            ctx.arc(t.x - 10 + lv * 5, t.y + 13, 2, 0, Math.PI * 2);
-            ctx.fillStyle = t.def.color;
-            ctx.fill();
-          }
-
-          if (!t.def.economy && !t.def.support) {
-            ctx.save();
-            ctx.translate(t.x, t.y);
-            ctx.rotate(t.angle);
-            ctx.fillStyle = t.def.color;
-            ctx.fillRect(5, -2.5, 13, 5);
-            ctx.restore();
-          }
-
-          ctx.font = "16px serif";
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
-          ctx.fillText(t.def.icon, t.x, t.y);
+      // Wave clear
+      if (waveActive && spawnQueue.length === 0 && threats.length === 0) {
+        waveActive = false;
+        var bonus = 50 + wave * 5;
+        // village commerce
+        for (var vj = 0; vj < towers.length; vj++) {
+          if (towers[vj].def.support) bonus += getStats(towers[vj]).income || 0;
         }
+        addBan(bonus, W / 2, 100);
+        showToast("ROUND CLEAR  ·  +" + bonus + " BAN");
+        if (wave % 5 === 0) confettiBurst();
+        refreshUI();
+        if (wave >= MAX_WAVE) endWin();
       }
+    }
 
-      function drawEnemies() {
-        for (var i = 0; i < enemies.length; i++) {
-          var e = enemies[i];
-          if (!e.alive) continue;
-          ctx.beginPath();
-          ctx.ellipse(e.x, e.y + e.r * 0.65, e.r * 0.65, 3.5, 0, 0, Math.PI * 2);
-          ctx.fillStyle = "rgba(0,0,0,0.35)";
-          ctx.fill();
-          ctx.beginPath();
-          ctx.arc(e.x, e.y, e.r, 0, Math.PI * 2);
-          ctx.fillStyle = e.color;
-          ctx.fill();
-          ctx.strokeStyle = "#0a0a0a";
-          ctx.lineWidth = 2;
-          ctx.stroke();
-          if (e.freezeT > 0 || e.stunT > 0) {
-            ctx.strokeStyle = e.stunT > 0 ? "rgba(192,132,252,0.8)" : "rgba(103,232,249,0.85)";
+    // ── Draw ──
+    function drawMap() {
+      // grass checker
+      for (var r = 0; r < ROWS; r++) {
+        for (var c = 0; c < COLS; c++) {
+          var x = c * TW, y = r * TH;
+          if (isPath(c, r)) {
+            ctx.fillStyle = (c + r) % 2 ? "#d4b896" : "#c9a87c";
+            ctx.fillRect(x, y, TW + 0.5, TH + 0.5);
+            // blockchain vine accent
+            ctx.strokeStyle = "rgba(245,208,65,0.2)";
             ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.arc(e.x, e.y, e.r + 3, 0, Math.PI * 2);
-            ctx.stroke();
+            ctx.strokeRect(x + 4, y + 4, TW - 8, TH - 8);
+          } else {
+            ctx.fillStyle = (c + r) % 2 ? "#3f9a52" : "#348a46";
+            ctx.fillRect(x, y, TW + 0.5, TH + 0.5);
           }
-          if (e.burnT > 0) {
-            ctx.strokeStyle = "rgba(251,146,60,0.75)";
-            ctx.beginPath();
-            ctx.arc(e.x, e.y, e.r + 5, 0, Math.PI * 2);
-            ctx.stroke();
-          }
-          ctx.font = (e.r + 2) + "px serif";
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
-          ctx.fillText(e.icon, e.x, e.y + 1);
-          var bw = e.r * 2.2, pct = clamp(e.hp / e.maxHp, 0, 1);
-          ctx.fillStyle = "rgba(0,0,0,0.55)";
-          ctx.fillRect(e.x - bw / 2, e.y - e.r - 9, bw, 4);
-          ctx.fillStyle = pct > 0.35 ? "#86efac" : "#f87171";
-          ctx.fillRect(e.x - bw / 2, e.y - e.r - 9, bw * pct, 4);
         }
       }
 
-      function drawProjectiles() {
-        for (var i = 0; i < projectiles.length; i++) {
-          var pr = projectiles[i];
-          if (pr.kind === "banana") {
-            ctx.font = "13px serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-            ctx.fillText("🍌", pr.x, pr.y);
-          } else {
-            ctx.beginPath();
-            ctx.arc(pr.x, pr.y, pr.kind === "shell" ? 6 : 4, 0, Math.PI * 2);
-            ctx.fillStyle = pr.color;
-            ctx.fill();
-          }
-        }
-        for (var b = 0; b < beams.length; b++) {
-          var bm = beams[b];
-          var a = 1 - bm.age / bm.life;
-          ctx.globalAlpha = a;
-          ctx.strokeStyle = bm.color;
-          ctx.lineWidth = 2.5;
+      // path ribbon
+      ctx.strokeStyle = "rgba(90, 60, 30, 0.35)";
+      ctx.lineWidth = Math.min(TW, TH) * 0.72;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.beginPath();
+      for (var i = 0; i < waypoints.length; i++) {
+        if (i === 0) ctx.moveTo(waypoints[i].x, waypoints[i].y);
+        else ctx.lineTo(waypoints[i].x, waypoints[i].y);
+      }
+      ctx.stroke();
+      ctx.strokeStyle = "rgba(245, 208, 65, 0.25)";
+      ctx.lineWidth = 3;
+      ctx.setLineDash([8, 10]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // decor
+      for (var d = 0; d < decor.length; d++) {
+        var de = decor[d];
+        if (de.kind === "tree") {
+          ctx.font = "20px serif";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText("🌴", de.x, de.y);
+        } else {
+          var bob = Math.sin(animT * 2 + de.phase) * 3;
+          ctx.globalAlpha = 0.7;
           ctx.beginPath();
-          ctx.moveTo(bm.x, bm.y);
-          ctx.lineTo(bm.x2, bm.y2);
-          ctx.stroke();
+          ctx.arc(de.x, de.y + bob, 4, 0, Math.PI * 2);
+          ctx.fillStyle = "#f5d041";
+          ctx.fill();
           ctx.globalAlpha = 1;
         }
       }
 
-      function drawFX() {
-        for (var i = 0; i < particles.length; i++) {
-          var pt = particles[i];
-          var a = 1 - pt.age / pt.life;
-          ctx.globalAlpha = a;
+      // spawn & core
+      var sp = waypoints[0], core = waypoints[waypoints.length - 1];
+      ctx.font = "22px serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("🚪", sp.x, sp.y);
+      // core glow
+      ctx.beginPath();
+      ctx.arc(core.x, core.y, 20 + Math.sin(animT * 3) * 2, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(245,208,65,0.25)";
+      ctx.fill();
+      ctx.font = "24px serif";
+      ctx.fillText("🍌", core.x, core.y);
+    }
+
+    function drawHover() {
+      if (!hover || !running || gameOver || selectedTower) return;
+      var def = TOWER_BY_ID[selectedShop];
+      if (!def) return;
+      var c = hover.c, r = hover.r;
+      var valid = inBounds(c, r) && !isPath(c, r) && !towerAt(c, r);
+      ctx.fillStyle = valid ? "rgba(255,255,100,0.28)" : "rgba(248,113,113,0.3)";
+      ctx.fillRect(c * TW + 2, r * TH + 2, TW - 4, TH - 4);
+      if (valid) {
+        var stRange = def.range;
+        ctx.beginPath();
+        ctx.arc(c * TW + TW / 2, r * TH + TH / 2, stRange, 0, Math.PI * 2);
+        ctx.strokeStyle = "rgba(255,255,255,0.35)";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+    }
+
+    function drawMonkey(t) {
+      var st = getStats(t);
+      var sel = t === selectedTower;
+      if (sel) {
+        ctx.beginPath();
+        ctx.arc(t.x, t.y, st.range, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(255,229,102,0.08)";
+        ctx.fill();
+        ctx.strokeStyle = "rgba(255,229,102,0.45)";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+      if (t.def.support) {
+        ctx.beginPath();
+        ctx.arc(t.x, t.y, st.range, 0, Math.PI * 2);
+        ctx.strokeStyle = "rgba(192,132,252,0.25)";
+        ctx.setLineDash([6, 6]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      // body
+      var scale = 1 + t.tier * 0.08;
+      ctx.save();
+      ctx.translate(t.x, t.y);
+      ctx.scale(scale, scale);
+
+      // shadow
+      ctx.beginPath();
+      ctx.ellipse(0, 12, 14, 5, 0, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(0,0,0,0.25)";
+      ctx.fill();
+
+      // platform
+      ctx.beginPath();
+      ctx.arc(0, 4, 16, 0, Math.PI * 2);
+      ctx.fillStyle = "#5b3a1a";
+      ctx.fill();
+      ctx.strokeStyle = t.def.color;
+      ctx.lineWidth = sel ? 3 : 2;
+      ctx.stroke();
+
+      // monkey face circle
+      ctx.beginPath();
+      ctx.arc(0, -2, 13, 0, Math.PI * 2);
+      ctx.fillStyle = "#c4a574";
+      ctx.fill();
+      ctx.strokeStyle = "#3b2a1a";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // ears
+      ctx.beginPath();
+      ctx.arc(-12, -6, 5, 0, Math.PI * 2);
+      ctx.arc(12, -6, 5, 0, Math.PI * 2);
+      ctx.fillStyle = "#c4a574";
+      ctx.fill();
+      ctx.stroke();
+
+      // eyes
+      ctx.fillStyle = "#fff";
+      ctx.beginPath();
+      ctx.arc(-4, -4, 3.2, 0, Math.PI * 2);
+      ctx.arc(4, -4, 3.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#111";
+      ctx.beginPath();
+      ctx.arc(-3.5 + Math.cos(t.angle) * 0.8, -4, 1.6, 0, Math.PI * 2);
+      ctx.arc(4.5 + Math.cos(t.angle) * 0.8, -4, 1.6, 0, Math.PI * 2);
+      ctx.fill();
+
+      // smile
+      ctx.beginPath();
+      ctx.arc(0, 0, 4, 0.15, Math.PI - 0.15);
+      ctx.strokeStyle = "#3b2a1a";
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // hat / role flair by type
+      ctx.font = "12px serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      if (t.def.id === "sniper") ctx.fillText("🎯", 0, -18);
+      else if (t.def.id === "bomb") ctx.fillText("💣", 0, -18);
+      else if (t.def.id === "ice") ctx.fillText("🧊", 0, -18);
+      else if (t.def.id === "village") ctx.fillText("🏠", 0, -18);
+      else if (t.def.id === "super") ctx.fillText("🦸", 0, -18);
+      else if (t.def.id === "boomer") ctx.fillText("🪃", 0, -18);
+      else ctx.fillText("🍌", 10, -10);
+
+      // tier pips
+      for (var p = 0; p < t.tier; p++) {
+        ctx.beginPath();
+        ctx.arc(-8 + p * 8, 14, 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = t.def.color;
+        ctx.fill();
+      }
+
+      // barrel
+      if (!t.def.support && !t.def.freezePulse) {
+        ctx.rotate(t.angle);
+        ctx.fillStyle = t.def.color;
+        ctx.fillRect(8, -3, 12 + t.tier * 2, 6);
+      }
+      ctx.restore();
+    }
+
+    function drawThreat(th) {
+      if (!th.alive) return;
+      // camo transparency
+      ctx.globalAlpha = th.camo ? 0.55 : 1;
+
+      if (th.kind === "layer") {
+        var L = LAYERS[th.layer] || LAYERS.red;
+        // balloon body
+        ctx.beginPath();
+        ctx.ellipse(th.x, th.y - 2, th.r * 0.85, th.r, 0, 0, Math.PI * 2);
+        ctx.fillStyle = L.color;
+        ctx.fill();
+        ctx.strokeStyle = L.stroke;
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+        // highlight
+        ctx.beginPath();
+        ctx.ellipse(th.x - th.r * 0.25, th.y - th.r * 0.35, th.r * 0.25, th.r * 0.35, -0.4, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(255,255,255,0.35)";
+        ctx.fill();
+        // knot
+        ctx.beginPath();
+        ctx.moveTo(th.x - 3, th.y + th.r - 2);
+        ctx.lineTo(th.x, th.y + th.r + 5);
+        ctx.lineTo(th.x + 3, th.y + th.r - 2);
+        ctx.fillStyle = L.stroke;
+        ctx.fill();
+        // string
+        ctx.strokeStyle = "rgba(0,0,0,0.35)";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(th.x, th.y + th.r + 5);
+        ctx.quadraticCurveTo(th.x + 4, th.y + th.r + 14, th.x - 2, th.y + th.r + 20);
+        ctx.stroke();
+        if (th.regrow) {
+          ctx.font = "10px serif";
+          ctx.textAlign = "center";
+          ctx.fillText("♻️", th.x + th.r * 0.5, th.y - th.r * 0.5);
+        }
+        if (th.lead) {
+          ctx.beginPath();
+          ctx.ellipse(th.x, th.y - 2, th.r * 0.85, th.r, 0, 0, Math.PI * 2);
+          ctx.strokeStyle = "#94a3b8";
+          ctx.lineWidth = 3;
+          ctx.stroke();
+        }
+      } else {
+        // ceramic / boss / whale
+        var col = th.kind === "ceramic" ? "#d6d3d1" : th.kind === "boss" ? "#a855f7" : "#f472b6";
+        ctx.beginPath();
+        ctx.arc(th.x, th.y, th.r, 0, Math.PI * 2);
+        ctx.fillStyle = col;
+        ctx.fill();
+        ctx.strokeStyle = "#1a1a1a";
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        ctx.font = th.r + "px serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(th.kind === "ceramic" ? "🧱" : th.kind === "boss" ? "👾" : "🐋", th.x, th.y);
+        // hp bar
+        var bw = th.r * 2, pct = clamp(th.hp / th.maxHp, 0, 1);
+        ctx.fillStyle = "rgba(0,0,0,0.5)";
+        ctx.fillRect(th.x - bw / 2, th.y - th.r - 10, bw, 5);
+        ctx.fillStyle = "#86efac";
+        ctx.fillRect(th.x - bw / 2, th.y - th.r - 10, bw * pct, 5);
+      }
+
+      if (th.freezeT > 0) {
+        ctx.strokeStyle = "rgba(103,232,249,0.8)";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(th.x, th.y, th.r + 4, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    function drawProjectiles() {
+      for (var i = 0; i < projectiles.length; i++) {
+        var pr = projectiles[i];
+        if (pr.kind === "dart" || pr.kind === "super" || pr.kind === "sniper") {
+          ctx.save();
+          ctx.translate(pr.x, pr.y);
+          ctx.rotate(Math.atan2(pr.vy, pr.vx));
+          ctx.font = "14px serif";
+          ctx.textAlign = "center";
+          ctx.fillText("🍌", 0, 0);
+          ctx.restore();
+        } else if (pr.kind === "boomer") {
+          ctx.save();
+          ctx.translate(pr.x, pr.y);
+          ctx.rotate(animT * 12);
+          ctx.font = "16px serif";
+          ctx.textAlign = "center";
+          ctx.fillText("🪃", 0, 0);
+          ctx.restore();
+        } else if (pr.kind === "bomb") {
+          ctx.beginPath();
+          ctx.arc(pr.x, pr.y, 7, 0, Math.PI * 2);
+          ctx.fillStyle = "#1a1a1a";
+          ctx.fill();
+          ctx.font = "12px serif";
+          ctx.textAlign = "center";
+          ctx.fillText("💣", pr.x, pr.y + 1);
+        } else {
+          ctx.beginPath();
+          ctx.arc(pr.x, pr.y, 5, 0, Math.PI * 2);
+          ctx.fillStyle = pr.color;
+          ctx.fill();
+        }
+      }
+    }
+
+    function drawFX() {
+      for (var i = 0; i < particles.length; i++) {
+        var pt = particles[i];
+        var a = 1 - pt.age / pt.life;
+        ctx.globalAlpha = a;
+        if (pt.kind === "peel") {
+          ctx.font = (10 * a + 6) + "px serif";
+          ctx.fillText("🍌", pt.x, pt.y);
+        } else {
           ctx.fillStyle = pt.color;
           ctx.beginPath();
           ctx.arc(pt.x, pt.y, pt.size * a, 0, Math.PI * 2);
           ctx.fill();
         }
-        ctx.globalAlpha = 1;
-        for (var f = 0; f < floats.length; f++) {
-          var fl = floats[f];
-          ctx.globalAlpha = 1 - fl.age / fl.life;
-          ctx.font = "700 12px Syne,sans-serif";
-          ctx.textAlign = "center";
-          ctx.strokeStyle = "rgba(0,0,0,0.7)";
-          ctx.lineWidth = 3;
-          ctx.strokeText(fl.text, fl.x, fl.y);
-          ctx.fillStyle = fl.color;
-          ctx.fillText(fl.text, fl.x, fl.y);
-        }
-        ctx.globalAlpha = 1;
       }
-
-      function draw() {
-        ctx.fillStyle = "#060c10";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        drawMap();
-        drawHover();
-        drawTowers();
-        drawEnemies();
-        drawProjectiles();
-        drawFX();
-        ctx.strokeStyle = "rgba(103,232,249,0.12)";
-        ctx.lineWidth = 2;
-        ctx.strokeRect(1, 1, canvas.width - 2, canvas.height - 2);
+      ctx.globalAlpha = 1;
+      for (var f = 0; f < floats.length; f++) {
+        var fl = floats[f];
+        ctx.globalAlpha = 1 - fl.age / fl.life;
+        ctx.font = "700 " + fl.size + "px Fredoka, sans-serif";
+        ctx.textAlign = "center";
+        ctx.strokeStyle = "rgba(0,0,0,0.55)";
+        ctx.lineWidth = 3;
+        ctx.strokeText(fl.text, fl.x, fl.y);
+        ctx.fillStyle = fl.color;
+        ctx.fillText(fl.text, fl.x, fl.y);
       }
+      ctx.globalAlpha = 1;
+    }
 
-      function loop(ts) {
-        if (!lastTs) lastTs = ts;
-        var dt = (ts - lastTs) / 1000;
-        lastTs = ts;
-        if (dt > 0.05) dt = 0.05;
-        update(dt);
-        draw();
-        requestAnimationFrame(loop);
-      }
+    function draw() {
+      // sky-jungle gradient backdrop under tiles already filled per cell
+      ctx.fillStyle = "#2f6b3c";
+      ctx.fillRect(0, 0, W, H);
+      drawMap();
+      drawHover();
+      for (var t = 0; t < towers.length; t++) drawMonkey(towers[t]);
+      for (var i = 0; i < threats.length; i++) drawThreat(threats[i]);
+      drawProjectiles();
+      drawFX();
+    }
 
-      // Input
-      function canvasPos(evt) {
-        var rect = canvas.getBoundingClientRect();
-        var cx, cy;
-        if (evt.touches && evt.touches[0]) { cx = evt.touches[0].clientX; cy = evt.touches[0].clientY; }
-        else if (evt.changedTouches && evt.changedTouches[0]) { cx = evt.changedTouches[0].clientX; cy = evt.changedTouches[0].clientY; }
-        else { cx = evt.clientX; cy = evt.clientY; }
-        var x = ((cx - rect.left) / rect.width) * canvas.width;
-        var y = ((cy - rect.top) / rect.height) * canvas.height;
-        return { x: x, y: y, c: Math.floor(x / CW), r: Math.floor(y / CH) };
-      }
-
-      canvas.addEventListener("mousemove", function (e) {
-        var p = canvasPos(e);
-        hoverCell = inBounds(p.c, p.r) ? { c: p.c, r: p.r } : null;
-      });
-      canvas.addEventListener("mouseleave", function () { hoverCell = null; });
-      function onDown(e) {
-        e.preventDefault();
-        ensureAudio();
-        if (!running || gameOver) return;
-        var p = canvasPos(e);
-        if (!inBounds(p.c, p.r)) return;
-        var ex = towerAt(p.c, p.r);
-        if (ex) { selectedTower = ex; refreshHud(); return; }
-        if (selectedType && unlockedTower(TOWERS[selectedType]) && !isPath(p.c, p.r)) {
-          placeTower(p.c, p.r);
-        } else {
-          selectedTower = null;
-          refreshHud();
-        }
-      }
-      canvas.addEventListener("mousedown", onDown);
-      canvas.addEventListener("touchstart", onDown, { passive: false });
-
-      // Tabs
-      document.querySelectorAll(".tab").forEach(function (tab) {
-        tab.addEventListener("click", function () {
-          document.querySelectorAll(".tab").forEach(function (t) { t.classList.remove("active"); });
-          document.querySelectorAll(".panel-section").forEach(function (p) { p.classList.remove("active"); });
-          tab.classList.add("active");
-          document.getElementById("tab-" + tab.getAttribute("data-tab")).classList.add("active");
-        });
-      });
-
-      pathA.addEventListener("click", function () { pickPath("A"); });
-      pathB.addEventListener("click", function () { pickPath("B"); });
-      btnUpgrade.addEventListener("click", function () { ensureAudio(); upgradeSelected(); });
-      btnSell.addEventListener("click", function () { ensureAudio(); sellSelected(); });
-      btnWave.addEventListener("click", function () { ensureAudio(); startWave(); });
-      btnCancel.addEventListener("click", function () { selectedTower = null; refreshHud(); });
-      document.getElementById("btnStart").addEventListener("click", function () { ensureAudio(); resetGame(); });
-      document.getElementById("btnWin").addEventListener("click", function () { ensureAudio(); resetGame(); });
-      document.getElementById("btnLose").addEventListener("click", function () { ensureAudio(); resetGame(); });
-
-      window.addEventListener("keydown", function (e) {
-        var k = e.key;
-        if (k === " " || e.code === "Space") {
-          e.preventDefault();
-          ensureAudio();
-          if (!running) resetGame();
-          else startWave();
-        }
-        var map = { "1": "peeler", "2": "rain", "3": "chill", "4": "cannon", "5": "sniper", "6": "tesla", "7": "farm", "8": "beacon" };
-        if (map[k] && unlockedTower(TOWERS[map[k]])) {
-          selectedType = map[k]; selectedTower = null; refreshHud();
-        }
-        if (k === "u" || k === "U") { ensureAudio(); upgradeSelected(); }
-        if (k === "s" || k === "S") { ensureAudio(); sellSelected(); }
-        if (k === "a" || k === "A") pickPath("A");
-        if (k === "b" || k === "B") pickPath("B");
-        if (k === "q" || k === "Q") useAbility("strike");
-        if (k === "e" || k === "E") useAbility("freeze");
-        if (k === "Escape") { selectedTower = null; refreshHud(); }
-      });
-
-      recomputeGlobals();
-      buildTowerButtons();
-      buildResearchUI();
-      buildAbilityUI();
-      buildIntel();
-      refreshHud();
+    function loop(ts) {
+      if (!lastTs) lastTs = ts;
+      var dt = (ts - lastTs) / 1000;
+      lastTs = ts;
+      if (dt > 0.05) dt = 0.05;
+      update(dt);
+      draw();
       requestAnimationFrame(loop);
-    })();
+    }
+
+    // ── UI ──
+    function buildShop() {
+      shopEl.innerHTML = "";
+      for (var i = 0; i < TOWER_DEFS.length; i++) {
+        var d = TOWER_DEFS[i];
+        var b = document.createElement("button");
+        b.type = "button";
+        b.className = "shop-btn" + (selectedShop === d.id ? " on" : "");
+        b.innerHTML = '<span class="ico">' + d.icon + '</span><span class="nm">' + d.name + '</span><span class="cs">' + d.cost + " BAN</span>";
+        b.disabled = !running || gameOver || ban < d.cost;
+        b.addEventListener("click", (function (id) {
+          return function () {
+            selectedShop = id;
+            selectedTower = null;
+            refreshUI();
+          };
+        })(d.id));
+        shopEl.appendChild(b);
+      }
+    }
+
+    function refreshUI() {
+      hudBan.textContent = String(Math.floor(ban));
+      hudLives.textContent = String(Math.max(0, lives));
+      hudWave.textContent = String(wave);
+      hudPops.textContent = String(pops);
+      buildShop();
+
+      if (selectedTower) {
+        var t = selectedTower;
+        var st = getStats(t);
+        var next = t.tier < 3 ? t.def.ups[t.tier] : null;
+        var cost = t.tier < 3 ? t.def.upCost[t.tier] : 0;
+        var html = "<strong>" + t.def.icon + " " + t.def.name + "</strong> · Tier " + t.tier + "/3<br>";
+        html += t.def.desc + "<br>";
+        if (!t.def.support) {
+          html += "Range " + Math.floor(st.range) + " · Pop " + st.pop + " · Pierce " + st.pierce;
+          if (st.splash) html += " · Splash";
+          if (st.camo) html += " · 👁️ Camo";
+          if (st.lead) html += " · 🔩 Lead";
+        } else {
+          html += "Buff aura " + Math.floor(st.range) + " · Village support";
+        }
+        if (next) html += "<br>Next: <strong>" + next.name + "</strong> — " + next.desc + " (" + cost + " BAN)";
+        else html += "<br>Maxed out! Absolute unit of a MonKey.";
+        selBox.innerHTML = html;
+        btnUp.disabled = t.tier >= 3 || ban < cost || gameOver;
+        btnUp.textContent = t.tier >= 3 ? "Max Tier" : "Upgrade (" + cost + ")";
+        btnSell.disabled = gameOver;
+        btnSell.textContent = "Sell (+" + Math.floor(spentOn(t) * 0.7) + ")";
+      } else {
+        var def = TOWER_BY_ID[selectedShop];
+        selBox.innerHTML = def
+          ? "<strong>" + def.icon + " " + def.name + "</strong> · " + def.cost + " BAN<br>" + def.desc + "<br><em>" + def.role + "</em>"
+          : "Pick a MonKey from the shop.";
+        btnUp.disabled = true;
+        btnUp.textContent = "Upgrade";
+        btnSell.disabled = true;
+        btnSell.textContent = "Sell";
+      }
+      btnWave.disabled = !running || gameOver || paused || waveActive || wave >= MAX_WAVE;
+    }
+
+    function resetGame() {
+      ban = 650; lives = 200; wave = 0; pops = 0; banEarned = 0;
+      running = true; paused = false; gameOver = false;
+      selectedShop = "dart"; selectedTower = null;
+      towers = []; threats = []; projectiles = []; particles = []; floats = [];
+      spawnQueue = []; spawnTimer = 0; waveActive = false; totalBuilt = 0;
+      initDecor();
+      startOv.classList.add("hidden");
+      winOv.classList.add("hidden");
+      loseOv.classList.add("hidden");
+      pauseOv.classList.add("hidden");
+      showToast("DON'T LET YOUR MEMES BE DREAMS");
+      refreshUI();
+      sfxPlace();
+    }
+
+    function endWin() {
+      gameOver = true; running = false;
+      document.getElementById("winMsg").textContent =
+        "40 waves cleared! Pops " + pops + " · BAN earned " + banEarned + " · MonKeys " + totalBuilt + ". Potassium forever!";
+      winOv.classList.remove("hidden");
+      confettiBurst();
+      sfxWin();
+    }
+    function endLose() {
+      gameOver = true; running = false; waveActive = false;
+      document.getElementById("loseMsg").textContent =
+        "Reached wave " + wave + " · Pops " + pops + " · BAN earned " + banEarned + ". Rebuild the jungle!";
+      loseOv.classList.remove("hidden");
+      sfxLeak();
+    }
+
+    // Input
+    function canvasPos(evt) {
+      var rect = canvas.getBoundingClientRect();
+      var cx, cy;
+      if (evt.touches && evt.touches[0]) { cx = evt.touches[0].clientX; cy = evt.touches[0].clientY; }
+      else if (evt.changedTouches && evt.changedTouches[0]) { cx = evt.changedTouches[0].clientX; cy = evt.changedTouches[0].clientY; }
+      else { cx = evt.clientX; cy = evt.clientY; }
+      var x = ((cx - rect.left) / rect.width) * W;
+      var y = ((cy - rect.top) / rect.height) * H;
+      return { x: x, y: y, c: Math.floor(x / TW), r: Math.floor(y / TH) };
+    }
+
+    canvas.addEventListener("mousemove", function (e) {
+      var p = canvasPos(e);
+      hover = inBounds(p.c, p.r) ? { c: p.c, r: p.r } : null;
+    });
+    canvas.addEventListener("mouseleave", function () { hover = null; });
+
+    function onPointer(e) {
+      e.preventDefault();
+      ensureAudio();
+      if (!running || gameOver || paused) return;
+      var p = canvasPos(e);
+      if (!inBounds(p.c, p.r)) return;
+      var existing = towerAt(p.c, p.r);
+      if (existing) {
+        selectedTower = existing;
+        refreshUI();
+        return;
+      }
+      placeTower(p.c, p.r);
+    }
+    canvas.addEventListener("mousedown", onPointer);
+    canvas.addEventListener("touchstart", onPointer, { passive: false });
+
+    document.querySelectorAll(".spd").forEach(function (b) {
+      b.addEventListener("click", function () {
+        speed = parseInt(b.getAttribute("data-spd"), 10);
+        document.querySelectorAll(".spd").forEach(function (x) { x.classList.remove("on"); });
+        b.classList.add("on");
+      });
+    });
+
+    btnUp.addEventListener("click", function () { ensureAudio(); upgradeTower(); });
+    btnSell.addEventListener("click", function () { ensureAudio(); sellTower(); });
+    btnWave.addEventListener("click", function () { ensureAudio(); startWave(); });
+    btnPause.addEventListener("click", function () {
+      if (!running || gameOver) return;
+      paused = !paused;
+      pauseOv.classList.toggle("hidden", !paused);
+    });
+    document.getElementById("btnResume").addEventListener("click", function () {
+      paused = false;
+      pauseOv.classList.add("hidden");
+    });
+    document.getElementById("btnStart").addEventListener("click", function () { ensureAudio(); resetGame(); });
+    document.getElementById("btnWin").addEventListener("click", function () { ensureAudio(); resetGame(); });
+    document.getElementById("btnLose").addEventListener("click", function () { ensureAudio(); resetGame(); });
+
+    window.addEventListener("keydown", function (e) {
+      var k = e.key;
+      if (k === " " || e.code === "Space") { e.preventDefault(); ensureAudio(); if (!running) resetGame(); else startWave(); }
+      if (k === "p" || k === "P") {
+        if (!running || gameOver) return;
+        paused = !paused;
+        pauseOv.classList.toggle("hidden", !paused);
+      }
+      if (k === "u" || k === "U") { ensureAudio(); upgradeTower(); }
+      if (k === "s" || k === "S") { ensureAudio(); sellTower(); }
+      if (k === "Escape") { selectedTower = null; refreshUI(); }
+      var keys = { "1": "dart", "2": "boomer", "3": "sniper", "4": "bomb", "5": "ice", "6": "village", "7": "super" };
+      if (keys[k]) { selectedShop = keys[k]; selectedTower = null; refreshUI(); }
+    });
+
+    initDecor();
+    buildShop();
+    refreshUI();
+    // idle draw path before start
+    requestAnimationFrame(loop);
+  })();
   </script>
 </body>
 </html>
