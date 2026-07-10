@@ -22,8 +22,13 @@
     });
   }
 
-  // Dropdowns
+  // Dropdowns — hover on desktop, click-to-expand on mobile/touch
   const dropdownParents = document.querySelectorAll(".has-dropdown");
+
+  function isTouchNav() {
+    return window.matchMedia("(max-width: 768px)").matches ||
+      window.matchMedia("(hover: none)").matches;
+  }
 
   function closeAllDropdowns(except) {
     dropdownParents.forEach((item) => {
@@ -38,13 +43,26 @@
     const btn = item.querySelector(".nav-drop-btn");
     if (!btn) return;
 
+    // Desktop: pure CSS hover — don't click-lock the menu open
     btn.addEventListener("click", (e) => {
+      if (!isTouchNav()) {
+        e.preventDefault();
+        return;
+      }
       e.preventDefault();
       e.stopPropagation();
       const willOpen = !item.classList.contains("open");
       closeAllDropdowns(item);
       item.classList.toggle("open", willOpen);
       btn.setAttribute("aria-expanded", willOpen ? "true" : "false");
+    });
+
+    // Keep aria-expanded in sync with hover for assistive tech on desktop
+    item.addEventListener("mouseenter", () => {
+      if (!isTouchNav()) btn.setAttribute("aria-expanded", "true");
+    });
+    item.addEventListener("mouseleave", () => {
+      if (!isTouchNav()) btn.setAttribute("aria-expanded", "false");
     });
   });
 

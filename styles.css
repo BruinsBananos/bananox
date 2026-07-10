@@ -293,21 +293,34 @@ h1, h2, h3, h4 {
 
 .nav-dropdown {
   position: absolute;
-  top: calc(100% + 0.45rem);
+  /* Sit flush under the trigger — no hover dead-zone gap */
+  top: 100%;
   left: 50%;
   transform: translateX(-50%) translateY(6px);
   min-width: 210px;
-  padding: 0.45rem;
+  /* Visual offset via padding so the pointer path stays inside the menu */
+  padding: 0.55rem 0.45rem 0.45rem;
   list-style: none;
   background: rgba(6, 14, 10, 0.96);
+  background-clip: padding-box;
   border: 1px solid var(--border-strong);
   border-radius: 14px;
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45), var(--glow-soft);
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transition: opacity 0.2s var(--ease), transform 0.2s var(--ease), visibility 0.2s;
+  transition: opacity 0.18s var(--ease), transform 0.18s var(--ease), visibility 0.18s;
   z-index: 120;
+}
+
+/* Invisible bridge so the mouse can travel from label → menu without closing */
+.nav-dropdown::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -0.55rem;
+  height: 0.55rem;
 }
 
 .has-dropdown.open > .nav-dropdown {
@@ -1343,12 +1356,18 @@ a.card:focus-visible {
     transition: max-height 0.3s var(--ease), padding 0.3s;
   }
 
+  .nav-dropdown::before {
+    display: none;
+  }
+
   .has-dropdown.open > .nav-dropdown {
     transform: none;
     pointer-events: auto;
-    max-height: 240px;
+    max-height: 280px;
     padding: 0.25rem 0.35rem 0.5rem;
   }
+
+
 
   .nav-dropdown a {
     padding: 0.7rem 1rem;
@@ -1405,6 +1424,7 @@ a.card:focus-visible {
   }
 }
 
+/* Desktop / fine pointer: open on hover — no click required to “lock” */
 @media (hover: hover) and (min-width: 769px) {
   .has-dropdown:hover > .nav-dropdown,
   .has-dropdown:focus-within > .nav-dropdown {
@@ -1418,5 +1438,18 @@ a.card:focus-visible {
   .has-dropdown:focus-within > .nav-drop-btn {
     color: var(--banana);
     background: rgba(245, 208, 65, 0.08);
+  }
+
+  .has-dropdown:hover > .nav-drop-btn .chev,
+  .has-dropdown:focus-within > .nav-drop-btn .chev {
+    transform: rotate(225deg) translateY(-1px);
+  }
+
+  /* Delay close slightly so diagonal mouse moves feel forgiving */
+  .has-dropdown > .nav-dropdown {
+    transition-delay: 0s;
+  }
+  .has-dropdown:not(:hover):not(:focus-within) > .nav-dropdown {
+    transition-delay: 0.08s;
   }
 }

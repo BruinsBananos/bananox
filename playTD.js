@@ -3,7 +3,7 @@
 
   // ═══════════════════════════════════════════════════════════
   // BANANO TD — EPIC FUN EDITION
-  // Fever mode · events · auto-wave · rage · golden bananas · juice
+  // Dual paths · targeting · fever · events · rage · juice · optimized
   // ═══════════════════════════════════════════════════════════
 
   var canvas = document.getElementById("game");
@@ -229,34 +229,49 @@
   };
   var LAYER_ORDER = ["green", "ripe", "gold", "purple", "star", "zebra", "golden"];
 
-  // 9 towers · 5 tiers · ranges tuned for large map
+  // 9 towers · BTD-style dual paths (Top / Bottom)
+  // Rule: either path up to 2 freely; only ONE path may go to 3 and 4
   var TOWER_DEFS = [
     {
       id: "dart", name: "Dart MonKey", icon: "🐵", role: "Primary",
       desc: "Rapid banana darts. Your always-on backbone.",
       cost: 175, range: 170, rof: 0.46, pierce: 1, pop: 1, splash: 0, slow: 0,
       camo: false, lead: false, color: "#f5d041",
-      upCost: [120, 240, 420, 800, 1500],
-      ups: [
-        { name: "Sharp Tips", desc: "+pierce, faster", pierce: 1, rof: -0.06 },
-        { name: "Razor Rinds", desc: "+pop, +range", pop: 1, range: 22 },
-        { name: "Twin Peel", desc: "Double shot", multishot: 1, pierce: 1 },
-        { name: "Jungle Barrage", desc: "Triple stream", multishot: 1, rof: -0.1, pierce: 1 },
-        { name: "Potassium Storm", desc: "Quad shredders", multishot: 1, pop: 1, pierce: 2, range: 30 }
+      pathNames: ["Sharp Path", "Frenzy Path"],
+      paths: [
+        [
+          { name: "Sharp Tips", desc: "+1 pierce, snappier shots", cost: 140, pierce: 1, rof: -0.06 },
+          { name: "Razor Rinds", desc: "+pop power and range", cost: 280, pop: 1, range: 25 },
+          { name: "Spike Storm", desc: "High pierce banana spikes", cost: 900, pierce: 4, pop: 1, range: 20 },
+          { name: "Potassium Javelin", desc: "Snipes lines of bananas", cost: 2200, pierce: 8, pop: 2, range: 40, preferStrong: true }
+        ],
+        [
+          { name: "Quick Hands", desc: "Faster throwing", cost: 160, rof: -0.1 },
+          { name: "Twin Peel", desc: "Fire two darts", cost: 350, multishot: 1 },
+          { name: "Triple Threat", desc: "Three-dart volleys", cost: 1100, multishot: 1, rof: -0.05, pierce: 1 },
+          { name: "Monkey Fan Club", desc: "Quad shredders at blur speed", cost: 2800, multishot: 2, rof: -0.08, pierce: 1, pop: 1 }
+        ]
       ]
     },
     {
-      id: "boomer", name: "Boomer K⁺", icon: "🪃", role: "Mid",
+      id: "boomer", name: "Boomer K+", icon: "🪃", role: "Mid",
       desc: "Returning blades — farms long path lines.",
       cost: 320, range: 150, rof: 0.85, pierce: 6, pop: 1, splash: 0, slow: 0,
       camo: false, lead: false, color: "#fb923c", boomerang: true,
-      upCost: [190, 360, 650, 1200, 2200],
-      ups: [
-        { name: "Wide Arc", desc: "+3 pierce", pierce: 3 },
-        { name: "K-Rang", desc: "+pop & pierce", pop: 1, pierce: 2 },
-        { name: "Glaive Lord", desc: "Faster returns", pierce: 3, rof: -0.18, pop: 1 },
-        { name: "Orbit Blades", desc: "Twin rangs", multishot: 1, pierce: 2 },
-        { name: "MOAB Cleaver", desc: "Boss shred orbit", pierce: 7, pop: 2, range: 35, lead: true }
+      pathNames: ["Glaive Path", "Chase Path"],
+      paths: [
+        [
+          { name: "Wide Arc", desc: "+3 pierce", cost: 220, pierce: 3 },
+          { name: "K-Rang", desc: "+pop and pierce", cost: 400, pop: 1, pierce: 2 },
+          { name: "Glaive Ricochet", desc: "Huge multi-hit glaives", cost: 1200, pierce: 6, pop: 1, rof: -0.1 },
+          { name: "MOAB Cleaver", desc: "Boss-shred orbit blades", cost: 2800, pierce: 10, pop: 3, lead: true, range: 30 }
+        ],
+        [
+          { name: "Red Hot Rangs", desc: "Faster spin", cost: 200, rof: -0.15 },
+          { name: "Bionic Boomer", desc: "Twin returning blades", cost: 450, multishot: 1 },
+          { name: "Turbo Charge", desc: "Blazing throw rate", cost: 1400, rof: -0.25, pierce: 2 },
+          { name: "Perma-Charge", desc: "Permanent turbo multi-rang", cost: 3200, multishot: 1, rof: -0.2, pierce: 3, pop: 1 }
+        ]
       ]
     },
     {
@@ -264,13 +279,20 @@
       desc: "Map-range eyes. Camo native. Armor later.",
       cost: 380, range: 420, rof: 1.0, pierce: 1, pop: 2, splash: 0, slow: 0,
       camo: true, lead: false, color: "#86efac", preferStrong: true,
-      upCost: [220, 450, 850, 1600, 3000],
-      ups: [
-        { name: "Night Scope", desc: "Faster aim", rof: -0.22, range: 30 },
-        { name: "Armor Piercer", desc: "Pops lead", lead: true, pop: 2 },
-        { name: "Elite Marksman", desc: "Layer shred", pop: 3, rof: -0.18, range: 40 },
-        { name: "Deadeye", desc: "Huge pop power", pop: 5, pierce: 2 },
-        { name: "Orbital Strike", desc: "Starship sniper", pop: 10, pierce: 3, rof: -0.15, range: 50 }
+      pathNames: ["Deadeye Path", "Supply Path"],
+      paths: [
+        [
+          { name: "Full Metal Jacket", desc: "Pops lead, more power", cost: 300, lead: true, pop: 2 },
+          { name: "Point Five Oh", desc: "Huge single-target damage", cost: 700, pop: 4, range: 30 },
+          { name: "Deadly Precision", desc: "Shreds ceramics", cost: 1800, pop: 6, pierce: 1 },
+          { name: "Cripple MOAB", desc: "Boss-melting rail shots", cost: 4000, pop: 12, pierce: 2, range: 50 }
+        ],
+        [
+          { name: "Night Vision", desc: "Faster aim", cost: 250, rof: -0.25, range: 30 },
+          { name: "Shrapnel Shot", desc: "Splash on impact", cost: 550, splash: 35, pop: 1 },
+          { name: "Bouncing Bullet", desc: "Pierce through packs", cost: 1600, pierce: 4, rof: -0.1 },
+          { name: "Supply Drop", desc: "Income + rapid fire", cost: 3500, income: 100, rof: -0.2, pierce: 2 }
+        ]
       ]
     },
     {
@@ -278,13 +300,20 @@
       desc: "Peel grenades with natural armor pop.",
       cost: 550, range: 160, rof: 1.1, pierce: 1, pop: 1, splash: 78, slow: 0,
       camo: false, lead: true, color: "#f97316",
-      upCost: [300, 580, 1050, 1900, 3400],
-      ups: [
-        { name: "Bigger Bombs", desc: "+splash & pop", splash: 20, pop: 1 },
-        { name: "Cluster Peels", desc: "Faster volleys", rof: -0.28, pop: 1, splash: 14 },
-        { name: "MOAB Mauler", desc: "Boss AOE", pop: 3, splash: 24, range: 25 },
-        { name: "Carpet Bomb", desc: "Wide destruction", splash: 34, pop: 2, multishot: 1 },
-        { name: "Starship Salvo", desc: "Orbital warheads", pop: 4, splash: 48, range: 40, rof: -0.2 }
+      pathNames: ["Blast Path", "Missile Path"],
+      paths: [
+        [
+          { name: "Bigger Bombs", desc: "More splash and pop", cost: 350, splash: 25, pop: 1 },
+          { name: "Heavy Shells", desc: "Stronger blasts", cost: 650, pop: 2, splash: 15 },
+          { name: "Really Big Bombs", desc: "Massive AOE", cost: 1600, splash: 40, pop: 2, range: 20 },
+          { name: "Bloon Impact", desc: "Stun-slow blasts", cost: 3800, splash: 50, pop: 3, slow: 0.35 }
+        ],
+        [
+          { name: "Faster Reload", desc: "Quicker bombs", cost: 280, rof: -0.25 },
+          { name: "Missile Launcher", desc: "Long-range missiles", cost: 600, range: 50, rof: -0.1 },
+          { name: "MOAB Mauler", desc: "Boss-hunter missiles", cost: 1500, pop: 5, preferStrong: true, range: 30 },
+          { name: "MOAB Eliminator", desc: "Deletes super-heavy targets", cost: 4200, pop: 10, multishot: 1, range: 40 }
+        ]
       ]
     },
     {
@@ -292,13 +321,20 @@
       desc: "Frost aura — control the mega path.",
       cost: 400, range: 145, rof: 1.2, pierce: 1, pop: 0, splash: 100, slow: 0.52,
       camo: false, lead: false, color: "#67e8f9", freezePulse: true,
-      upCost: [240, 480, 850, 1500, 2700],
-      ups: [
-        { name: "Permafrost", desc: "Harder slow", slow: 0.12, splash: 14 },
-        { name: "Ice Shards", desc: "Slow + pops", pop: 1, splash: 12 },
-        { name: "Absolute Zero", desc: "Deep freeze", slow: 0.15, splash: 28, rof: -0.3, pop: 1 },
-        { name: "Cryo Field", desc: "Camo chill", camo: true, range: 30, slow: 0.08 },
-        { name: "Nitrogen Core", desc: "Pack freezes solid", slow: 0.12, splash: 40, pop: 2, rof: -0.25, lead: true }
+      pathNames: ["Freeze Path", "Impale Path"],
+      paths: [
+        [
+          { name: "Permafrost", desc: "Harder slow", cost: 250, slow: 0.12, splash: 15 },
+          { name: "Deep Freeze", desc: "Longer freeze", cost: 500, slow: 0.1, rof: -0.15 },
+          { name: "Arctic Wind", desc: "Huge freeze radius", cost: 1400, splash: 45, range: 30, slow: 0.08 },
+          { name: "Absolute Zero", desc: "Near-stop freeze field", cost: 3200, splash: 55, slow: 0.15, pop: 1, camo: true }
+        ],
+        [
+          { name: "Ice Shards", desc: "Slow that also pops", cost: 280, pop: 1 },
+          { name: "Shatter", desc: "More pop on freeze pulse", cost: 550, pop: 1, splash: 15 },
+          { name: "Icicle Impale", desc: "Camo + lead shards", cost: 1500, camo: true, lead: true, pop: 2 },
+          { name: "Snowstorm", desc: "Map-wide chill pops", cost: 3600, splash: 80, pop: 2, range: 40, rof: -0.25 }
+        ]
       ]
     },
     {
@@ -306,13 +342,20 @@
       desc: "Passive BAN income every round clear.",
       cost: 750, range: 90, rof: 99, pierce: 0, pop: 0, splash: 0, slow: 0,
       camo: false, lead: false, color: "#84cc16", farm: true, support: true,
-      upCost: [450, 900, 1600, 2800, 4800],
-      ups: [
-        { name: "More Trees", desc: "+round income", income: 40 },
-        { name: "Irrigation", desc: "Bigger harvest", income: 55 },
-        { name: "Marketplace", desc: "Strong income", income: 90 },
-        { name: "Export Hub", desc: "Huge harvest", income: 140 },
-        { name: "Potassium Bank", desc: "Empire income", income: 220 }
+      pathNames: ["Harvest Path", "Bank Path"],
+      paths: [
+        [
+          { name: "More Trees", desc: "+round income", cost: 400, income: 45 },
+          { name: "Irrigation", desc: "Bigger harvest", cost: 800, income: 70 },
+          { name: "Marketplace", desc: "Strong income", cost: 1800, income: 120 },
+          { name: "Banana Republic", desc: "Empire harvest", cost: 4000, income: 250 }
+        ],
+        [
+          { name: "Banana Saver", desc: "Steady passive", cost: 450, income: 40 },
+          { name: "Monkey Bank", desc: "Stored interest bonus", cost: 900, income: 80 },
+          { name: "IMF Loan", desc: "Huge cash injection", cost: 2000, income: 150 },
+          { name: "Monkey Wall Street", desc: "Insane end-round income", cost: 4500, income: 320 }
+        ]
       ]
     },
     {
@@ -320,13 +363,20 @@
       desc: "Buffs nearby MonKeys. Fuels airdrops.",
       cost: 1000, range: 190, rof: 99, pierce: 0, pop: 0, splash: 0, slow: 0,
       camo: false, lead: false, color: "#c084fc", support: true,
-      upCost: [550, 1100, 1900, 3200, 5200],
-      ups: [
-        { name: "Jungle Drums", desc: "+12% attack speed", auraRof: 0.12 },
-        { name: "Radar Scanner", desc: "Nearby camo detect", auraCamo: true, auraRof: 0.06, range: 20 },
-        { name: "Monkey Commerce", desc: "Round income", income: 80, auraRof: 0.06 },
-        { name: "War Council", desc: "Big speed aura", auraRof: 0.16, range: 30 },
-        { name: "Potassium Exchange", desc: "Elite buffs", income: 150, auraRof: 0.12, auraCamo: true, range: 25 }
+      pathNames: ["Support Path", "Trade Path"],
+      paths: [
+        [
+          { name: "Jungle Drums", desc: "+12% attack speed aura", cost: 500, auraRof: 0.12 },
+          { name: "Radar Scanner", desc: "Camo detect for nearby", cost: 1000, auraCamo: true, auraRof: 0.06, range: 20 },
+          { name: "Call to Arms", desc: "Big attack speed aura", cost: 2200, auraRof: 0.2, range: 30 },
+          { name: "Homeland Defense", desc: "Massive buff bubble", cost: 5000, auraRof: 0.28, auraCamo: true, range: 40 }
+        ],
+        [
+          { name: "Banana Farmer", desc: "Small income", cost: 450, income: 50 },
+          { name: "Monkey Commerce", desc: "Round income", cost: 950, income: 100 },
+          { name: "Marketplace Hub", desc: "Strong economy aura", cost: 2100, income: 180, range: 15 },
+          { name: "Trade Empire", desc: "Village mint", cost: 4800, income: 350, auraRof: 0.08 }
+        ]
       ]
     },
     {
@@ -334,13 +384,20 @@
       desc: "Meme-powered multi-banana fury.",
       cost: 2400, range: 200, rof: 0.1, pierce: 1, pop: 1, splash: 0, slow: 0,
       camo: true, lead: true, color: "#f472b6", multishot: 1,
-      upCost: [1300, 2600, 5000, 9500, 17000],
-      ups: [
-        { name: "Laser Eyes", desc: "Pierce + speed", pierce: 2, rof: -0.02 },
-        { name: "Robo Super", desc: "Triple stream", multishot: 2, pop: 1 },
-        { name: "Plasma Core", desc: "Splash plasma", multishot: 1, pierce: 2, pop: 1, splash: 26 },
-        { name: "Tech Terror", desc: "Quad storm", multishot: 2, pierce: 2, pop: 2, splash: 20 },
-        { name: "Starship Avatar", desc: "Unmatched DPS", multishot: 3, pierce: 4, pop: 3, splash: 32, range: 45, rof: -0.03 }
+      pathNames: ["Plasma Path", "Robo Path"],
+      paths: [
+        [
+          { name: "Laser Shockwave", desc: "+pierce", cost: 1200, pierce: 2 },
+          { name: "Plasma Blasts", desc: "Splash plasma", cost: 2800, splash: 30, pop: 1, pierce: 1 },
+          { name: "Sun Avatar", desc: "Blazing multi-beam", cost: 7000, multishot: 2, pierce: 2, pop: 2, splash: 20 },
+          { name: "Sun Temple", desc: "Unmatched DPS shrine", cost: 16000, multishot: 3, pierce: 4, pop: 3, splash: 35, range: 50 }
+        ],
+        [
+          { name: "Robo Super", desc: "Faster triple stream", cost: 1400, multishot: 1, rof: -0.02 },
+          { name: "Tech Terror", desc: "Quad storm", cost: 3200, multishot: 2, pierce: 1, pop: 1 },
+          { name: "The Anti-Bloon", desc: "Delete button beam", cost: 8000, multishot: 2, pierce: 3, pop: 4, splash: 25 },
+          { name: "Legend of the Night", desc: "Dark super multi-shot", cost: 18000, multishot: 3, pierce: 3, pop: 3, rof: -0.03, range: 40 }
+        ]
       ]
     },
     {
@@ -348,19 +405,27 @@
       desc: "Orbital rail — deletes bosses for a living.",
       cost: 4800, range: 460, rof: 1.7, pierce: 1, pop: 14, splash: 0, slow: 0,
       camo: true, lead: true, color: "#38bdf8", preferStrong: true, rail: true,
-      upCost: [2600, 5200, 9500, 16000, 28000],
-      ups: [
-        { name: "Capacitor Bank", desc: "Faster charge", rof: -0.35 },
-        { name: "Rail Expansion", desc: "Pierce packs", pierce: 3, pop: 4 },
-        { name: "Cluster Warhead", desc: "Splash impact", splash: 48, pop: 4 },
-        { name: "Multi-Vector", desc: "Twin rails", multishot: 1, pierce: 2, pop: 5 },
-        { name: "Full Stack Raptor", desc: "Delete button", multishot: 2, pierce: 4, pop: 12, splash: 55, rof: -0.4, range: 50 }
+      pathNames: ["Rail Path", "Salvo Path"],
+      paths: [
+        [
+          { name: "Capacitor Bank", desc: "Faster charge", cost: 2400, rof: -0.35 },
+          { name: "Rail Expansion", desc: "Pierce packs", cost: 4800, pierce: 3, pop: 4 },
+          { name: "Hyper Rail", desc: "Devastating pierce", cost: 11000, pierce: 5, pop: 8, range: 40 },
+          { name: "Full Stack Raptor", desc: "Boss delete beam", cost: 24000, pierce: 8, pop: 16, range: 60, rof: -0.2 }
+        ],
+        [
+          { name: "Cluster Tip", desc: "Splash on impact", cost: 2600, splash: 45, pop: 3 },
+          { name: "Multi-Vector", desc: "Twin rails", cost: 5200, multishot: 1, pop: 3 },
+          { name: "Barrage Array", desc: "Triple orbital", cost: 12000, multishot: 2, splash: 30, pop: 4 },
+          { name: "Starfall Battery", desc: "Sky falls on bananas", cost: 26000, multishot: 3, splash: 55, pop: 8, rof: -0.25 }
+        ]
       ]
     }
   ];
+
   var TOWER_BY_ID = {};
   for (var ti = 0; ti < TOWER_DEFS.length; ti++) TOWER_BY_ID[TOWER_DEFS[ti].id] = TOWER_DEFS[ti];
-  var MAX_TIER = 5;
+  var MAX_PATH = 4; // upgrades per path (BTD-style)
   var MAX_WAVE = 150;
 
   // Difficulty
@@ -382,7 +447,13 @@
   var hover = null, lastTs = 0, animT = 0, toastT = 0, airdropT = 0;
   var totalBuilt = 0, shake = 0;
   var mapCache = null, mapDirty = true;
-  var MAX_PARTICLES = 280, MAX_FLOATS = 64, quality = 1;
+  var MAX_PARTICLES = 220, MAX_FLOATS = 48, quality = 1;
+  var nextUid = 1;
+  var frameStatsId = 0;     // per-frame getStats cache
+  var uiBanSnap = -1;       // avoid thrashing shop DOM
+  var uiShopSnap = "";
+  var TARGET_MODES = ["first", "last", "strong", "close"];
+  var TARGET_LABEL = { first: "First", last: "Last", strong: "Strong", close: "Close" };
 
   // Live round economy
   var roundKillBan = 0;   // BAN earned from kills this wave (already paid out live)
@@ -408,6 +479,8 @@
   var bestStreakRun = 0;
   var goldensPopped = 0;
   var endless = false;      // continues past MAX_WAVE
+  var muted = false;
+  var records = { bestWave: 0, bestStreak: 0, bestPops: 0, games: 0 };
 
   // Abilities (cooldowns in seconds)
   var abilities = {
@@ -429,7 +502,7 @@
     if (actx && actx.state === "suspended") actx.resume();
   }
   function beep(f, d, type, v) {
-    if (!actx) return;
+    if (muted || !actx) return;
     var t = actx.currentTime, o = actx.createOscillator(), g = actx.createGain();
     o.type = type || "square"; o.frequency.value = f;
     g.gain.setValueAtTime(v || 0.03, t);
@@ -437,6 +510,39 @@
     o.connect(g); g.connect(actx.destination);
     o.start(t); o.stop(t + d + 0.02);
   }
+  function loadRecords() {
+    try {
+      var raw = localStorage.getItem("bananox_td_v1");
+      if (raw) {
+        var o = JSON.parse(raw);
+        if (o && typeof o === "object") {
+          records.bestWave = o.bestWave | 0;
+          records.bestStreak = o.bestStreak | 0;
+          records.bestPops = o.bestPops | 0;
+          records.games = o.games | 0;
+        }
+      }
+    } catch (e) {}
+  }
+  function saveRecords() {
+    try {
+      if (wave > records.bestWave) records.bestWave = wave;
+      if (bestStreakRun > records.bestStreak) records.bestStreak = bestStreakRun;
+      if (pops > records.bestPops) records.bestPops = pops;
+      localStorage.setItem("bananox_td_v1", JSON.stringify(records));
+    } catch (e) {}
+  }
+  function toggleMute() {
+    muted = !muted;
+    var btn = document.getElementById("btnMute");
+    if (btn) {
+      btn.textContent = muted ? "🔇" : "🔊";
+      btn.classList.toggle("on", muted);
+      btn.title = muted ? "Unmute (M)" : "Mute (M)";
+    }
+    showToast(muted ? "MUTED" : "SOUND ON");
+  }
+  loadRecords();
   function sfxPop() { beep(520 + Math.random() * 380, 0.03, "square", 0.022); }
   function sfxPlace() { beep(320, 0.06, "triangle", 0.035); beep(480, 0.08, "triangle", 0.025); }
   function sfxUp() { beep(520, 0.05, "square", 0.03); beep(780, 0.1, "sine", 0.028); }
@@ -451,6 +557,7 @@
 
   function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
   function dist(ax, ay, bx, by) { var dx = ax - bx, dy = ay - by; return Math.sqrt(dx * dx + dy * dy); }
+  function distSq(ax, ay, bx, by) { var dx = ax - bx, dy = ay - by; return dx * dx + dy * dy; }
   function isPath(c, r) { return !!pathSet[c + "," + r]; }
   function inBounds(c, r) { return c >= 0 && r >= 0 && c < COLS && r < ROWS; }
 
@@ -476,6 +583,9 @@
 
   function burst(x, y, color, n) {
     n = Math.ceil(n * quality);
+    if (particles.length > MAX_PARTICLES - 12) {
+      particles.splice(0, Math.min(n + 6, particles.length >> 2));
+    }
     for (var i = 0; i < n && particles.length < MAX_PARTICLES; i++) {
       var a = Math.random() * TWO_PI, s = 50 + Math.random() * 180;
       particles.push({
@@ -495,7 +605,7 @@
     toastT = 1.7;
   }
   function confettiBurst() {
-    for (var i = 0; i < Math.floor(48 * quality) && particles.length < MAX_PARTICLES; i++) {
+    for (var i = 0; i < Math.floor(32 * quality) && particles.length < MAX_PARTICLES; i++) {
       particles.push({
         x: W * 0.5 + (Math.random() - 0.5) * 280, y: H * 0.3,
         vx: (Math.random() - 0.5) * 300, vy: -100 - Math.random() * 220,
@@ -522,67 +632,103 @@
     mapDirty = true;
   }
 
+  
+  function totalTier(t) {
+    return (t.paths ? t.paths[0] + t.paths[1] : (t.tier || 0));
+  }
+  function canBuyPath(t, pathIdx) {
+    if (!t.paths || !t.def.paths) return false;
+    var cur = t.paths[pathIdx];
+    if (cur >= MAX_PATH) return false;
+    var next = cur + 1;
+    var other = t.paths[1 - pathIdx];
+    // BTD rule: cannot have both paths above 2
+    if (next > 2 && other > 2) return false;
+    return !!t.def.paths[pathIdx][cur];
+  }
+  function nextUpgrade(t, pathIdx) {
+    if (!canBuyPath(t, pathIdx)) return null;
+    return t.def.paths[pathIdx][t.paths[pathIdx]];
+  }
+  function applyAllPathUpgrades(t, fn) {
+    if (!t.def.paths || !t.paths) return;
+    for (var p = 0; p < 2; p++) {
+      for (var i = 0; i < t.paths[p]; i++) {
+        var u = t.def.paths[p][i];
+        if (u) fn(u);
+      }
+    }
+  }
+  function applyUpgradeToStats(st, u) {
+    if (u.range) st.range += u.range;
+    if (u.rof) st.rof += u.rof;
+    if (u.pierce) st.pierce += u.pierce;
+    if (u.pop) st.pop += u.pop;
+    if (u.splash) st.splash += u.splash;
+    if (u.slow) st.slow += u.slow;
+    if (u.camo) st.camo = true;
+    if (u.lead) st.lead = true;
+    if (u.multishot) st.multishot += u.multishot;
+    if (u.auraRof) st.auraRof += u.auraRof;
+    if (u.auraCamo) st.auraCamo = true;
+    if (u.income) st.income += u.income;
+    if (u.preferStrong) st.preferStrong = true;
+  }
+
   function getStatsNoAura(t) {
     var d = t.def, range = d.range, auraRof = 0, auraCamo = false, income = 0;
-    for (var i = 0; i < t.tier; i++) {
-      var u = d.ups[i]; if (!u) continue;
+    if (d.farm) income += 25;
+    applyAllPathUpgrades(t, function (u) {
       if (u.range) range += u.range;
       if (u.auraRof) auraRof += u.auraRof;
       if (u.auraCamo) auraCamo = true;
       if (u.income) income += u.income;
-    }
-    // base farm income
-    if (d.farm) income += 25;
+    });
     return { range: range, auraRof: auraRof, auraCamo: auraCamo, income: income };
   }
 
   function getStats(t) {
+    // Per-frame cache: update + draw both call this
+    if (t._fid === frameStatsId && t._st) return t._st;
     var d = t.def;
-    var range = d.range, rof = d.rof, pierce = d.pierce, pop = d.pop;
-    var splash = d.splash, slow = d.slow, camo = d.camo, lead = d.lead;
-    var multishot = d.multishot || 0, auraRof = 0, auraCamo = false, income = d.farm ? 25 : 0;
-    for (var i = 0; i < t.tier; i++) {
-      var u = d.ups[i]; if (!u) continue;
-      if (u.range) range += u.range;
-      if (u.rof) rof += u.rof;
-      if (u.pierce) pierce += u.pierce;
-      if (u.pop) pop += u.pop;
-      if (u.splash) splash += u.splash;
-      if (u.slow) slow += u.slow;
-      if (u.camo) camo = true;
-      if (u.lead) lead = true;
-      if (u.multishot) multishot += u.multishot;
-      if (u.auraRof) auraRof += u.auraRof;
-      if (u.auraCamo) auraCamo = true;
-      if (u.income) income += u.income;
-    }
+    var st = {
+      range: d.range, rof: d.rof, pierce: d.pierce, pop: d.pop,
+      splash: d.splash, slow: d.slow, camo: d.camo, lead: d.lead,
+      multishot: d.multishot || 0, auraRof: 0, auraCamo: false,
+      income: d.farm ? 25 : 0, preferStrong: !!d.preferStrong
+    };
+    applyAllPathUpgrades(t, function (u) { applyUpgradeToStats(st, u); });
     var rofMul = 1;
     for (var j = 0; j < towers.length; j++) {
       var v = towers[j];
       if (!v.def.support || v.def.farm || v === t) continue;
       var vs = getStatsNoAura(v);
-      if (dist(t.x, t.y, v.x, v.y) <= vs.range) {
+      if (distSq(t.x, t.y, v.x, v.y) <= vs.range * vs.range) {
         rofMul += vs.auraRof;
-        if (vs.auraCamo) camo = true;
+        if (vs.auraCamo) st.camo = true;
       }
     }
-    rof = Math.max(0.04, rof / rofMul);
-    // Epic juice: fever + rage crank attack speed
-    if (feverT > 0) rof = Math.max(0.035, rof * 0.72);
-    if (rageT > 0) rof = Math.max(0.03, rof * 0.55);
-    if (eventKind === "frenzy") rof = Math.max(0.03, rof * 0.65);
-    // Crit chance later applied in fire()
-    return {
-      range: range, rof: rof, pierce: pierce, pop: Math.max(0, pop),
-      splash: splash, slow: Math.min(0.92, slow), camo: camo, lead: lead,
-      multishot: multishot, auraRof: auraRof, auraCamo: auraCamo, income: income
-    };
+    st.rof = Math.max(0.04, st.rof / rofMul);
+    if (feverT > 0) st.rof = Math.max(0.035, st.rof * 0.72);
+    if (rageT > 0) st.rof = Math.max(0.03, st.rof * 0.55);
+    if (eventKind === "frenzy") st.rof = Math.max(0.03, st.rof * 0.65);
+    st.pop = Math.max(0, st.pop);
+    st.slow = Math.min(0.92, st.slow);
+    t._fid = frameStatsId;
+    t._st = st;
+    return st;
   }
 
   function spentOn(t) {
-    var s = t.def.cost;
-    for (var i = 0; i < t.tier; i++) s += t.def.upCost[i];
-    return s;
+    var sum = t.def.cost;
+    if (t.def.paths && t.paths) {
+      for (var p = 0; p < 2; p++) {
+        for (var i = 0; i < t.paths[p]; i++) {
+          if (t.def.paths[p][i]) sum += t.def.paths[p][i].cost;
+        }
+      }
+    }
+    return sum;
   }
 
   function interestPreview() {
@@ -621,16 +767,17 @@
       r: L.r, speed: L.speed * (flags.speedMul || 1) * (0.92 + sc * 0.08),
       camo: !!flags.camo, regrow: !!flags.regrow, lead: !!flags.lead,
       regrowT: 0, alive: true, hp: 1, maxHp: 1, value: L.value,
-      freezeT: 0, slowMul: 1, wobble: Math.random() * TWO_PI, uid: Math.random()
+      freezeT: 0, slowMul: 1, wobble: Math.random() * TWO_PI, uid: nextUid++
     };
   }
 
   function makeSpecial(kind, distAlong, scale) {
     var sc = (scale || 1) * DIFFS[difficulty].scale;
+    var uid = nextUid++;
     if (kind === "ceramic") {
       return {
         kind: "ceramic", dist: distAlong, x: 0, y: 0, ang: 0, r: 19, speed: 44,
-        camo: false, lead: false, alive: true,
+        camo: false, lead: false, alive: true, uid: uid,
         hp: Math.floor(14 * sc), maxHp: Math.floor(14 * sc), value: 32,
         freezeT: 0, slowMul: 1, children: "zebra", childCount: 2, wobble: Math.random() * TWO_PI
       };
@@ -638,7 +785,7 @@
     if (kind === "boss") {
       return {
         kind: "boss", dist: distAlong, x: 0, y: 0, ang: 0, r: 32, speed: 24,
-        camo: false, lead: true, alive: true,
+        camo: false, lead: true, alive: true, uid: uid,
         hp: Math.floor(260 * sc), maxHp: Math.floor(260 * sc), value: 220,
         freezeT: 0, slowMul: 1, children: "ceramic", childCount: 4, wobble: Math.random() * TWO_PI
       };
@@ -646,7 +793,7 @@
     if (kind === "starship") {
       return {
         kind: "starship", dist: distAlong, x: 0, y: 0, ang: 0, r: 40, speed: 16,
-        camo: false, lead: true, alive: true,
+        camo: false, lead: true, alive: true, uid: uid,
         hp: Math.floor(800 * sc), maxHp: Math.floor(800 * sc), value: 500,
         freezeT: 0, slowMul: 1, children: "boss", childCount: 2, wobble: Math.random() * TWO_PI
       };
@@ -654,7 +801,7 @@
     if (kind === "superstarship") {
       return {
         kind: "superstarship", dist: distAlong, x: 0, y: 0, ang: 0, r: 48, speed: 12,
-        camo: false, lead: true, alive: true,
+        camo: false, lead: true, alive: true, uid: uid,
         hp: Math.floor(2000 * sc), maxHp: Math.floor(2000 * sc), value: 1200,
         freezeT: 0, slowMul: 1, children: "starship", childCount: 2, wobble: Math.random() * TWO_PI
       };
@@ -830,12 +977,14 @@
 
   function damageAt(x, y, popPower, pierce, splash, slow, canCamo, canLead) {
     var hits = 0, targets = [];
+    var rad = splash > 0 ? splash : 0;
+    var radSq = rad * rad;
     for (var i = 0; i < threats.length; i++) {
       var th = threats[i];
       if (!th.alive) continue;
       if (th.camo && !canCamo) continue;
-      var d = dist(x, y, th.x, th.y);
-      if (d <= (splash > 0 ? splash : th.r + 10)) targets.push({ th: th, dist: th.dist });
+      var need = splash > 0 ? radSq : (th.r + 10) * (th.r + 10);
+      if (distSq(x, y, th.x, th.y) <= need) targets.push({ th: th, dist: th.dist });
     }
     if (!targets.length) return 0;
     if (splash > 0) {
@@ -1112,6 +1261,7 @@
     abilities.freeze.cd = Math.max(0, abilities.freeze.cd - 8);
     abilities.cash.cd = Math.max(0, abilities.cash.cd - 6);
     killStreak = 0;
+    saveRecords();
     refreshUI();
   }
 
@@ -1183,7 +1333,7 @@
     showToast(ch.title.toUpperCase() + " · +" + chBonus + " BAN");
     confettiBurst();
     // sync map picker UI
-    document.querySelectorAll("#mapPick .chip-btn").forEach(function (b) {
+    document.querySelectorAll("#mapPick .chip-btn, #mapPick .map-card").forEach(function (b) {
       b.classList.toggle("on", b.getAttribute("data-map") === currentMap);
     });
     refreshUI();
@@ -1208,23 +1358,46 @@
     var def = TOWER_BY_ID[selectedShop];
     if (!def || ban < def.cost) return;
     ban -= def.cost;
-    var t = { c: c, r: r, x: c * TW + TW / 2, y: r * TH + TH / 2, def: def, tier: 0, cd: 0, angle: 0 };
+    var t = {
+      c: c, r: r, x: c * TW + TW / 2, y: r * TH + TH / 2,
+      def: def, paths: [0, 0], cd: 0, angle: 0,
+      target: def.preferStrong ? "strong" : "first",
+      flashT: 0.35
+    };
     towers.push(t); selectedTower = t; totalBuilt++;
     sfxPlace(); burst(t.x, t.y, def.color, 10);
     floatTxt(t.x, t.y - 16, "-" + def.cost, "#f5d041");
+    frameStatsId++; // invalidate aura caches for nearby towers
     refreshUI();
   }
 
-  function upgradeTower() {
+  function upgradeTower(pathIdx) {
     if (!selectedTower || gameOver) return;
+    if (pathIdx !== 0 && pathIdx !== 1) pathIdx = 0;
     var t = selectedTower;
-    if (t.tier >= MAX_TIER) return;
-    var cost = t.def.upCost[t.tier];
-    if (ban < cost) return;
-    ban -= cost; t.tier++;
-    sfxUp(); burst(t.x, t.y, t.def.color, 16);
-    floatTxt(t.x, t.y - 18, t.def.ups[t.tier - 1].name, "#86efac", 12);
-    if (t.tier >= MAX_TIER) { confettiBurst(); floatTxt(t.x, t.y - 32, "MAX PATH", "#f472b6", 14); }
+    if (!canBuyPath(t, pathIdx)) return;
+    var up = nextUpgrade(t, pathIdx);
+    if (!up || ban < up.cost) return;
+    ban -= up.cost;
+    t.paths[pathIdx]++;
+    t.flashT = 0.45;
+    t._fid = -1; // force stat recompute
+    sfxUp(); burst(t.x, t.y, pathIdx === 0 ? "#ffe566" : "#67e8f9", 18);
+    floatTxt(t.x, t.y - 18, up.name, pathIdx === 0 ? "#ffe566" : "#67e8f9", 12);
+    // Specializing into deep tiers (3+) locks the other path
+    if (t.paths[pathIdx] === 3) {
+      confettiBurst();
+      var pname = (t.def.pathNames && t.def.pathNames[pathIdx]) || (pathIdx === 0 ? "Top" : "Bottom");
+      announce(pname.toUpperCase() + "!", 1.35);
+      floatTxt(t.x, t.y - 36, "SPECIALIZED", "#f472b6", 13);
+      shake = Math.max(shake, 0.12);
+    }
+    if (t.paths[pathIdx] >= MAX_PATH) {
+      confettiBurst();
+      floatTxt(t.x, t.y - 32, "PATH MAX!", "#f472b6", 14);
+      announce("PATH COMPLETE!", 1.1);
+    }
+    frameStatsId++;
     refreshUI();
   }
 
@@ -1236,6 +1409,7 @@
     floatTxt(selectedTower.x, selectedTower.y, "+" + val, "#86efac");
     towers = towers.filter(function (x) { return x !== selectedTower; });
     selectedTower = null;
+    frameStatsId++;
     beep(200, 0.08, "triangle", 0.03);
     refreshUI();
   }
@@ -1296,21 +1470,38 @@
     refreshUI();
   }
 
+  function cycleTarget(tower) {
+    if (!tower) return;
+    var i = TARGET_MODES.indexOf(tower.target || "first");
+    if (i < 0) i = 0;
+    tower.target = TARGET_MODES[(i + 1) % TARGET_MODES.length];
+    floatTxt(tower.x, tower.y - 22, TARGET_LABEL[tower.target], "#c084fc", 12);
+    beep(440 + i * 40, 0.04, "triangle", 0.02);
+    refreshUI();
+  }
+
   function findTarget(tower, st) {
-    var best = null, bestScore = -1;
+    var best = null, bestScore = -1e15;
+    var mode = tower.target || "first";
+    var rangeSq = st.range * st.range;
     for (var i = 0; i < threats.length; i++) {
       var th = threats[i];
       if (!th.alive) continue;
       if (th.camo && !st.camo) continue;
       if (th.lead && !st.lead && th.kind === "layer") continue;
       if ((th.kind === "ceramic" || th.kind === "boss" || th.kind === "starship" || th.kind === "superstarship") && th.lead && !st.lead) continue;
-      var d = dist(tower.x, tower.y, th.x, th.y);
-      if (d > st.range) continue;
-      var score = th.dist;
-      if (tower.def.preferStrong) {
-        score += th.hp * 4;
-        if (th.kind !== "layer") score += 90;
-        else score += LAYER_ORDER.indexOf(th.layer) * 12;
+      var dsq = distSq(tower.x, tower.y, th.x, th.y);
+      if (dsq > rangeSq) continue;
+      var score;
+      if (mode === "last") score = -th.dist;
+      else if (mode === "close") score = -dsq;
+      else if (mode === "strong") {
+        score = th.hp * 5;
+        if (th.kind !== "layer") score += 120;
+        else score += LAYER_ORDER.indexOf(th.layer) * 14;
+        score += th.dist * 0.002; // tie-break: farther along path
+      } else {
+        score = th.dist; // first = furthest along path
       }
       if (score > bestScore) { bestScore = score; best = th; }
     }
@@ -1344,7 +1535,7 @@
         camo: st.camo, lead: st.lead, color: crit ? "#ffffff" : tower.def.color,
         boomer: !!tower.def.boomerang, rail: !!tower.def.rail,
         home: tower.def.boomerang ? { x: tower.x, y: tower.y } : null,
-        phase: 0, hitIds: {}, kind: tower.def.id, trail: [], crit: crit
+        phase: 0, hitIds: {}, kind: tower.def.id, trail: quality > 0.55 ? [] : null, crit: crit
       });
     }
     beep(tower.def.rail ? 90 : tower.def.id === "bomb" ? 120 : 400, 0.025, "square", 0.015);
@@ -1352,6 +1543,7 @@
 
   function update(dt) {
     animT += dt;
+    frameStatsId++; // invalidate per-frame stats cache
     if (toastT > 0) { toastT -= dt; if (toastT <= 0) toast.classList.remove("show"); }
     if (shake > 0) shake = Math.max(0, shake - dt * 2.2);
 
@@ -1463,6 +1655,7 @@
 
     for (var t = 0; t < towers.length; t++) {
       var tower = towers[t];
+      if (tower.flashT > 0) tower.flashT = Math.max(0, tower.flashT - d);
       if (tower.def.farm) continue;
       if (tower.def.support && !tower.def.freezePulse) continue;
       var st = getStats(tower);
@@ -1479,9 +1672,9 @@
     for (var p = projectiles.length - 1; p >= 0; p--) {
       var pr = projectiles[p];
       pr.age += d;
-      if (quality > 0.55 && pr.trail) {
+      if (pr.trail) {
         pr.trail.push({ x: pr.x, y: pr.y });
-        if (pr.trail.length > 7) pr.trail.shift();
+        if (pr.trail.length > 6) pr.trail.shift();
       }
       if (pr.boomer) {
         pr.phase += d;
@@ -1494,11 +1687,13 @@
         }
       } else { pr.x += pr.vx * d; pr.y += pr.vy * d; }
 
+      var hitPad = pr.rail ? 14 : 9;
       for (var ti = 0; ti < threats.length; ti++) {
         var th2 = threats[ti];
-        if (!th2.alive || (th2.camo && !pr.camo) || pr.hitIds[ti]) continue;
-        if (dist(pr.x, pr.y, th2.x, th2.y) <= th2.r + (pr.rail ? 14 : 9)) {
-          pr.hitIds[ti] = true;
+        if (!th2.alive || (th2.camo && !pr.camo) || pr.hitIds[th2.uid]) continue;
+        var hitR = th2.r + hitPad;
+        if (distSq(pr.x, pr.y, th2.x, th2.y) <= hitR * hitR) {
+          pr.hitIds[th2.uid] = true;
           if (pr.splash > 0) {
             damageAt(pr.x, pr.y, pr.pop, 99, pr.splash, pr.slow, pr.camo, pr.lead);
             if (pr.rail) shake = Math.max(shake, 0.12);
@@ -1537,8 +1732,18 @@
   function drawBananaShape(x, y, r, fill, stroke, tip, ang, lead, camo) {
     ctx.save();
     ctx.translate(x, y);
-    ctx.rotate(ang + Math.sin(animT * 3 + x * 0.01) * 0.08);
+    ctx.rotate(ang + (quality > 0.55 ? Math.sin(animT * 3 + x * 0.01) * 0.08 : 0));
     ctx.globalAlpha = camo ? 0.5 : 1;
+    // Fast path under load — solid banana, still readable
+    if (quality < 0.55) {
+      ctx.beginPath();
+      ctx.ellipse(0, 0, r * 0.75, r * 1.05, 0.15, 0, TWO_PI);
+      ctx.fillStyle = fill; ctx.fill();
+      ctx.strokeStyle = stroke; ctx.lineWidth = 1.8; ctx.stroke();
+      if (lead) { ctx.strokeStyle = "#94a3b8"; ctx.lineWidth = 2.5; ctx.stroke(); }
+      ctx.restore();
+      return;
+    }
     ctx.beginPath();
     ctx.ellipse(2, r * 0.55, r * 0.7, r * 0.28, 0.2, 0, TWO_PI);
     ctx.fillStyle = "rgba(0,0,0,0.22)"; ctx.fill();
@@ -1664,20 +1869,58 @@
   }
 
   function drawHover() {
-    if (!hover || !running || gameOver || selectedTower) return;
-    var def = TOWER_BY_ID[selectedShop]; if (!def) return;
+    if (!hover || !running || gameOver) return;
     var c = hover.c, r = hover.r;
-    var valid = inBounds(c, r) && !isPath(c, r) && !towerAt(c, r);
-    ctx.fillStyle = valid ? "rgba(255,229,102,0.28)" : "rgba(248,113,113,0.32)";
-    ctx.fillRect(c * TW + 2, r * TH + 2, TW - 4, TH - 4);
-    if (valid) {
-      ctx.beginPath(); ctx.arc(c * TW + TW / 2, r * TH + TH / 2, def.range, 0, TWO_PI);
-      ctx.strokeStyle = "rgba(255,255,255,0.4)"; ctx.lineWidth = 2; ctx.setLineDash([4, 4]); ctx.stroke(); ctx.setLineDash([]);
+    if (!inBounds(c, r)) return;
+    var occupied = towerAt(c, r);
+    // Always show crisp cell under cursor (fixes “where will it drop?”)
+    var x = c * TW, y = r * TH;
+    var valid = !isPath(c, r) && !occupied;
+    ctx.save();
+    // Soft outer glow
+    ctx.strokeStyle = valid ? "rgba(255,229,102,0.85)" : "rgba(248,113,113,0.9)";
+    ctx.lineWidth = 3;
+    ctx.strokeRect(x + 1.5, y + 1.5, TW - 3, TH - 3);
+    ctx.fillStyle = valid ? "rgba(255,229,102,0.22)" : "rgba(248,113,113,0.25)";
+    ctx.fillRect(x + 3, y + 3, TW - 6, TH - 6);
+    // Crosshair center
+    var cx = x + TW / 2, cy = y + TH / 2;
+    ctx.strokeStyle = valid ? "rgba(255,255,255,0.55)" : "rgba(255,180,180,0.5)";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(cx - 8, cy); ctx.lineTo(cx + 8, cy);
+    ctx.moveTo(cx, cy - 8); ctx.lineTo(cx, cy + 8);
+    ctx.stroke();
+
+    // Placement preview only when not selecting an existing tower for upgrade
+    if (!selectedTower || !occupied) {
+      var def = TOWER_BY_ID[selectedShop];
+      if (def && valid) {
+        ctx.beginPath();
+        ctx.arc(cx, cy, def.range, 0, TWO_PI);
+        ctx.fillStyle = "rgba(255,229,102,0.06)";
+        ctx.fill();
+        ctx.strokeStyle = "rgba(255,255,255,0.45)";
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 5]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        // Ghost portrait
+        ctx.globalAlpha = 0.55;
+        ctx.font = "22px serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(def.icon, cx, cy);
+        ctx.globalAlpha = 1;
+      }
     }
+    ctx.restore();
   }
 
   function drawMonkey(t) {
     var st = getStats(t), sel = t === selectedTower;
+    var deepTop = t.paths && t.paths[0] >= 3;
+    var deepBot = t.paths && t.paths[1] >= 3;
     if (sel) {
       ctx.beginPath(); ctx.arc(t.x, t.y, st.range, 0, TWO_PI);
       ctx.fillStyle = "rgba(255,229,102,0.07)"; ctx.fill();
@@ -1687,15 +1930,31 @@
       ctx.beginPath(); ctx.arc(t.x, t.y, st.range, 0, TWO_PI);
       ctx.strokeStyle = "rgba(192,132,252,0.28)"; ctx.setLineDash([6, 6]); ctx.stroke(); ctx.setLineDash([]);
     }
-    var scale = 1 + t.tier * 0.055;
+    // Specialized path aura
+    if (deepTop || deepBot) {
+      var glow = 0.12 + Math.sin(animT * 5 + t.x) * 0.04;
+      ctx.beginPath(); ctx.arc(t.x, t.y, 28, 0, TWO_PI);
+      ctx.fillStyle = deepTop ? "rgba(255,229,102," + glow + ")" : "rgba(103,232,249," + glow + ")";
+      ctx.fill();
+    }
+    var scale = 1 + totalTier(t) * 0.04 + (t.flashT > 0 ? t.flashT * 0.25 : 0);
     ctx.save(); ctx.translate(t.x, t.y); ctx.scale(scale, scale);
+    if (t.flashT > 0) {
+      ctx.beginPath(); ctx.arc(0, 0, 22, 0, TWO_PI);
+      ctx.fillStyle = "rgba(255,255,255," + (t.flashT * 0.35) + ")"; ctx.fill();
+    }
     ctx.beginPath(); ctx.ellipse(0, 13, 14, 5, 0, 0, TWO_PI); ctx.fillStyle = "rgba(0,0,0,0.28)"; ctx.fill();
     ctx.beginPath(); ctx.arc(0, 5, 15, 0, TWO_PI); ctx.fillStyle = "#4a3018"; ctx.fill();
     ctx.strokeStyle = t.def.color; ctx.lineWidth = sel ? 3 : 2; ctx.stroke();
     ctx.beginPath(); ctx.arc(0, -2, 13, 0, TWO_PI);
-    var face = ctx.createRadialGradient(-3, -5, 2, 0, 0, 14);
-    face.addColorStop(0, "#e2c08a"); face.addColorStop(1, "#b8894e");
-    ctx.fillStyle = face; ctx.fill(); ctx.strokeStyle = "#3b2a1a"; ctx.lineWidth = 1.8; ctx.stroke();
+    if (quality > 0.55) {
+      var face = ctx.createRadialGradient(-3, -5, 2, 0, 0, 14);
+      face.addColorStop(0, "#e2c08a"); face.addColorStop(1, "#b8894e");
+      ctx.fillStyle = face;
+    } else {
+      ctx.fillStyle = "#c9a06a";
+    }
+    ctx.fill(); ctx.strokeStyle = "#3b2a1a"; ctx.lineWidth = 1.8; ctx.stroke();
     ctx.beginPath(); ctx.arc(-12, -6, 5, 0, TWO_PI); ctx.arc(12, -6, 5, 0, TWO_PI);
     ctx.fillStyle = "#c4a574"; ctx.fill(); ctx.stroke();
     ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(-4, -4, 3.3, 0, TWO_PI); ctx.arc(4, -4, 3.3, 0, TWO_PI); ctx.fill();
@@ -1707,17 +1966,22 @@
     ctx.font = "13px serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
     var badge = { sniper: "🎯", bomb: "💣", ice: "🧊", village: "🏠", super: "🦸", boomer: "🪃", battery: "🚀", dart: "🍌", farm: "🌴" };
     ctx.fillText(badge[t.def.id] || "🍌", 0, -18);
-    for (var p = 0; p < t.tier; p++) {
-      ctx.beginPath(); ctx.arc(-12 + p * 6, 15, 2.4, 0, TWO_PI);
-      ctx.fillStyle = t.def.color; ctx.fill();
+    // Path pips: top path left (gold), bottom path right (cyan)
+    for (var p0 = 0; p0 < (t.paths ? t.paths[0] : 0); p0++) {
+      ctx.beginPath(); ctx.arc(-14 + p0 * 5, 15, p0 >= 2 ? 2.6 : 2.2, 0, TWO_PI);
+      ctx.fillStyle = p0 >= 2 ? "#f472b6" : "#ffe566"; ctx.fill();
+    }
+    for (var p1 = 0; p1 < (t.paths ? t.paths[1] : 0); p1++) {
+      ctx.beginPath(); ctx.arc(2 + p1 * 5, 15, p1 >= 2 ? 2.6 : 2.2, 0, TWO_PI);
+      ctx.fillStyle = p1 >= 2 ? "#c084fc" : "#67e8f9"; ctx.fill();
     }
     if (!t.def.support && !t.def.freezePulse && !t.def.farm) {
       ctx.rotate(t.angle);
       if (t.def.rail) {
-        ctx.fillStyle = "#38bdf8"; ctx.fillRect(6, -2.5, 18 + t.tier * 2, 5);
-        ctx.fillStyle = "#e0f2fe"; ctx.fillRect(20 + t.tier, -1.5, 8, 3);
+        ctx.fillStyle = "#38bdf8"; ctx.fillRect(6, -2.5, 18 + totalTier(t) * 2, 5);
+        ctx.fillStyle = "#e0f2fe"; ctx.fillRect(20 + totalTier(t), -1.5, 8, 3);
       } else {
-        ctx.fillStyle = t.def.color; ctx.fillRect(8, -3, 12 + t.tier * 2, 6);
+        ctx.fillStyle = t.def.color; ctx.fillRect(8, -3, 12 + totalTier(t) * 2, 6);
       }
     }
     if (t.def.farm) {
@@ -1725,6 +1989,18 @@
       ctx.beginPath(); ctx.arc(0, 0, 18, 0, TWO_PI); ctx.fill();
     }
     ctx.restore();
+    // Target priority label when selected
+    if (sel && !t.def.farm && !(t.def.support && !t.def.freezePulse)) {
+      ctx.font = "bold 10px Fredoka, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+      var tl = TARGET_LABEL[t.target || "first"] || "First";
+      ctx.strokeStyle = "rgba(0,0,0,0.5)";
+      ctx.lineWidth = 3;
+      ctx.strokeText(tl, t.x, t.y + 20);
+      ctx.fillStyle = "#e9d5ff";
+      ctx.fillText(tl, t.x, t.y + 20);
+    }
   }
 
   function drawThreat(th) {
@@ -1854,15 +2130,31 @@
       var a = Math.min(1, comboAnnouncerT * 2);
       ctx.save();
       ctx.globalAlpha = a;
+      var popScale = 1 + (1 - Math.min(1, comboAnnouncerT)) * 0.15;
+      ctx.translate(W / 2, H * 0.28);
+      ctx.scale(popScale, popScale);
       ctx.font = "800 42px Fredoka, sans-serif";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.strokeStyle = "rgba(0,0,0,0.55)";
       ctx.lineWidth = 8;
-      ctx.strokeText(comboAnnouncer, W / 2, H * 0.28);
+      ctx.strokeText(comboAnnouncer, 0, 0);
       ctx.fillStyle = feverT > 0 ? "#ffe566" : "#fff8d6";
-      ctx.fillText(comboAnnouncer, W / 2, H * 0.28);
+      ctx.fillText(comboAnnouncer, 0, 0);
       ctx.restore();
+    }
+
+    // Mini status when playing
+    if (running && !gameOver && quality > 0.4) {
+      ctx.font = "600 12px Fredoka, sans-serif";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "top";
+      ctx.globalAlpha = 0.55;
+      ctx.fillStyle = "#fff8d6";
+      var tip = autoWave ? "AUTO" : "Space → wave";
+      if (selectedTower) tip = "Z/X path · Tab target · click again target";
+      ctx.fillText(tip, 12, 10);
+      ctx.globalAlpha = 1;
     }
 
     ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -1876,18 +2168,166 @@
     requestAnimationFrame(loop);
   }
 
-  // UI
-  function buildShop() {
+  // UI — procedural tower portraits (no external assets)
+  var portraitCache = {};
+  function towerPortrait(def, size) {
+    size = size || 72;
+    var key = def.id + "_" + size;
+    if (portraitCache[key]) return portraitCache[key];
+    var c = document.createElement("canvas");
+    c.width = size; c.height = size;
+    var g = c.getContext("2d");
+    // Background plate
+    var bg = g.createLinearGradient(0, 0, size, size);
+    bg.addColorStop(0, "#1a3d28");
+    bg.addColorStop(1, "#0c1a12");
+    g.fillStyle = bg;
+    roundRectPath(g, 4, 4, size - 8, size - 8, 14);
+    g.fill();
+    g.strokeStyle = def.color;
+    g.lineWidth = 3;
+    g.stroke();
+    // Soft glow
+    g.beginPath();
+    g.arc(size / 2, size / 2 + 2, size * 0.28, 0, Math.PI * 2);
+    g.fillStyle = def.color;
+    g.globalAlpha = 0.2;
+    g.fill();
+    g.globalAlpha = 1;
+    // Monkey body
+    g.beginPath();
+    g.arc(size / 2, size / 2 + 4, size * 0.22, 0, Math.PI * 2);
+    var face = g.createRadialGradient(size / 2 - 4, size / 2, 2, size / 2, size / 2 + 4, size * 0.24);
+    face.addColorStop(0, "#e8c9a0");
+    face.addColorStop(1, "#b8894e");
+    g.fillStyle = face;
+    g.fill();
+    g.strokeStyle = "#3b2a1a";
+    g.lineWidth = 1.5;
+    g.stroke();
+    // Ears
+    g.beginPath();
+    g.arc(size / 2 - size * 0.18, size / 2 - 2, size * 0.08, 0, Math.PI * 2);
+    g.arc(size / 2 + size * 0.18, size / 2 - 2, size * 0.08, 0, Math.PI * 2);
+    g.fillStyle = "#c4a574";
+    g.fill();
+    // Eyes
+    g.fillStyle = "#fff";
+    g.beginPath();
+    g.arc(size / 2 - 5, size / 2 + 2, 3.2, 0, Math.PI * 2);
+    g.arc(size / 2 + 5, size / 2 + 2, 3.2, 0, Math.PI * 2);
+    g.fill();
+    g.fillStyle = "#111";
+    g.beginPath();
+    g.arc(size / 2 - 4.5, size / 2 + 2, 1.5, 0, Math.PI * 2);
+    g.arc(size / 2 + 5.5, size / 2 + 2, 1.5, 0, Math.PI * 2);
+    g.fill();
+    // Role badge
+    g.font = Math.floor(size * 0.28) + "px serif";
+    g.textAlign = "center";
+    g.textBaseline = "middle";
+    g.fillText(def.icon, size / 2, size * 0.22);
+    // Color bar
+    g.fillStyle = def.color;
+    g.fillRect(10, size - 12, size - 20, 4);
+    portraitCache[key] = c.toDataURL("image/png");
+    return portraitCache[key];
+  }
+  function roundRectPath(g, x, y, w, h, r) {
+    g.beginPath();
+    g.moveTo(x + r, y);
+    g.arcTo(x + w, y, x + w, y + h, r);
+    g.arcTo(x + w, y + h, x, y + h, r);
+    g.arcTo(x, y + h, x, y, r);
+    g.arcTo(x, y, x + w, y, r);
+    g.closePath();
+  }
+
+  function upgradePathHtml(tOrDef, isPlaced) {
+    var def = isPlaced ? tOrDef.def : tOrDef;
+    var paths = isPlaced ? tOrDef.paths : [0, 0];
+    var names = def.pathNames || ["Top Path", "Bottom Path"];
+    var html = '<div class="dual-paths">';
+    for (var p = 0; p < 2; p++) {
+      var lockedDeep = paths[1 - p] > 2; // other path took the deep route
+      html += '<div class="path-col' + (lockedDeep && paths[p] >= 2 ? " capped" : "") + '">';
+      html += '<div class="path-title">' + (p === 0 ? "▲ " : "▼ ") + names[p] +
+        ' <span class="path-rank">' + paths[p] + "/" + MAX_PATH + "</span></div>";
+      html += '<div class="path-nodes">';
+      for (var i = 0; i < MAX_PATH; i++) {
+        var cls = "pn";
+        var deepLocked = i >= 2 && lockedDeep;
+        if (i < paths[p]) cls += " done";
+        else if (i === paths[p] && !deepLocked) cls += " next";
+        else cls += " locked";
+        if (i >= 2) cls += " deep";
+        if (deepLocked && i >= paths[p]) cls += " cross-lock";
+        var u = def.paths[p][i];
+        html += '<div class="' + cls + '" title="' + (u ? u.name + ": " + u.desc : "") + (deepLocked && i >= paths[p] ? " (other path specialized)" : "") + '">' + (i + 1) + "</div>";
+        if (i < MAX_PATH - 1) html += '<div class="pn-line' + (i < paths[p] ? " on" : "") + '"></div>';
+      }
+      html += "</div>";
+      // list
+      for (var j = 0; j < MAX_PATH; j++) {
+        var uu = def.paths[p][j];
+        if (!uu) continue;
+        var state = j < paths[p] ? "done" : (j === paths[p] ? "next" : "locked");
+        if (j >= 2 && paths[1 - p] > 2) state = j < paths[p] ? "done" : "locked";
+        html += '<div class="path-up ' + state + '"><b>' + (j + 1) + "</b> " + uu.name +
+          "<span>" + uu.cost + "</span><small>" + uu.desc + "</small></div>";
+      }
+      if (isPlaced) {
+        var nu = nextUpgrade(tOrDef, p);
+        var can = canBuyPath(tOrDef, p) && nu && ban >= nu.cost && !gameOver;
+        var label = !nu ? "MAX" : (!canBuyPath(tOrDef, p) ? "LOCKED" : ("Buy " + nu.cost));
+        html += '<button type="button" class="btn btn-sm path-buy' + (can ? " btn-primary" : " btn-ghost") +
+          '" data-path="' + p + '"' + (can ? "" : " disabled") + ">" + label + "</button>";
+      }
+      html += "</div>";
+    }
+    html += "</div>";
+    if (isPlaced && paths[0] >= 3) {
+      html += '<p class="path-spec top">★ Specialized: ' + names[0] + "</p>";
+    } else if (isPlaced && paths[1] >= 3) {
+      html += '<p class="path-spec bot">★ Specialized: ' + names[1] + "</p>";
+    } else {
+      html += '<p class="path-rule">Tiers 1–2 free on both paths. Tiers 3–4: <em>one path only</em>. <kbd>Z</kbd>/<kbd>X</kbd> buy · <kbd>Tab</kbd> target.</p>';
+    }
+    return html;
+  }
+
+  function buildShop(force) {
+    var snap = selectedShop + "|" + Math.floor(ban) + "|" + (running ? 1 : 0) + "|" + (gameOver ? 1 : 0);
+    if (!force && snap === uiShopSnap && shopEl.children.length === TOWER_DEFS.length) {
+      // cheap disable refresh only
+      for (var si = 0; si < shopEl.children.length; si++) {
+        var btn = shopEl.children[si];
+        var id = btn.getAttribute("data-id");
+        var dd = TOWER_BY_ID[id];
+        if (!dd) continue;
+        btn.disabled = !running || gameOver || ban < dd.cost;
+        btn.classList.toggle("on", selectedShop === id);
+      }
+      return;
+    }
+    uiShopSnap = snap;
     shopEl.innerHTML = "";
     for (var i = 0; i < TOWER_DEFS.length; i++) {
       var d = TOWER_DEFS[i];
       var b = document.createElement("button");
       b.type = "button";
       b.className = "shop-btn" + (selectedShop === d.id ? " on" : "");
-      b.innerHTML = '<span class="ico">' + d.icon + '</span><span class="nm">' + d.name + '</span><span class="cs">' + d.cost + " BAN</span>";
+      b.setAttribute("data-id", d.id);
+      var img = towerPortrait(d, 64);
+      b.innerHTML =
+        '<img class="shop-art" src="' + img + '" alt="" width="48" height="48">' +
+        '<span class="shop-meta"><span class="nm">' + d.name + "</span>" +
+        '<span class="role">' + d.role + "</span>" +
+        '<span class="cs">' + d.cost + " BAN</span></span>";
       b.disabled = !running || gameOver || ban < d.cost;
+      b.title = d.desc + " · [" + (i + 1) + "]";
       b.addEventListener("click", (function (id) {
-        return function () { selectedShop = id; selectedTower = null; refreshUI(); };
+        return function () { selectedShop = id; selectedTower = null; uiShopSnap = ""; refreshUI(); };
       })(d.id));
       shopEl.appendChild(b);
     }
@@ -1945,29 +2385,68 @@
 
     if (selectedTower) {
       var t = selectedTower, st = getStats(t);
-      var next = t.tier < MAX_TIER ? t.def.ups[t.tier] : null;
-      var cost = t.tier < MAX_TIER ? t.def.upCost[t.tier] : 0;
-      var html = "<strong>" + t.def.icon + " " + t.def.name + "</strong> · Tier " + t.tier + "/" + MAX_TIER + "<br>" + t.def.desc + "<br>";
-      if (t.def.farm) html += "Farm income " + st.income + " BAN / round";
+      var art = towerPortrait(t.def, 80);
+      var tgt = t.target || "first";
+      var html = '<div class="sel-head"><img src="' + art + '" alt="" width="56" height="56">' +
+        "<div><strong>" + t.def.name + "</strong><br><span class='role-tag'>" + t.def.role +
+        " · " + t.paths[0] + "-" + t.paths[1] + "</span></div></div>";
+      html += '<p class="sel-desc">' + t.def.desc + "</p>";
+      if (t.def.farm) html += "<div class='sel-stats'>Income <b>" + st.income + "</b> BAN / round</div>";
       else if (!t.def.support || t.def.freezePulse) {
-        html += "Range " + Math.floor(st.range) + " · Pop " + st.pop + " · Pierce " + st.pierce;
-        if (st.splash) html += " · Splash " + Math.floor(st.splash);
-        if (st.camo) html += " · 👁️";
-        if (st.lead) html += " · 🔩";
-      } else html += "Aura " + Math.floor(st.range) + (st.income ? " · Income +" + st.income : "");
-      if (next) html += "<br>Next: <strong>" + next.name + "</strong> — " + next.desc + " (" + cost + ")";
-      else html += "<br>⭐ Max path — Raptor ready.";
+        html += "<div class='sel-stats'>Range <b>" + Math.floor(st.range) + "</b> · Pop <b>" + st.pop +
+          "</b> · Pierce <b>" + st.pierce + "</b>";
+        if (st.splash) html += " · Splash <b>" + Math.floor(st.splash) + "</b>";
+        if (st.multishot) html += " · Multi <b>+" + st.multishot + "</b>";
+        if (st.camo) html += " · Camo";
+        if (st.lead) html += " · Lead";
+        html += "</div>";
+      } else html += "<div class='sel-stats'>Aura <b>" + Math.floor(st.range) + "</b>" +
+        (st.income ? " · Income <b>+" + st.income + "</b>" : "") + "</div>";
+      // Targeting (BTD-style)
+      if (!t.def.farm && !(t.def.support && !t.def.freezePulse)) {
+        html += '<div class="target-row" role="group" aria-label="Target priority">';
+        for (var tm = 0; tm < TARGET_MODES.length; tm++) {
+          var mode = TARGET_MODES[tm];
+          html += '<button type="button" class="tgt-btn' + (tgt === mode ? " on" : "") +
+            '" data-tgt="' + mode + '">' + TARGET_LABEL[mode] + "</button>";
+        }
+        html += "</div>";
+      }
+      html += upgradePathHtml(t, true);
       selBox.innerHTML = html;
-      btnUp.disabled = t.tier >= MAX_TIER || ban < cost || gameOver;
-      btnUp.textContent = t.tier >= MAX_TIER ? "Max Path" : "Upgrade (" + cost + ")";
+      selBox.querySelectorAll(".path-buy").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          ensureAudio();
+          upgradeTower(parseInt(btn.getAttribute("data-path"), 10));
+        });
+      });
+      selBox.querySelectorAll(".tgt-btn").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          ensureAudio();
+          if (selectedTower) {
+            selectedTower.target = btn.getAttribute("data-tgt");
+            floatTxt(selectedTower.x, selectedTower.y - 22, TARGET_LABEL[selectedTower.target], "#c084fc", 12);
+            refreshUI();
+          }
+        });
+      });
+      if (btnUp) { btnUp.style.display = "none"; }
       btnSell.disabled = gameOver;
       btnSell.textContent = "Sell (+" + Math.floor(spentOn(t) * 0.72) + ")";
     } else {
       var def = TOWER_BY_ID[selectedShop];
-      selBox.innerHTML = def
-        ? "<strong>" + def.icon + " " + def.name + "</strong> · " + def.cost + " BAN<br>" + def.desc + "<br><em>" + def.role + " · 5-tier path</em>"
-        : "Pick a MonKey from the shop.";
-      btnUp.disabled = true; btnUp.textContent = "Upgrade";
+      if (def) {
+        var art2 = towerPortrait(def, 80);
+        selBox.innerHTML = '<div class="sel-head"><img src="' + art2 + '" alt="" width="56" height="56">' +
+          "<div><strong>" + def.name + "</strong><br><span class='role-tag'>" + def.role +
+          " · " + def.cost + " BAN</span></div></div>" +
+          '<p class="sel-desc">' + def.desc + "</p>" +
+          upgradePathHtml(def, false) +
+          '<p class="sel-hint">Click grass to place · then pick Top or Bottom upgrades</p>';
+      } else {
+        selBox.innerHTML = "Pick a MonKey from the shop.";
+      }
+      if (btnUp) { btnUp.style.display = "none"; btnUp.disabled = true; }
       btnSell.disabled = true; btnSell.textContent = "Sell";
     }
     var hold = chapterPending || (roundOv && !roundOv.classList.contains("hidden"));
@@ -1979,7 +2458,7 @@
     if (playMode === "campaign") {
       campaignChapter = 0;
       currentMap = CHAPTERS[0].map;
-      document.querySelectorAll("#mapPick .chip-btn").forEach(function (b) {
+      document.querySelectorAll("#mapPick .chip-btn, #mapPick .map-card").forEach(function (b) {
         b.classList.toggle("on", b.getAttribute("data-map") === currentMap);
       });
     }
@@ -2018,6 +2497,8 @@
     var endlessBtn = document.getElementById("btnEndless");
     if (endlessBtn) endlessBtn.classList.remove("hidden");
     confettiBurst(); confettiBurst(); confettiBurst(); sfxWin();
+    records.games = (records.games | 0) + 1;
+    saveRecords();
   }
 
   function startEndless() {
@@ -2038,29 +2519,61 @@
       "Wave " + wave + "/" + MAX_WAVE + " on " + MAPS[currentMap].short + " · Pops " + pops +
       " · BAN earned " + Math.floor(banEarned) + ". Refuel and relaunch.";
     loseOv.classList.remove("hidden"); sfxLeak();
+    records.games = (records.games | 0) + 1;
+    saveRecords();
   }
 
+  // Map pointer → game coords, correctly handling letterboxing / object-fit
   function canvasPos(evt) {
     var rect = canvas.getBoundingClientRect();
     var cx, cy;
     if (evt.touches && evt.touches[0]) { cx = evt.touches[0].clientX; cy = evt.touches[0].clientY; }
     else if (evt.changedTouches && evt.changedTouches[0]) { cx = evt.changedTouches[0].clientX; cy = evt.changedTouches[0].clientY; }
     else { cx = evt.clientX; cy = evt.clientY; }
-    var x = ((cx - rect.left) / rect.width) * W;
-    var y = ((cy - rect.top) / rect.height) * H;
-    return { x: x, y: y, c: Math.floor(x / TW), r: Math.floor(y / TH) };
+    // Uniform scale (contain) + centering offsets
+    var scale = Math.min(rect.width / W, rect.height / H);
+    if (!(scale > 0)) scale = 1;
+    var dispW = W * scale;
+    var dispH = H * scale;
+    var offX = (rect.width - dispW) / 2;
+    var offY = (rect.height - dispH) / 2;
+    var x = (cx - rect.left - offX) / scale;
+    var y = (cy - rect.top - offY) / scale;
+    x = clamp(x, 0, W - 0.001);
+    y = clamp(y, 0, H - 0.001);
+    return {
+      x: x,
+      y: y,
+      c: Math.floor(x / TW),
+      r: Math.floor(y / TH),
+      inCanvas: cx >= rect.left + offX && cx <= rect.left + offX + dispW &&
+                cy >= rect.top + offY && cy <= rect.top + offY + dispH
+    };
   }
 
   canvas.addEventListener("mousemove", function (e) {
-    var p = canvasPos(e); hover = inBounds(p.c, p.r) ? { c: p.c, r: p.r } : null;
+    var p = canvasPos(e);
+    if (!p.inCanvas) { hover = null; return; }
+    hover = inBounds(p.c, p.r) ? { c: p.c, r: p.r, x: p.x, y: p.y } : null;
   });
   canvas.addEventListener("mouseleave", function () { hover = null; });
   function onPointer(e) {
     e.preventDefault(); ensureAudio();
     if (!running || gameOver || paused) return;
-    var p = canvasPos(e); if (!inBounds(p.c, p.r)) return;
+    if (roundOv && !roundOv.classList.contains("hidden")) return;
+    var p = canvasPos(e);
+    if (!p.inCanvas || !inBounds(p.c, p.r)) return;
     var existing = towerAt(p.c, p.r);
-    if (existing) { selectedTower = existing; refreshUI(); return; }
+    if (existing) {
+      // Click same tower again → cycle target priority (BTD-style)
+      if (selectedTower === existing && !existing.def.farm && !(existing.def.support && !existing.def.freezePulse)) {
+        cycleTarget(existing);
+      } else {
+        selectedTower = existing;
+        refreshUI();
+      }
+      return;
+    }
     placeTower(p.c, p.r);
   }
   canvas.addEventListener("mousedown", onPointer);
@@ -2075,11 +2588,11 @@
   });
 
   // Map / difficulty picks (start screen)
-  document.querySelectorAll("#mapPick .chip-btn").forEach(function (b) {
+  document.querySelectorAll("#mapPick .chip-btn, #mapPick .map-card").forEach(function (b) {
     b.addEventListener("click", function () {
       if (running && !gameOver) return;
       currentMap = b.getAttribute("data-map");
-      document.querySelectorAll("#mapPick .chip-btn").forEach(function (x) { x.classList.remove("on"); });
+      document.querySelectorAll("#mapPick .chip-btn, #mapPick .map-card").forEach(function (x) { x.classList.remove("on"); });
       b.classList.add("on");
       rebuildPath(); initDecor();
       refreshUI();
@@ -2095,7 +2608,7 @@
     });
   });
 
-  btnUp.addEventListener("click", function () { ensureAudio(); upgradeTower(); });
+  if (btnUp) btnUp.addEventListener("click", function () { ensureAudio(); if (selectedTower) { if (canBuyPath(selectedTower, 0)) upgradeTower(0); else upgradeTower(1); } });
   btnSell.addEventListener("click", function () { ensureAudio(); sellTower(); });
   btnWave.addEventListener("click", function () { ensureAudio(); startWave(); });
   btnPause.addEventListener("click", function () {
@@ -2156,7 +2669,11 @@
       if (!running || gameOver) return;
       paused = !paused; pauseOv.classList.toggle("hidden", !paused);
     }
-    if (k === "u" || k === "U") { ensureAudio(); upgradeTower(); }
+    if (k === "u" || k === "U") { ensureAudio(); if (selectedTower) { if (canBuyPath(selectedTower, 0)) upgradeTower(0); else if (canBuyPath(selectedTower, 1)) upgradeTower(1); } }
+    if (k === "z" || k === "Z") { ensureAudio(); if (selectedTower) upgradeTower(0); }
+    if (k === "x" || k === "X") { ensureAudio(); if (selectedTower) upgradeTower(1); }
+    if (k === "Tab") { e.preventDefault(); ensureAudio(); if (selectedTower) cycleTarget(selectedTower); }
+    if (k === "m" || k === "M") { ensureAudio(); toggleMute(); }
     if (k === "s" || k === "S") { ensureAudio(); sellTower(); }
     if (k === "q" || k === "Q") { ensureAudio(); useStorm(); }
     if (k === "e" || k === "E") { ensureAudio(); useFreeze(); }
@@ -2194,9 +2711,24 @@
   // ability UI tick
   setInterval(function () { if (running) refreshAbilities(); }, 250);
 
+  var btnMute = document.getElementById("btnMute");
+  if (btnMute) btnMute.addEventListener("click", function () { ensureAudio(); toggleMute(); });
+
+  // Show personal bests on start screen
+  (function showRecords() {
+    var el = document.getElementById("tdRecords");
+    if (!el) return;
+    if (records.bestWave || records.bestStreak) {
+      el.textContent = "Best wave " + (records.bestWave || 0) +
+        " · Streak x" + (records.bestStreak || 0) +
+        " · Pops " + (records.bestPops || 0);
+      el.classList.remove("hidden");
+    }
+  })();
+
   rebuildPath();
   initDecor();
-  buildShop();
+  buildShop(true);
   refreshUI();
   requestAnimationFrame(loop);
 })();
