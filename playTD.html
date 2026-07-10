@@ -33,22 +33,23 @@
       background: #07140e;
       overflow-x: hidden;
     }
+    /* Full-bleed epic layout — almost the whole browser */
     .td-app {
-      width: min(100% - 1rem, 1680px);
+      width: min(100% - 0.75rem, 1920px);
       margin: 0 auto;
-      padding: calc(var(--nav-h) + 0.4rem) 0.5rem 1rem;
+      padding: calc(var(--nav-h) + 0.25rem) 0.4rem 0.6rem;
     }
     .td-title {
       display: flex;
       flex-wrap: wrap;
       align-items: baseline;
       justify-content: space-between;
-      gap: 0.35rem 1rem;
-      margin-bottom: 0.55rem;
+      gap: 0.2rem 1rem;
+      margin-bottom: 0.35rem;
     }
     .td-title h1 {
       font-family: Fredoka, Syne, system-ui, sans-serif;
-      font-size: clamp(1.35rem, 2.4vw, 1.85rem);
+      font-size: clamp(1.2rem, 2vw, 1.65rem);
       color: var(--td-ban);
       text-shadow: 0 0 24px rgba(245, 208, 65, 0.35);
       letter-spacing: -0.02em;
@@ -56,22 +57,24 @@
     }
     .td-title p {
       color: rgba(232, 245, 216, 0.65);
-      font-size: 0.82rem;
+      font-size: 0.78rem;
       margin: 0;
     }
     .td-layout {
       display: grid;
-      gap: 0.65rem;
+      gap: 0.55rem;
       grid-template-columns: 1fr;
+      /* Stage gets nearly full remaining viewport height */
+      min-height: calc(100vh - var(--nav-h) - 3.2rem);
     }
     @media (min-width: 1100px) {
       .td-layout {
-        grid-template-columns: minmax(0, 1fr) 300px;
-        align-items: start;
+        grid-template-columns: minmax(0, 1fr) 320px;
+        align-items: stretch;
       }
     }
     .td-stage-wrap {
-      border-radius: 16px;
+      border-radius: 14px;
       overflow: hidden;
       border: 3px solid rgba(245, 208, 65, 0.45);
       box-shadow:
@@ -82,6 +85,9 @@
       position: relative;
       touch-action: none;
       user-select: none;
+      display: flex;
+      flex-direction: column;
+      min-height: calc(100vh - var(--nav-h) - 3.5rem);
     }
     .td-hud {
       display: flex;
@@ -142,18 +148,23 @@
     canvas#game {
       display: block;
       width: 100%;
+      /* Grow to fill stage — this was the “tiny window” culprit */
+      flex: 1 1 auto;
       height: auto;
+      min-height: min(72vh, 920px);
+      max-height: none;
       background: #2f6b3c;
       cursor: crosshair;
-      max-height: min(78vh, 900px);
       object-fit: contain;
     }
     .td-side {
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
-      max-height: calc(100vh - var(--nav-h) - 2.5rem);
+      gap: 0.45rem;
+      max-height: calc(100vh - var(--nav-h) - 2rem);
       overflow-y: auto;
+      position: sticky;
+      top: calc(var(--nav-h) + 0.35rem);
     }
     .td-card {
       background: linear-gradient(160deg, rgba(20,40,28,0.96), rgba(10,24,16,0.96));
@@ -320,9 +331,10 @@
     }
     .wave-toast.show { opacity: 1; }
     @media (max-width: 700px) {
-      .td-app { width: 100%; padding-inline: 0.35rem; }
-      canvas#game { max-height: 58vh; }
-      .td-side { max-height: none; }
+      .td-app { width: 100%; padding-inline: 0.25rem; }
+      .td-stage-wrap { min-height: auto; }
+      canvas#game { min-height: 52vh; max-height: 62vh; flex: none; }
+      .td-side { max-height: none; position: static; }
     }
   </style>
 </head>
@@ -344,7 +356,7 @@
           </button>
           <ul class="nav-dropdown" role="menu">
             <li role="none"><a role="menuitem" href="playTD.html">Defend · Banano TD</a></li>
-            <li role="none"><a role="menuitem" href="play.html">Climb · Banana Tower</a></li>
+            <li role="none"><a role="menuitem" href="play.html">Climb · Potassium Tower</a></li>
           </ul>
         </li>
         <li class="has-dropdown">
@@ -366,7 +378,7 @@
   <main id="main" class="td-app">
     <div class="td-title">
       <h1>Banano TD · Epic</h1>
-      <p>Huge battlefield · 3 maps · 100 waves · abilities · full Raptor energy</p>
+      <p>Full-window battlefield · 40×25 grid · 3 maps · 100 waves · 9 towers · abilities</p>
     </div>
 
     <div class="td-layout">
@@ -392,7 +404,7 @@
             </span>
           </div>
         </div>
-        <canvas id="game" width="1280" height="800" aria-label="Banano TD epic map"></canvas>
+        <canvas id="game" width="1600" height="1000" aria-label="Banano TD epic map"></canvas>
         <div class="wave-toast" id="toast">WAVE 1</div>
 
         <div class="overlay" id="startOv">

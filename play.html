@@ -3,102 +3,224 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Play · Banana Tower · Banano X</title>
-  <meta name="description" content="Banana Tower — auto or manual jump, fever rush, pure chaos fun.">
-  <meta name="theme-color" content="#030806">
+  <title>Mega Potassium Tower · Banano X</title>
+  <meta name="description" content="Icy Tower–style Banano climber — slippery platforms, combos, BAN coins. Don’t let your memes be dreams.">
+  <meta name="theme-color" content="#0a1620">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="favicon.svg">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Banano X">
   <meta property="og:url" content="https://bananox.com/play.html">
-  <meta property="og:title" content="Banana Tower · Banano X">
-  <meta property="og:description" content="Bounce peel to peel, stack combos, and trigger Banana Rush.">
+  <meta property="og:title" content="Mega Potassium Tower · Banano X">
+  <meta property="og:description" content="Climb the icy blockchain tower. Combos, coins, MonKey chaos.">
   <meta property="og:image" content="https://bananox.com/og-image.jpg">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Banana Tower · Banano X">
-  <meta name="twitter:description" content="Bounce peel to peel, stack combos, and trigger Banana Rush.">
+  <meta name="twitter:title" content="Mega Potassium Tower · Banano X">
+  <meta name="twitter:description" content="Climb the icy blockchain tower. Combos, coins, MonKey chaos.">
   <meta name="twitter:image" content="https://bananox.com/og-image.jpg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fredoka:wght@500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <style>
-    .game-frame {
-      width: min(100%, 400px);
-      aspect-ratio: 400 / 600;
-      touch-action: none;
-      user-select: none;
-      -webkit-user-select: none;
-      background: #07140e;
-      box-shadow:
-        0 0 0 2px rgba(245, 208, 65, 0.4),
-        0 0 90px rgba(245, 208, 65, 0.22),
-        0 28px 50px rgba(0, 0, 0, 0.55);
+    body.climb-page { background: #071018; }
+    .climb-app {
+      width: min(100% - 1rem, 520px);
+      margin: 0 auto;
+      padding: calc(var(--nav-h) + 0.6rem) 0.5rem 1.25rem;
     }
-    .game-frame canvas {
-      display: block;
-      width: 100%;
-      height: 100%;
-      background: #07140e;
+    .climb-title {
+      text-align: center;
+      margin-bottom: 0.65rem;
     }
-    .mode-row {
-      display: flex;
-      gap: 0.5rem;
-      justify-content: center;
-      margin: 0 0 1rem;
-      flex-wrap: wrap;
-    }
-    .mode-btn {
-      font-family: Syne, system-ui, sans-serif;
-      font-weight: 700;
-      font-size: 0.8rem;
-      padding: 0.55rem 0.9rem;
-      border-radius: 999px;
-      border: 1.5px solid rgba(245, 208, 65, 0.35);
-      background: rgba(0, 0, 0, 0.45);
-      color: rgba(232, 245, 216, 0.75);
-      cursor: pointer;
-      transition: 0.2s ease;
-    }
-    .mode-btn:hover {
-      border-color: rgba(245, 208, 65, 0.7);
-      color: #f5d041;
-    }
-    .mode-btn.active {
-      background: linear-gradient(135deg, #ffe566, #f5d041);
-      color: #1a1400;
-      border-color: transparent;
-      box-shadow: 0 4px 20px rgba(245, 208, 65, 0.35);
-    }
-    .mode-desc {
-      font-size: 0.82rem;
-      color: rgba(232, 245, 216, 0.65);
-      margin-bottom: 1.1rem;
-      line-height: 1.45;
-    }
-    .power-legend {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.4rem 0.7rem;
-      justify-content: center;
-      max-width: 440px;
-      margin: 0.85rem auto 0;
-      font-size: 0.72rem;
-      color: var(--text-muted);
-    }
-    .power-legend span { white-space: nowrap; }
-    .play-header h1 {
-      background: linear-gradient(90deg, #ffe566, #f5d041, #fb923c, #f472b6, #f5d041, #ffe566);
-      background-size: 220% auto;
+    .climb-title h1 {
+      font-family: Fredoka, Syne, system-ui, sans-serif;
+      font-size: clamp(1.45rem, 4vw, 1.9rem);
+      background: linear-gradient(90deg, #7dd3fc, #f5d041, #f472b6, #7dd3fc);
+      background-size: 200% auto;
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
-      animation: shine 2.8s linear infinite;
+      animation: climb-shine 4s linear infinite;
+      margin: 0 0 0.25rem;
     }
-    @keyframes shine { to { background-position: 220% center; } }
+    @keyframes climb-shine { to { background-position: 200% center; } }
+    .climb-title p {
+      color: rgba(200, 230, 255, 0.65);
+      font-size: 0.88rem;
+      margin: 0;
+    }
+    .climb-frame {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 420 / 720;
+      max-height: min(78vh, 780px);
+      margin: 0 auto;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 3px solid rgba(125, 211, 252, 0.45);
+      box-shadow:
+        0 0 0 3px rgba(245, 208, 65, 0.2),
+        0 0 70px rgba(56, 189, 248, 0.18),
+        0 24px 48px rgba(0,0,0,0.55);
+      background: #0a1620;
+      touch-action: none;
+      user-select: none;
+    }
+    .climb-frame canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      background: #0a1620;
+    }
+    .climb-hud {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      z-index: 4;
+      display: flex;
+      justify-content: space-between;
+      gap: 0.35rem;
+      padding: 0.45rem 0.5rem;
+      pointer-events: none;
+      font-family: Fredoka, system-ui, sans-serif;
+      font-size: 0.72rem;
+      color: #e0f2fe;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.7);
+    }
+    .climb-hud .pill {
+      background: rgba(5, 16, 28, 0.72);
+      border: 1.5px solid rgba(125, 211, 252, 0.35);
+      border-radius: 999px;
+      padding: 0.28rem 0.55rem;
+      backdrop-filter: blur(6px);
+    }
+    .climb-hud .pill b { color: #f5d041; }
+    .climb-combo {
+      position: absolute;
+      top: 18%;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 5;
+      font-family: Fredoka, system-ui, sans-serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #f5d041;
+      text-shadow: 0 2px 0 #1a1400, 0 0 20px rgba(245,208,65,0.5);
+      opacity: 0;
+      transition: opacity 0.15s;
+      pointer-events: none;
+      white-space: nowrap;
+      text-align: center;
+    }
+    .climb-combo.show { opacity: 1; }
+    .climb-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      background: rgba(6, 14, 24, 0.9);
+      backdrop-filter: blur(8px);
+      text-align: center;
+      overflow-y: auto;
+    }
+    .climb-overlay.hidden { display: none; }
+    .climb-overlay h2 {
+      font-family: Fredoka, Syne, system-ui, sans-serif;
+      font-size: 1.55rem;
+      color: #f5d041;
+      margin: 0 0 0.5rem;
+      text-shadow: 0 0 24px rgba(245,208,65,0.4);
+    }
+    .climb-overlay p {
+      color: rgba(200, 230, 255, 0.75);
+      font-size: 0.9rem;
+      line-height: 1.5;
+      margin: 0 0 0.75rem;
+      max-width: 20rem;
+      margin-inline: auto;
+    }
+    .climb-overlay .stat-line {
+      font-family: Fredoka, system-ui, sans-serif;
+      color: #e0f2fe;
+      font-size: 1rem;
+      margin-bottom: 0.85rem;
+    }
+    .climb-overlay .stat-line em {
+      color: #f5d041;
+      font-style: normal;
+    }
+    .climb-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      justify-content: center;
+      margin-top: 0.35rem;
+    }
+    .climb-actions .btn { min-width: 7.5rem; }
+    .how-list {
+      text-align: left;
+      font-size: 0.85rem;
+      color: rgba(200, 230, 255, 0.8);
+      line-height: 1.55;
+      margin: 0 0 1rem;
+      padding-left: 1.1rem;
+      max-width: 18rem;
+      margin-inline: auto;
+    }
+    .scores-box {
+      text-align: left;
+      max-width: 16rem;
+      margin: 0 auto 1rem;
+      font-size: 0.88rem;
+      color: rgba(200, 230, 255, 0.85);
+      line-height: 1.6;
+    }
+    .scores-box strong { color: #f5d041; }
+    .touch-pad {
+      display: none;
+      position: absolute;
+      bottom: 0.55rem;
+      left: 0.45rem;
+      right: 0.45rem;
+      z-index: 6;
+      gap: 0.4rem;
+      justify-content: space-between;
+      pointer-events: none;
+    }
+    .touch-pad button {
+      pointer-events: auto;
+      width: 3.4rem;
+      height: 3.4rem;
+      border-radius: 16px;
+      border: 2px solid rgba(125, 211, 252, 0.4);
+      background: rgba(5, 16, 28, 0.7);
+      color: #7dd3fc;
+      font-size: 1.25rem;
+      font-family: Fredoka, system-ui, sans-serif;
+      backdrop-filter: blur(6px);
+      touch-action: none;
+    }
+    .touch-pad button:active { background: rgba(245, 208, 65, 0.25); color: #f5d041; }
+    .touch-pad .jump-btn {
+      width: 4.2rem;
+      border-color: rgba(245, 208, 65, 0.45);
+      color: #f5d041;
+    }
+    @media (hover: none), (max-width: 700px) {
+      .touch-pad { display: flex; }
+    }
+    .climb-hint {
+      text-align: center;
+      margin-top: 0.7rem;
+      font-size: 0.78rem;
+      color: rgba(200, 230, 255, 0.55);
+    }
   </style>
 </head>
-<body>
+<body class="climb-page">
   <a href="#main" class="skip-link">Skip to content</a>
   <header class="nav">
     <div class="nav-inner">
@@ -116,7 +238,7 @@
           </button>
           <ul class="nav-dropdown" role="menu">
             <li role="none"><a role="menuitem" href="playTD.html">Defend · Banano TD</a></li>
-            <li role="none"><a role="menuitem" href="play.html">Climb · Banana Tower</a></li>
+            <li role="none"><a role="menuitem" href="play.html">Climb · Potassium Tower</a></li>
           </ul>
         </li>
         <li class="has-dropdown">
@@ -135,62 +257,100 @@
     </div>
   </header>
 
-  <main id="main" class="play-wrap">
-    <div class="play-header">
-      <h1>Banana Tower</h1>
-      <p>Peel platforms · Banano power-ups · climb the potassium canopy.</p>
+  <main id="main" class="climb-app">
+    <div class="climb-title">
+      <h1>Mega Potassium Tower</h1>
+      <p>Icy climbs · slippery peels · don’t let your memes be dreams</p>
     </div>
 
-    <div class="game-frame" id="frame">
-      <canvas id="c" width="400" height="600" aria-label="Banana Tower game"></canvas>
+    <div class="climb-frame" id="frame">
+      <div class="climb-hud" id="hud" hidden>
+        <span class="pill">⬆ <b id="hudH">0</b>m</span>
+        <span class="pill">★ <b id="hudScore">0</b></span>
+        <span class="pill">🍌 <b id="hudCoins">0</b></span>
+      </div>
+      <div class="climb-combo" id="comboEl"></div>
 
-      <div id="start" class="game-overlay">
+      <canvas id="c" width="420" height="720" aria-label="Mega Potassium Tower game"></canvas>
+
+      <!-- MENU -->
+      <div class="climb-overlay" id="menuOv">
         <div>
-          <h2>BANANA TOWER 🍌</h2>
-          <p class="mode-desc" style="margin-top:0.6rem;">
-            Bounce peel to peel. Stack combos. Trigger <strong style="color:#f5d041">BANANA RUSH</strong>.
-          </p>
-          <div class="mode-row" role="group" aria-label="Jump mode">
-            <button type="button" class="mode-btn active" id="modeAuto" data-mode="auto">AUTO BOUNCE</button>
-            <button type="button" class="mode-btn" id="modeManual" data-mode="manual">MANUAL (W)</button>
+          <h2>🍌 MEGA POTASSIUM TOWER</h2>
+          <p>Climb the frozen blockchain spire. Slide, jump, combo — collect BAN before the FUD catches you.</p>
+          <div class="climb-actions">
+            <button type="button" class="btn btn-primary" id="btnPlay">START CLIMB</button>
+            <button type="button" class="btn btn-ghost" id="btnHow">HOW TO PLAY</button>
+            <button type="button" class="btn btn-ghost" id="btnScores">HIGH SCORES</button>
           </div>
-          <p class="mode-desc" id="modeHelp">
-            Auto: land and you bounce — classic Icy Tower flow.
-          </p>
-          <button type="button" class="btn btn-primary" id="startBtn">LET’S CLIMB</button>
         </div>
       </div>
 
-      <div id="over" class="game-overlay hidden">
+      <!-- HOW -->
+      <div class="climb-overlay hidden" id="howOv">
         <div>
-          <h2 class="fail-title" id="overTitle">YEETED 💀</h2>
-          <p class="stat">
-            Height: <em id="endHeight">0</em>m
-            · Score: <em id="endScore">0</em><br>
-            Best combo: <em id="endCombo">0</em>
-            · Best: <em id="endBest">0</em>m
-          </p>
-          <p id="overRank" style="color:#f5d041;font-family:Syne,sans-serif;font-weight:700;margin-bottom:0.75rem;font-size:1.1rem;"></p>
-          <div class="mode-row" style="margin-bottom:0.85rem;">
-            <button type="button" class="mode-btn" id="modeAuto2" data-mode="auto">AUTO</button>
-            <button type="button" class="mode-btn" id="modeManual2" data-mode="manual">MANUAL (W)</button>
+          <h2>How MonKeys Climb</h2>
+          <ul class="how-list">
+            <li><strong>A/D or ←/→</strong> — slide left/right (ice is slippery!)</li>
+            <li><strong>Space / W / ↑</strong> — jump (hold for higher)</li>
+            <li><strong>Wall jump</strong> — bounce off tower walls</li>
+            <li><strong>Combos</strong> — chain landings for potassium multipliers</li>
+            <li><strong>Coins &amp; powers</strong> — BAN, super jump, shield, float, magnet</li>
+            <li><strong>Don’t fall</strong> — off the bottom = game over</li>
+          </ul>
+          <div class="climb-actions">
+            <button type="button" class="btn btn-primary" id="btnHowBack">GOT IT</button>
           </div>
-          <button type="button" class="btn btn-primary" id="retryBtn">ONE MORE RUN</button>
         </div>
+      </div>
+
+      <!-- SCORES -->
+      <div class="climb-overlay hidden" id="scoresOv">
+        <div>
+          <h2>High Scores</h2>
+          <div class="scores-box" id="scoresBox">No climbs yet — go be legendary.</div>
+          <div class="climb-actions">
+            <button type="button" class="btn btn-primary" id="btnScoresBack">BACK</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAUSE -->
+      <div class="climb-overlay hidden" id="pauseOv">
+        <div>
+          <h2>Paused 🧊</h2>
+          <p>Even MonKeys need a banana break.</p>
+          <div class="climb-actions">
+            <button type="button" class="btn btn-primary" id="btnResume">RESUME</button>
+            <button type="button" class="btn btn-ghost" id="btnPauseMenu">MENU</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- GAME OVER -->
+      <div class="climb-overlay hidden" id="overOv">
+        <div>
+          <h2 id="overTitle">YEETED OFF THE TOWER 💀</h2>
+          <p class="stat-line">
+            Height <em id="endH">0</em>m · Score <em id="endScore">0</em><br>
+            Coins <em id="endCoins">0</em> · Best combo <em id="endCombo">0</em>
+          </p>
+          <p id="overPun" style="color:#7dd3fc;font-family:Fredoka,sans-serif;font-weight:600;"></p>
+          <div class="climb-actions">
+            <button type="button" class="btn btn-primary" id="btnRetry">ONE MORE RUN</button>
+            <button type="button" class="btn btn-ghost" id="btnOverMenu">MENU</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="touch-pad" id="touchPad" aria-hidden="true">
+        <button type="button" id="touchL" aria-label="Left">◀</button>
+        <button type="button" class="jump-btn" id="touchJ" aria-label="Jump">⬆</button>
+        <button type="button" id="touchR" aria-label="Right">▶</button>
       </div>
     </div>
 
-    <p class="play-hint" id="hintText">A D / ← → move · Auto bounce on land · M swaps mode · tap/Space air-hop</p>
-    <div class="power-legend">
-      <span>💪 Potassium boost</span>
-      <span>🛡️ Peel armor</span>
-      <span>🧊 Jungle chill</span>
-      <span>🔥 Spicy BAN</span>
-      <span>🌧️ Rain magnet</span>
-      <span>🚀 Banano burst</span>
-      <span>🍌 BAN tip</span>
-      <span>🙈 Sneaky monkey</span>
-    </div>
+    <p class="climb-hint">Desktop: A D · Space jump · P pause · Wall-jump for style points</p>
   </main>
 
   <script src="site.js"></script>
