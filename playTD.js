@@ -182,30 +182,54 @@
   var MODES = {
     classic: {
       name: "Classic", short: "Classic",
-      tagline: "One map. 150 waves. Pure tower defense.",
+      tagline: "One map. Pure tower defense. Pick a length below.",
       waves: 150, dens: 1, ban: 1, startBan: 0,
       pickMap: true, tour: false, eventScale: 1, jackpot: 1
     },
     tour: {
       name: "World Tour", short: "Tour",
-      tagline: "Maps rotate every 20 waves — MonKeys relocate, upgrades stay.",
+      tagline: "Maps rotate — MonKeys relocate, upgrades stay.",
       waves: 120, dens: 1.08, ban: 1.18, startBan: 150,
       pickMap: false, tour: true, tourEvery: 20, eventScale: 0.9, jackpot: 1.15
     },
     rush: {
       name: "Fever Rush", short: "Rush",
-      tagline: "80 dense waves, fat bounties, free Fever to start. Go loud.",
+      tagline: "Dense waves, fat bounties, free Fever to start. Go loud.",
       waves: 80, dens: 1.42, ban: 1.55, startBan: 300,
       pickMap: true, tour: false, eventScale: 0.75, jackpot: 1.9, feverStart: 12
     },
     party: {
       name: "Party", short: "Party",
-      tagline: "Events on loop. Jackpots rain. 100 waves of pure juice.",
+      tagline: "Events on loop. Jackpots rain. Pure juice.",
       waves: 100, dens: 1.22, ban: 1.35, startBan: 200,
       pickMap: true, tour: false, eventScale: 0.4, jackpot: 1.7
     }
   };
+  // Length options — clear each map on Short / Medium / Long for badges
+  var LENGTHS = {
+    short: {
+      name: "Short", short: "S",
+      tagline: "Quick run — packed threats, badge-friendly.",
+      waves: { classic: 30, tour: 40, rush: 25, party: 30 },
+      dens: 1.05, ban: 1.08, scoreMul: 0.85, contentSpan: 90
+    },
+    medium: {
+      name: "Medium", short: "M",
+      tagline: "Balanced campaign length.",
+      waves: { classic: 75, tour: 80, rush: 50, party: 60 },
+      dens: 1, ban: 1, scoreMul: 1, contentSpan: 120
+    },
+    long: {
+      name: "Long", short: "L",
+      tagline: "Full endurance. Max prestige score.",
+      waves: { classic: 150, tour: 120, rush: 80, party: 100 },
+      dens: 1, ban: 1, scoreMul: 1.35, contentSpan: 150
+    }
+  };
   var playMode = "classic";
+  var playLength = "medium";
+  var reversePath = false;
+  var blitzOn = false;
   var tourStop = 0;
 
   var pathSet = {};
@@ -215,8 +239,56 @@
   var segLens = [0];
   var currentMap = "canyon";
 
+  function getLength() {
+    return LENGTHS[playLength] || LENGTHS.medium;
+  }
+
+  function getModeWaveCap() {
+    var mode = getMode();
+    var len = getLength();
+    var table = len.waves || {};
+    if (table[playMode] != null) return table[playMode] | 0;
+    return mode.waves || 150;
+  }
+
+  function getTourEvery() {
+    var mode = getMode();
+    if (!mode.tour) return 0;
+    var base = mode.tourEvery || 20;
+    if (playLength === "short") return Math.max(8, Math.round(base * 0.5));
+    if (playLength === "medium") return Math.max(12, Math.round(base * 0.75));
+    return base;
+  }
+
+  /** Map displayed wave → content index so Short still hits late-game threats. */
+  function waveContentLevel(n) {
+    var cap = Math.max(1, getModeWaveCap());
+    var span = (getLength().contentSpan || 150);
+    return Math.max(1, Math.min(150, Math.round(n * (span / cap))));
+  }
+
+  function runDensMul() {
+    var m = (getMode().dens || 1) * (getLength().dens || 1) * (DIFFS[difficulty] ? DIFFS[difficulty].dens : 1);
+    if (blitzOn) m *= 1.38;
+    return m;
+  }
+
+  function runBanMul() {
+    var m = (getMode().ban || 1) * (getLength().ban || 1);
+    if (blitzOn) m *= 1.12;
+    if (reversePath) m *= 1.05;
+    return m;
+  }
+
+  function runSpeedMul() {
+    return blitzOn ? 1.42 : 1;
+  }
+
   function rebuildPath() {
     PATH_CELLS = MAPS[currentMap].build();
+    if (reversePath && PATH_CELLS.length > 1) {
+      PATH_CELLS = PATH_CELLS.slice().reverse();
+    }
     pathSet = {};
     waypoints = [];
     for (var i = 0; i < PATH_CELLS.length; i++) {
@@ -451,10 +523,11 @@
     return MODES[playMode] || MODES.classic;
   }
   function syncWaveCap() {
-    MAX_WAVE = endless ? 99999 : (getMode().waves || 150);
+    MAX_WAVE = endless ? 99999 : getModeWaveCap();
   }
   function modeEventCdBase() {
-    return (6 + Math.random() * 8) * (getMode().eventScale || 1);
+    var scale = (getMode().eventScale || 1) * (blitzOn ? 0.75 : 1) * (playLength === "short" ? 0.85 : 1);
+    return (6 + Math.random() * 8) * scale;
   }
 
   // Difficulty
@@ -518,22 +591,14 @@
   //   bananox_td_v1      — primary JSON blob
   //   bananox_td_v1.bak  — previous good copy (dual-slot safety)
   //
-  // Schema (schemaVersion 3):
-  //   schemaVersion, updatedAt, lastPlayedAt, lastMapId, lastMode, lastDifficulty
-  //   records: { bestWave, bestStreak, bestPops, games, goldens, missions, bestScore }
-  //   maps:    { [mapId]: { bestWave, bestStreak, clears, bestScore } }
-  //   modes:   { [modeId]: { bestWave, wins, plays, bestScore } }
-  //   badges:  { [badgeId]: unlockedAtMs }
-  //   leaderboard: [{ score, wave, pops, mode, map, difficulty, won, at }]  (top 20 local)
-  //   stats:   { abilityUses, perfectWaves, totalWins, totalPops }
-  //   unlockedMaps, settings: { muted, autoWave }
-  //
-  // NOT saved: mid-wave entities, live BAN/lives of an active run (session only).
-  // Cloud accounts can later sync this same JSON blob.
+  // Schema (schemaVersion 4):
+  //   + lastLength, reversePath, blitzOn
+  //   + mapLengthClears: { "canyon_short": ts, ... }  map × length clears for badges
+  //   settings also stores reverse/blitz prefs
   // ─────────────────────────────────────────────────────────────
   var SAVE_KEY = "bananox_td_v1";
   var SAVE_BAK = "bananox_td_v1.bak";
-  var SAVE_SCHEMA = 3;
+  var SAVE_SCHEMA = 4;
   var LB_MAX = 20;
   var saveTimer = null;
   var lastSavedAt = 0;
@@ -549,11 +614,13 @@
   var badgesUnlocked = {}; // badgeId -> timestamp
   var leaderboard = [];  // top local scores
   var metaStats = { abilityUses: 0, perfectWaves: 0, totalWins: 0, totalPops: 0 };
+  var mapLengthClears = {}; // "canyon_short" -> timestamp
   var unlockedMaps = ["canyon", "helix", "spiral", "fork", "runway", "gauntlet"];
   var progressMeta = {
     lastMapId: "canyon",
     lastMode: "classic",
     lastDifficulty: "normal",
+    lastLength: "medium",
     lastPlayedAt: 0,
     updatedAt: 0
   };
@@ -573,6 +640,9 @@
       lastMapId: "canyon",
       lastMode: "classic",
       lastDifficulty: "normal",
+      lastLength: "medium",
+      reversePath: false,
+      blitzOn: false,
       records: {
         bestWave: 0, bestStreak: 0, bestPops: 0, games: 0,
         goldens: 0, missions: 0, bestScore: 0
@@ -582,8 +652,9 @@
       badges: {},
       leaderboard: [],
       stats: { abilityUses: 0, perfectWaves: 0, totalWins: 0, totalPops: 0 },
+      mapLengthClears: {},
       unlockedMaps: ["canyon", "helix", "spiral", "fork", "runway", "gauntlet"],
-      settings: { muted: false, autoWave: false }
+      settings: { muted: false, autoWave: false, reversePath: false, blitzOn: false }
     };
   }
 
@@ -616,6 +687,17 @@
       raw.leaderboard = Array.isArray(raw.leaderboard) ? raw.leaderboard : [];
       raw.stats = raw.stats || { abilityUses: 0, perfectWaves: 0, totalWins: 0, totalPops: 0 };
       if (raw.records && raw.records.bestScore == null) raw.records.bestScore = 0;
+      raw.schemaVersion = 3;
+    }
+    // v3 → v4: length options + mutators + map×length clears
+    if (raw.schemaVersion < 4) {
+      raw.lastLength = raw.lastLength || "medium";
+      raw.reversePath = !!raw.reversePath;
+      raw.blitzOn = !!raw.blitzOn;
+      raw.mapLengthClears = raw.mapLengthClears || {};
+      raw.settings = raw.settings || {};
+      raw.settings.reversePath = !!raw.settings.reversePath;
+      raw.settings.blitzOn = !!raw.settings.blitzOn;
       raw.schemaVersion = SAVE_SCHEMA;
     }
     return raw;
@@ -630,6 +712,9 @@
     out.lastMapId = typeof p.lastMapId === "string" && MAPS[p.lastMapId] ? p.lastMapId : "canyon";
     out.lastMode = typeof p.lastMode === "string" && MODES[p.lastMode] ? p.lastMode : "classic";
     out.lastDifficulty = typeof p.lastDifficulty === "string" && DIFFS[p.lastDifficulty] ? p.lastDifficulty : "normal";
+    out.lastLength = typeof p.lastLength === "string" && LENGTHS[p.lastLength] ? p.lastLength : "medium";
+    out.reversePath = !!(p.reversePath != null ? p.reversePath : (p.settings && p.settings.reversePath));
+    out.blitzOn = !!(p.blitzOn != null ? p.blitzOn : (p.settings && p.settings.blitzOn));
     var r = p.records || p;
     out.records.bestWave = Math.max(0, safeInt(r.bestWave, 0));
     out.records.bestStreak = Math.max(0, safeInt(r.bestStreak, 0));
@@ -683,6 +768,9 @@
           mode: typeof e.mode === "string" && MODES[e.mode] ? e.mode : "classic",
           map: typeof e.map === "string" && MAPS[e.map] ? e.map : "canyon",
           difficulty: typeof e.difficulty === "string" && DIFFS[e.difficulty] ? e.difficulty : "normal",
+          length: typeof e.length === "string" && LENGTHS[e.length] ? e.length : "medium",
+          reverse: !!e.reverse,
+          blitz: !!e.blitz,
           won: !!e.won,
           at: safeInt(e.at, 0)
         });
@@ -694,6 +782,13 @@
     out.stats.perfectWaves = Math.max(0, safeInt(st.perfectWaves, 0));
     out.stats.totalWins = Math.max(0, safeInt(st.totalWins, 0));
     out.stats.totalPops = Math.max(0, safeInt(st.totalPops, 0));
+    out.mapLengthClears = {};
+    if (p.mapLengthClears && typeof p.mapLengthClears === "object") {
+      Object.keys(p.mapLengthClears).forEach(function (k) {
+        var ts = safeInt(p.mapLengthClears[k], 0);
+        if (ts > 0) out.mapLengthClears[k] = ts;
+      });
+    }
     if (Array.isArray(p.unlockedMaps) && p.unlockedMaps.length) {
       out.unlockedMaps = p.unlockedMaps.filter(function (id) { return !!MAPS[id]; });
       if (!out.unlockedMaps.length) out.unlockedMaps = defaultProgress().unlockedMaps.slice();
@@ -701,6 +796,8 @@
     var s = p.settings || {};
     out.settings.muted = !!s.muted;
     out.settings.autoWave = !!s.autoWave;
+    out.settings.reversePath = !!out.reversePath;
+    out.settings.blitzOn = !!out.blitzOn;
     return out;
   }
 
@@ -717,6 +814,7 @@
     modeRecords = p.modes || {};
     badgesUnlocked = p.badges ? JSON.parse(JSON.stringify(p.badges)) : {};
     leaderboard = Array.isArray(p.leaderboard) ? p.leaderboard.slice() : [];
+    mapLengthClears = p.mapLengthClears ? JSON.parse(JSON.stringify(p.mapLengthClears)) : {};
     metaStats = {
       abilityUses: (p.stats && p.stats.abilityUses) || 0,
       perfectWaves: (p.stats && p.stats.perfectWaves) || 0,
@@ -727,8 +825,12 @@
     progressMeta.lastMapId = p.lastMapId;
     progressMeta.lastMode = p.lastMode;
     progressMeta.lastDifficulty = p.lastDifficulty;
+    progressMeta.lastLength = p.lastLength || "medium";
     progressMeta.lastPlayedAt = p.lastPlayedAt;
     progressMeta.updatedAt = p.updatedAt;
+    playLength = progressMeta.lastLength;
+    reversePath = !!p.reversePath;
+    blitzOn = !!p.blitzOn;
     muted = !!p.settings.muted;
     autoWave = !!p.settings.autoWave;
     lastSavedAt = p.updatedAt || 0;
@@ -765,6 +867,9 @@
       lastMapId: currentMap || progressMeta.lastMapId || "canyon",
       lastMode: playMode || progressMeta.lastMode || "classic",
       lastDifficulty: difficulty || progressMeta.lastDifficulty || "normal",
+      lastLength: playLength || progressMeta.lastLength || "medium",
+      reversePath: !!reversePath,
+      blitzOn: !!blitzOn,
       records: {
         bestWave: records.bestWave | 0,
         bestStreak: records.bestStreak | 0,
@@ -784,10 +889,13 @@
         totalWins: metaStats.totalWins | 0,
         totalPops: metaStats.totalPops | 0
       },
+      mapLengthClears: mapLengthClears,
       unlockedMaps: unlockedMaps.slice(),
       settings: {
         muted: !!muted,
-        autoWave: !!autoWave
+        autoWave: !!autoWave,
+        reversePath: !!reversePath,
+        blitzOn: !!blitzOn
       }
     };
     return validateProgress(payload);
@@ -940,15 +1048,28 @@
     out.stats.perfectWaves = Math.max(A.stats.perfectWaves, B.stats.perfectWaves);
     out.stats.totalWins = Math.max(A.stats.totalWins, B.stats.totalWins);
     out.stats.totalPops = Math.max(A.stats.totalPops, B.stats.totalPops);
+    Object.keys(A.mapLengthClears || {}).forEach(function (k) {
+      out.mapLengthClears[k] = A.mapLengthClears[k];
+    });
+    Object.keys(B.mapLengthClears || {}).forEach(function (k) {
+      if (!out.mapLengthClears[k] || B.mapLengthClears[k] < out.mapLengthClears[k]) {
+        out.mapLengthClears[k] = B.mapLengthClears[k];
+      }
+    });
     // Prefer newer file for "last*" and settings
     var newer = (B.updatedAt || 0) >= (A.updatedAt || 0) ? B : A;
     out.lastMapId = newer.lastMapId;
     out.lastMode = newer.lastMode;
     out.lastDifficulty = newer.lastDifficulty;
+    out.lastLength = newer.lastLength || "medium";
+    out.reversePath = !!newer.reversePath;
+    out.blitzOn = !!newer.blitzOn;
     out.lastPlayedAt = Math.max(A.lastPlayedAt, B.lastPlayedAt);
     out.updatedAt = Math.max(A.updatedAt, B.updatedAt);
     out.settings.muted = newer.settings.muted;
     out.settings.autoWave = newer.settings.autoWave;
+    out.settings.reversePath = !!newer.reversePath;
+    out.settings.blitzOn = !!newer.blitzOn;
     return out;
   }
 
@@ -1025,7 +1146,10 @@
     modeRecords[modeId].wins = (modeRecords[modeId].wins | 0) + 1;
   }
 
-  // ── Badges (30 goals across easy → legendary) ──
+  // ── Badges (core + map×length clears + mutators) ──
+  var MAP_ICONS = {
+    canyon: "🏞️", helix: "🧬", spiral: "🌀", fork: "🔀", runway: "🚀", gauntlet: "⚔️"
+  };
   var BADGE_DEFS = [
     { id: "first_peel", icon: "🍌", name: "First Peel", desc: "Finish any run", tier: "easy" },
     { id: "wave_10", icon: "🔟", name: "Wave 10", desc: "Reach wave 10", tier: "easy" },
@@ -1035,6 +1159,8 @@
     { id: "streak_25", icon: "🔥", name: "On a Roll", desc: "Kill streak ×25", tier: "easy" },
     { id: "mission_1", icon: "📋", name: "Side Quest", desc: "Complete a mission", tier: "easy" },
     { id: "ability_1", icon: "⚡", name: "Power User", desc: "Use any ability", tier: "easy" },
+    { id: "length_short_win", icon: "⏱️", name: "Speed Date", desc: "Win any Short run", tier: "easy" },
+    { id: "length_medium_win", icon: "🎯", name: "Solid Clear", desc: "Win any Medium run", tier: "easy" },
     { id: "wave_50", icon: "5️⃣", name: "Half Century", desc: "Reach wave 50", tier: "medium" },
     { id: "wave_75", icon: "🏔️", name: "High Ground", desc: "Reach wave 75", tier: "medium" },
     { id: "first_win", icon: "🏆", name: "Core Secure", desc: "Win any mode", tier: "medium" },
@@ -1045,6 +1171,9 @@
     { id: "all_maps", icon: "🗺️", name: "Tourist", desc: "Play all 6 maps", tier: "medium" },
     { id: "modes_all", icon: "🎲", name: "Variety Pack", desc: "Play every mode", tier: "medium" },
     { id: "abilities_25", icon: "🌩️", name: "Storm Chaser", desc: "Use abilities 25 times", tier: "medium" },
+    { id: "reverse_win", icon: "↩️", name: "Wrong Way", desc: "Win with Reverse path", tier: "medium" },
+    { id: "blitz_win", icon: "⚡", name: "Blitzkrieg", desc: "Win with Blitz mutator", tier: "medium" },
+    { id: "length_long_win", icon: "🏋️", name: "Marathoner", desc: "Win any Long run", tier: "medium" },
     { id: "wave_100", icon: "💯", name: "Century", desc: "Reach wave 100", tier: "hard" },
     { id: "classic_clear", icon: "👑", name: "Classic Champ", desc: "Win Classic mode", tier: "hard" },
     { id: "tour_clear", icon: "🌍", name: "World Tourist", desc: "Win World Tour", tier: "hard" },
@@ -1053,11 +1182,40 @@
     { id: "starship_40", icon: "🛸", name: "Starship Cadet", desc: "Wave 40 on Starship", tier: "hard" },
     { id: "golden_25", icon: "🌟", name: "Midas Touch", desc: "25 jackpots lifetime", tier: "hard" },
     { id: "streak_100", icon: "⚡", name: "Unstoppable", desc: "Kill streak ×100", tier: "hard" },
+    { id: "chaos_win", icon: "🌪️", name: "Chaos Agent", desc: "Win Reverse + Blitz together", tier: "hard" },
+    { id: "atlas_short", icon: "📗", name: "Short Atlas", desc: "Clear Short on every map", tier: "hard" },
+    { id: "atlas_medium", icon: "📘", name: "Medium Atlas", desc: "Clear Medium on every map", tier: "hard" },
     { id: "wave_150", icon: "🌈", name: "End of the Line", desc: "Reach wave 150", tier: "legend" },
     { id: "starship_win", icon: "🚀", name: "Starship Ace", desc: "Win on Starship difficulty", tier: "legend" },
-    { id: "badge_half", icon: "⭐", name: "Collector", desc: "Unlock 15 badges", tier: "legend" },
+    { id: "atlas_long", icon: "📙", name: "Long Atlas", desc: "Clear Long on every map", tier: "legend" },
+    { id: "full_atlas", icon: "🗺️", name: "Full Atlas", desc: "Clear all maps on S/M/L", tier: "legend" },
+    { id: "badge_half", icon: "⭐", name: "Collector", desc: "Unlock 20 badges", tier: "legend" },
     { id: "badge_all", icon: "🍌", name: "Potassium God", desc: "Unlock every other badge", tier: "legend" }
   ];
+  // Per-map × length clear badges (18) — chase content for hours
+  (function buildMapLengthBadges() {
+    var lens = [
+      { id: "short", label: "Short", tier: "easy" },
+      { id: "medium", label: "Medium", tier: "medium" },
+      { id: "long", label: "Long", tier: "hard" }
+    ];
+    Object.keys(MAPS).forEach(function (mid) {
+      var mname = MAPS[mid].short || mid;
+      var ico = MAP_ICONS[mid] || "🍌";
+      for (var i = 0; i < lens.length; i++) {
+        var L = lens[i];
+        BADGE_DEFS.push({
+          id: "ml_" + mid + "_" + L.id,
+          icon: ico,
+          name: mname + " " + L.label.charAt(0),
+          desc: "Clear " + L.label + " on " + (MAPS[mid].name || mname),
+          tier: L.tier,
+          mapId: mid,
+          lengthId: L.id
+        });
+      }
+    });
+  })();
 
   function mapStars(mapId) {
     var bw = (mapRecords[mapId] && mapRecords[mapId].bestWave) || 0;
@@ -1074,7 +1232,7 @@
     return s;
   }
 
-  /** Run score — higher is better. Diff/mode multiply for prestige. */
+  /** Run score — higher is better. Diff/mode/length/mutators multiply for prestige. */
   function computeRunScore(opts) {
     opts = opts || {};
     var w = opts.wave != null ? opts.wave : wave;
@@ -1085,10 +1243,35 @@
     var won = !!opts.won;
     var diff = opts.difficulty || difficulty;
     var mode = opts.mode || playMode;
+    var len = opts.length || playLength;
+    var rev = opts.reverse != null ? opts.reverse : reversePath;
+    var blz = opts.blitz != null ? opts.blitz : blitzOn;
     var diffMul = diff === "starship" ? 1.85 : diff === "hard" ? 1.4 : 1;
     var modeMul = mode === "rush" ? 1.15 : mode === "party" ? 1.1 : mode === "tour" ? 1.12 : 1;
+    var lenMul = (LENGTHS[len] && LENGTHS[len].scoreMul) || 1;
+    var mutMul = 1;
+    if (rev) mutMul *= 1.18;
+    if (blz) mutMul *= 1.28;
     var base = w * 1000 + p * 2 + Math.floor(earned * 0.08) + streak * 40 + gold * 600 + (won ? 8000 : 0);
-    return Math.max(0, Math.floor(base * diffMul * modeMul));
+    return Math.max(0, Math.floor(base * diffMul * modeMul * lenMul * mutMul));
+  }
+
+  function mapLengthKey(mapId, lengthId) {
+    return (mapId || currentMap) + "_" + (lengthId || playLength);
+  }
+
+  function noteMapLengthClear(mapId, lengthId) {
+    var key = mapLengthKey(mapId, lengthId);
+    if (!mapLengthClears[key]) mapLengthClears[key] = Date.now();
+    unlockBadge("ml_" + (mapId || currentMap) + "_" + (lengthId || playLength));
+  }
+
+  function countLengthAtlas(lengthId) {
+    var n = 0;
+    Object.keys(MAPS).forEach(function (mid) {
+      if (mapLengthClears[mapLengthKey(mid, lengthId)]) n++;
+    });
+    return n;
   }
 
   function pushLeaderboardEntry(entry) {
@@ -1100,6 +1283,9 @@
       mode: entry.mode || playMode,
       map: entry.map || currentMap,
       difficulty: entry.difficulty || difficulty,
+      length: entry.length || playLength,
+      reverse: !!entry.reverse,
+      blitz: !!entry.blitz,
       won: !!entry.won,
       at: entry.at || Date.now()
     });
@@ -1204,10 +1390,31 @@
     if (won && playMode === "rush") unlockBadge("rush_clear");
     if (won && playMode === "party") unlockBadge("party_clear");
     if (won && difficulty === "starship") unlockBadge("starship_win");
+    if (won && playLength === "short") unlockBadge("length_short_win");
+    if (won && playLength === "medium") unlockBadge("length_medium_win");
+    if (won && playLength === "long") unlockBadge("length_long_win");
+    if (won && reversePath) unlockBadge("reverse_win");
+    if (won && blitzOn) unlockBadge("blitz_win");
+    if (won && reversePath && blitzOn) unlockBadge("chaos_win");
+
+    // Map × length clears — Tour win credits every map on the route (big atlas push)
+    if (won) {
+      if (getMode().tour) {
+        for (var ti = 0; ti < TOUR_ROUTE.length; ti++) noteMapLengthClear(TOUR_ROUTE[ti], playLength);
+      } else {
+        noteMapLengthClear(currentMap, playLength);
+      }
+      if (countLengthAtlas("short") >= 6) unlockBadge("atlas_short");
+      if (countLengthAtlas("medium") >= 6) unlockBadge("atlas_medium");
+      if (countLengthAtlas("long") >= 6) unlockBadge("atlas_long");
+      if (countLengthAtlas("short") >= 6 && countLengthAtlas("medium") >= 6 && countLengthAtlas("long") >= 6) {
+        unlockBadge("full_atlas");
+      }
+    }
 
     // Collector badges after others
     var unlocked = Object.keys(badgesUnlocked).length;
-    if (unlocked >= 15) unlockBadge("badge_half");
+    if (unlocked >= 20) unlockBadge("badge_half");
     // badge_all: all except itself
     var nonLegendAll = BADGE_DEFS.filter(function (b) { return b.id !== "badge_all"; });
     var haveAll = nonLegendAll.every(function (b) { return !!badgesUnlocked[b.id]; });
@@ -1237,10 +1444,12 @@
     var boardEl = document.getElementById("hubBoard");
     var s = getProgressSummary();
     if (statsEl) {
+      var atlas = countLengthAtlas("short") + countLengthAtlas("medium") + countLengthAtlas("long");
       statsEl.innerHTML =
         "<span>Best wave <b>" + s.bestWave + "</b></span>" +
         "<span>Best score <b>" + formatScore(s.bestScore) + "</b></span>" +
         "<span>Badges <b>" + s.badges + "/" + s.badgesTotal + "</b></span>" +
+        "<span>Atlas <b>" + atlas + "/18</b></span>" +
         "<span>Runs <b>" + s.games + "</b></span>";
     }
     if (nextEl) {
@@ -1274,9 +1483,12 @@
           var mapName = MAPS[e.map] ? MAPS[e.map].short : e.map;
           var modeName = MODES[e.mode] ? MODES[e.mode].short : e.mode;
           var diffName = DIFFS[e.difficulty] ? DIFFS[e.difficulty].name : e.difficulty;
+          var lenName = LENGTHS[e.length] ? LENGTHS[e.length].short : "M";
+          var muts = (e.reverse ? "↩" : "") + (e.blitz ? "⚡" : "");
           lh += '<div class="lb-row">' +
             '<span class="rank">#' + (j + 1) + "</span>" +
-            '<div><div>' + modeName + " · " + mapName + (e.won ? " · Win" : "") + "</div>" +
+            '<div><div>' + modeName + " · " + mapName + " · " + lenName + (e.won ? " · Win" : "") +
+            (muts ? " · " + muts : "") + "</div>" +
             '<div class="meta">W' + e.wave + " · " + diffName + " · " + (e.pops | 0) + " pops</div></div>" +
             '<span class="score">' + formatScore(e.score) + "</span></div>";
         }
@@ -1284,7 +1496,7 @@
         boardEl.innerHTML = lh;
       }
     }
-    // Map mastery stars on map cards
+    // Map mastery: S/M/L clear pips + wave stars
     document.querySelectorAll("#mapPick .map-card").forEach(function (card) {
       var mid = card.getAttribute("data-map");
       var stars = mapStars(mid);
@@ -1294,7 +1506,13 @@
         el.className = "map-stars";
         card.appendChild(el);
       }
-      el.textContent = stars ? starString(stars) : "";
+      var sml = "";
+      ["short", "medium", "long"].forEach(function (lid) {
+        var done = !!mapLengthClears[mapLengthKey(mid, lid)];
+        var ch = lid === "short" ? "S" : lid === "medium" ? "M" : "L";
+        sml += '<span class="ml-pip' + (done ? " on" : "") + '">' + ch + "</span>";
+      });
+      el.innerHTML = sml + (stars ? " <span class='ml-stars'>" + starString(stars) + "</span>" : "");
     });
     refreshRecordsLabel();
   }
@@ -1352,6 +1570,9 @@
       mode: playMode,
       map: currentMap,
       difficulty: difficulty,
+      length: playLength,
+      reverse: !!reversePath,
+      blitz: !!blitzOn,
       won: won,
       at: Date.now()
     });
@@ -1395,7 +1616,7 @@
       btnAutoWave.classList.toggle("on", autoWave);
       btnAutoWave.textContent = autoWave ? "Auto on" : "Auto";
     }
-    // Restore last mode / map / difficulty on menu
+    // Restore last mode / map / difficulty / length / mutators on menu
     if (!running) {
       if (progressMeta.lastMode && MODES[progressMeta.lastMode]) {
         playMode = progressMeta.lastMode;
@@ -1415,6 +1636,16 @@
           b.classList.toggle("on", b.getAttribute("data-diff") === difficulty);
         });
       }
+      if (progressMeta.lastLength && LENGTHS[progressMeta.lastLength]) {
+        playLength = progressMeta.lastLength;
+      }
+      document.querySelectorAll("#lengthPick .chip-btn").forEach(function (b) {
+        b.classList.toggle("on", b.getAttribute("data-length") === playLength);
+      });
+      var revBtn = document.getElementById("mutReverse");
+      var blzBtn = document.getElementById("mutBlitz");
+      if (revBtn) revBtn.classList.toggle("on", reversePath);
+      if (blzBtn) blzBtn.classList.toggle("on", blitzOn);
       if (typeof updateModeUI === "function") updateModeUI();
       if (typeof rebuildPath === "function") { rebuildPath(); initDecor(); }
     }
@@ -1736,7 +1967,7 @@
     // Live kill payout scales with wave + streak + fever/events
     var streakMul = 1 + Math.min(0.75, killStreak * 0.025);
     var waveMul = 1 + wave * 0.012;
-    var mult = DIFFS[difficulty].reward * streakMul * waveMul * (getMode().ban || 1);
+    var mult = DIFFS[difficulty].reward * streakMul * waveMul * runBanMul();
     if (feverT > 0) mult *= 2;
     if (eventKind === "double") mult *= 2;
     if (eventKind === "frenzy") mult *= 1.5;
@@ -1759,7 +1990,7 @@
     var sc = DIFFS[difficulty].scale;
     return {
       kind: "layer", layer: L.id, dist: distAlong, x: 0, y: 0, ang: 0,
-      r: L.r, speed: L.speed * (flags.speedMul || 1) * (0.92 + sc * 0.08),
+      r: L.r, speed: L.speed * (flags.speedMul || 1) * (0.92 + sc * 0.08) * runSpeedMul(),
       camo: !!flags.camo, regrow: !!flags.regrow, lead: !!flags.lead,
       regrowT: 0, alive: true, hp: 1, maxHp: 1, value: L.value,
       freezeT: 0, slowMul: 1, wobble: Math.random() * TWO_PI, uid: nextUid++
@@ -1768,10 +1999,11 @@
 
   function makeSpecial(kind, distAlong, scale) {
     var sc = (scale || 1) * DIFFS[difficulty].scale;
+    var spd = runSpeedMul();
     var uid = nextUid++;
     if (kind === "ceramic") {
       return {
-        kind: "ceramic", dist: distAlong, x: 0, y: 0, ang: 0, r: 19, speed: 44,
+        kind: "ceramic", dist: distAlong, x: 0, y: 0, ang: 0, r: 19, speed: 44 * spd,
         camo: false, lead: false, alive: true, uid: uid,
         hp: Math.floor(14 * sc), maxHp: Math.floor(14 * sc), value: 32,
         freezeT: 0, slowMul: 1, children: "zebra", childCount: 2, wobble: Math.random() * TWO_PI
@@ -1779,7 +2011,7 @@
     }
     if (kind === "boss") {
       return {
-        kind: "boss", dist: distAlong, x: 0, y: 0, ang: 0, r: 32, speed: 24,
+        kind: "boss", dist: distAlong, x: 0, y: 0, ang: 0, r: 32, speed: 24 * spd,
         camo: false, lead: true, alive: true, uid: uid,
         hp: Math.floor(260 * sc), maxHp: Math.floor(260 * sc), value: 220,
         freezeT: 0, slowMul: 1, children: "ceramic", childCount: 4, wobble: Math.random() * TWO_PI
@@ -1787,7 +2019,7 @@
     }
     if (kind === "starship") {
       return {
-        kind: "starship", dist: distAlong, x: 0, y: 0, ang: 0, r: 40, speed: 16,
+        kind: "starship", dist: distAlong, x: 0, y: 0, ang: 0, r: 40, speed: 16 * spd,
         camo: false, lead: true, alive: true, uid: uid,
         hp: Math.floor(800 * sc), maxHp: Math.floor(800 * sc), value: 500,
         freezeT: 0, slowMul: 1, children: "boss", childCount: 2, wobble: Math.random() * TWO_PI
@@ -1795,7 +2027,7 @@
     }
     if (kind === "superstarship") {
       return {
-        kind: "superstarship", dist: distAlong, x: 0, y: 0, ang: 0, r: 48, speed: 12,
+        kind: "superstarship", dist: distAlong, x: 0, y: 0, ang: 0, r: 48, speed: 12 * spd,
         camo: false, lead: true, alive: true, uid: uid,
         hp: Math.floor(2000 * sc), maxHp: Math.floor(2000 * sc), value: 1200,
         freezeT: 0, slowMul: 1, children: "starship", childCount: 2, wobble: Math.random() * TWO_PI
@@ -2080,9 +2312,12 @@
 
   function buildWave(n) {
     var q = [];
-    var dens = DIFFS[difficulty].dens * (getMode().dens || 1);
-    var scale = 1 + Math.max(0, n - 40) * 0.045;
+    // Compress content for Short/Medium so late threats still appear
+    var contentN = waveContentLevel(n);
+    var dens = runDensMul();
+    var scale = 1 + Math.max(0, contentN - 40) * 0.045;
     var jpMul = getMode().jackpot || 1;
+    n = contentN; // use remapped wave for composition only
 
     function add(layer, count, gap, flags) {
       count = Math.max(1, Math.round(count * dens));
@@ -2168,7 +2403,7 @@
     var label = "WAVE " + wave + (endless ? " ∞" : " / " + MAX_WAVE);
     if (mode.tour) {
       var stop = Math.min(tourStop, TOUR_ROUTE.length - 1);
-      var localW = ((wave - 1) % (mode.tourEvery || 20)) + 1;
+      var localW = ((wave - 1) % (getTourEvery() || 20)) + 1;
       label = MAPS[TOUR_ROUTE[stop]].short + " · W" + localW + " · Tour " + (stop + 1) + "/" + TOUR_ROUTE.length;
     }
     if (wave === 25) label = "BOSS · MEGA BUNCH";
@@ -2193,7 +2428,7 @@
 
   function finishRoundEconomy() {
     // End-of-round bonus breakdown (kill money already paid live)
-    var rewardMul = DIFFS[difficulty].reward * (getMode().ban || 1);
+    var rewardMul = DIFFS[difficulty].reward * runBanMul();
     var clearBase = Math.floor((100 + wave * 14 + wave * wave * 0.1) * rewardMul);
     var perfect = roundLeak ? 0 : Math.floor((50 + wave * 8) * rewardMul);
     var farmInc = 0;
@@ -2305,7 +2540,7 @@
     }
     // World Tour: hop maps without wiping progress — relocate towers
     var mode = getMode();
-    if (mode.tour && mode.tourEvery && wave % mode.tourEvery === 0 && wave < MAX_WAVE) {
+    if (mode.tour && getTourEvery() && wave % getTourEvery() === 0 && wave < MAX_WAVE) {
       worldTourHop();
     }
     if (autoWave && (endless || wave < MAX_WAVE)) {
@@ -3584,6 +3819,11 @@
       });
     }
     ban = d.ban + (mode.startBan || 0);
+    // Short runs get a little extra cash; Blitz gets a sip of fever
+    if (playLength === "short") ban += 80;
+    if (playLength === "medium") ban += 30;
+    if (blitzOn) ban += 50;
+    if (reversePath) ban += 40;
     lives = d.lives; wave = 0; pops = 0; banEarned = 0;
     running = true; paused = false; gameOver = false;
     setPlayingUI(true);
@@ -3593,7 +3833,10 @@
     missionsDone = 0; mission = null;
     roundKillBan = 0; roundKills = 0; roundLeak = false; killStreak = 0;
     chapterPending = false; lastRoundSummary = null;
-    feverT = mode.feverStart || 0; rageT = 0; eventT = 0; eventKind = null; eventCd = modeEventCdBase();
+    feverT = mode.feverStart || 0;
+    if (blitzOn) feverT = Math.max(feverT, 6);
+    if (playLength === "short" && playMode === "party") feverT = Math.max(feverT, 4);
+    rageT = 0; eventT = 0; eventKind = null; eventCd = modeEventCdBase();
     autoWaveDelay = 0; hitFlash = 0; comboAnnouncerT = 0; bestStreakRun = 0; goldensPopped = 0;
     runPerfectWaves = 0; runAbilityUses = 0; runBadgeQueue = [];
     lastRunScore = 0; lastRunBadges = []; badgeToastT = 0;
@@ -3607,11 +3850,16 @@
     if (feverT > 0) {
       if (hudFever) { hudFever.classList.add("on"); hudFever.textContent = "Fever " + Math.ceil(feverT) + "s"; }
     }
-    var label = mode.name.toUpperCase() + " · " + MAPS[currentMap].name.toUpperCase() + " · " + d.name.toUpperCase();
+    var len = getLength();
+    var label = mode.short.toUpperCase() + " · " + len.short + " · " + MAPS[currentMap].short.toUpperCase() +
+      " · " + d.name.toUpperCase() +
+      (reversePath ? " · ↩" : "") + (blitzOn ? " · ⚡" : "");
     showToast(label);
     if (mode.tour) announce("WORLD TOUR!", 1.3);
     if (mode.feverStart) announce("FEVER RUSH!", 1.2);
     if (playMode === "party") announce("PARTY TIME!", 1.2);
+    if (blitzOn) announce("BLITZ!", 1.1);
+    if (reversePath) announce("REVERSE PATH!", 1.1);
     noteModePlay(playMode);
     saveRecords(true);
     refreshUI(); sfxPlace();
@@ -3623,8 +3871,10 @@
     if (roundOv) roundOv.classList.add("hidden");
     var mode = getMode();
     document.getElementById("winMsg").textContent =
-      mode.name + " clear — " + wave + " waves on " + MAPS[currentMap].name +
-      " (" + DIFFS[difficulty].name + "). Pops " + pops + " · BAN earned " + Math.floor(banEarned) +
+      mode.name + " · " + getLength().name + " clear — " + wave + " waves on " + MAPS[currentMap].name +
+      " (" + DIFFS[difficulty].name +
+      (reversePath ? " · Reverse" : "") + (blitzOn ? " · Blitz" : "") +
+      "). Pops " + pops + " · BAN earned " + Math.floor(banEarned) +
       " · Best streak x" + bestStreakRun + " · Jackpots " + goldensPopped +
       " · MonKeys " + totalBuilt + ". Legendary.";
     winOv.classList.remove("hidden");
@@ -3809,6 +4059,7 @@
 
   function updateModeUI() {
     var mode = getMode();
+    var len = getLength();
     var mapPick = document.getElementById("mapPick");
     var mapRow = mapPick ? mapPick.closest(".setup-row") : null;
     if (mapPick) {
@@ -3820,9 +4071,29 @@
       if (lab) lab.textContent = mode.pickMap ? "Map" : "Map (Tour picks for you)";
     }
     var desc = document.getElementById("modeDesc");
-    if (desc) desc.textContent = mode.tagline;
+    if (desc) {
+      var waves = getModeWaveCap();
+      var bits = [mode.tagline, len.name + ": " + waves + " waves"];
+      if (reversePath) bits.push("Reverse path");
+      if (blitzOn) bits.push("Blitz (faster + denser)");
+      desc.textContent = bits.join(" · ");
+    }
+    var lenDesc = document.getElementById("lengthDesc");
+    if (lenDesc) lenDesc.textContent = len.tagline + " (" + getModeWaveCap() + " waves this mode)";
+    document.querySelectorAll("#lengthPick .chip-btn").forEach(function (b) {
+      b.classList.toggle("on", b.getAttribute("data-length") === playLength);
+    });
+    var revBtn = document.getElementById("mutReverse");
+    var blzBtn = document.getElementById("mutBlitz");
+    if (revBtn) revBtn.classList.toggle("on", reversePath);
+    if (blzBtn) blzBtn.classList.toggle("on", blitzOn);
     syncWaveCap();
     if (hudWaveMax) hudWaveMax.textContent = String(MAX_WAVE);
+    // CTA shows length so player knows what they're starting
+    var cta = document.getElementById("btnStart");
+    if (cta && !running) {
+      cta.textContent = "Play " + len.name + (blitzOn || reversePath ? " +" : "");
+    }
   }
 
   document.querySelectorAll("#modePick .chip-btn").forEach(function (b) {
@@ -3837,6 +4108,62 @@
       refreshUI();
     });
   });
+
+  document.querySelectorAll("#lengthPick .chip-btn").forEach(function (b) {
+    b.addEventListener("click", function () {
+      if (running && !gameOver) return;
+      playLength = b.getAttribute("data-length") || "medium";
+      progressMeta.lastLength = playLength;
+      updateModeUI();
+      saveRecords();
+      refreshUI();
+    });
+  });
+
+  var mutReverse = document.getElementById("mutReverse");
+  var mutBlitz = document.getElementById("mutBlitz");
+  if (mutReverse) {
+    mutReverse.addEventListener("click", function () {
+      if (running && !gameOver) return;
+      reversePath = !reversePath;
+      mutReverse.classList.toggle("on", reversePath);
+      rebuildPath(); initDecor();
+      updateModeUI();
+      saveRecords();
+      refreshUI();
+    });
+  }
+  if (mutBlitz) {
+    mutBlitz.addEventListener("click", function () {
+      if (running && !gameOver) return;
+      blitzOn = !blitzOn;
+      mutBlitz.classList.toggle("on", blitzOn);
+      updateModeUI();
+      saveRecords();
+      refreshUI();
+    });
+  }
+
+  var btnRandomMap = document.getElementById("btnRandomMap");
+  if (btnRandomMap) {
+    btnRandomMap.addEventListener("click", function () {
+      if (running && !gameOver) return;
+      var mode = getMode();
+      if (!mode.pickMap) { showToast("Tour picks maps for you"); return; }
+      var ids = Object.keys(MAPS);
+      var pick = ids[Math.floor(Math.random() * ids.length)];
+      currentMap = pick;
+      progressMeta.lastMapId = currentMap;
+      document.querySelectorAll("#mapPick .chip-btn, #mapPick .map-card").forEach(function (x) {
+        x.classList.toggle("on", x.getAttribute("data-map") === currentMap);
+      });
+      rebuildPath(); initDecor();
+      showToast("Random map · " + MAPS[currentMap].name);
+      saveRecords();
+      refreshUI();
+    });
+  }
+
   updateModeUI();
 
   window.addEventListener("keydown", function (e) {
