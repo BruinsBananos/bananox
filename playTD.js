@@ -3,7 +3,7 @@
 
   // ═══════════════════════════════════════════════════════════
   // BANANO TD — EPIC EDITION
-  // Huge map · 3 battlefields · 100 waves · abilities · 9 towers
+  // Huge map · 6 battlefields · 150 waves · live bounties · round bonuses
   // ═══════════════════════════════════════════════════════════
 
   var canvas = document.getElementById("game");
@@ -24,6 +24,11 @@
   var hudWaveMax = document.getElementById("hudWaveMax");
   var hudInterest = document.getElementById("hudInterest");
   var hudMapName = document.getElementById("hudMapName");
+  var hudRoundEarn = document.getElementById("hudRoundEarn");
+  var hudStreak = document.getElementById("hudStreak");
+  var roundOv = document.getElementById("roundOv");
+  var roundSummaryEl = document.getElementById("roundSummary");
+  var btnRoundContinue = document.getElementById("btnRoundContinue");
   var shopEl = document.getElementById("shop");
   var selBox = document.getElementById("selBox");
   var missionBox = document.getElementById("missionBox");
@@ -63,7 +68,6 @@
       name: "Potassium Canyon",
       short: "Canyon",
       build: function () {
-        // Long serpentine across the 40×25 grid — tons of build space beside the path
         var p = [];
         lineH(12, 0, 9, p);
         lineV(9, 12, 3, p);
@@ -109,8 +113,77 @@
         lineH(8, 36, 39, p);
         return dedupe(p);
       }
+    },
+    spiral: {
+      name: "Peel Spiral",
+      short: "Spiral",
+      build: function () {
+        var p = [];
+        lineH(12, 0, 20, p);
+        lineV(20, 12, 4, p);
+        lineH(4, 20, 8, p);
+        lineV(8, 4, 18, p);
+        lineH(18, 8, 28, p);
+        lineV(28, 18, 6, p);
+        lineH(6, 28, 34, p);
+        lineV(34, 6, 20, p);
+        lineH(20, 34, 39, p);
+        return dedupe(p);
+      }
+    },
+    fork: {
+      name: "Twin Fork Trail",
+      short: "Fork",
+      build: function () {
+        // Single long path with a mid-map detour (classic single-track fork feel)
+        var p = [];
+        lineH(6, 0, 10, p);
+        lineV(10, 6, 16, p);
+        lineH(16, 10, 18, p);
+        lineV(18, 16, 4, p);
+        lineH(4, 18, 26, p);
+        lineV(26, 4, 19, p);
+        lineH(19, 26, 32, p);
+        lineV(32, 19, 10, p);
+        lineH(10, 32, 39, p);
+        return dedupe(p);
+      }
+    },
+    gauntlet: {
+      name: "Gauntlet Gorge",
+      short: "Gauntlet",
+      build: function () {
+        // Dense zig-zag — high pressure, lots of crossfire angles
+        var p = [];
+        lineH(2, 0, 6, p);
+        lineV(6, 2, 22, p);
+        lineH(22, 6, 12, p);
+        lineV(12, 22, 2, p);
+        lineH(2, 12, 18, p);
+        lineV(18, 2, 22, p);
+        lineH(22, 18, 24, p);
+        lineV(24, 22, 2, p);
+        lineH(2, 24, 30, p);
+        lineV(30, 2, 22, p);
+        lineH(22, 30, 36, p);
+        lineV(36, 22, 12, p);
+        lineH(12, 36, 39, p);
+        return dedupe(p);
+      }
     }
   };
+
+  // Campaign chapters (map progression)
+  var CHAPTERS = [
+    { map: "canyon",  waves: 25, title: "Ch.1 · Jungle Approach" },
+    { map: "helix",   waves: 25, title: "Ch.2 · Double Helix" },
+    { map: "spiral",  waves: 25, title: "Ch.3 · Peel Spiral" },
+    { map: "fork",    waves: 25, title: "Ch.4 · Twin Fork" },
+    { map: "runway",  waves: 25, title: "Ch.5 · Starship Runway" },
+    { map: "gauntlet", waves: 25, title: "Ch.6 · Gauntlet Finale" }
+  ];
+  var playMode = "skirmish"; // skirmish | campaign
+  var campaignChapter = 0;
 
   var pathSet = {};
   var PATH_CELLS = [];
@@ -139,14 +212,14 @@
     mapDirty = true;
   }
 
-  // Banana layers
+  // Banana layers — bounty = BAN paid per layer popped (live income)
   var LAYERS = {
-    green:  { id: "green",  name: "Unripe",  next: null,     r: 13, color: "#86efac", stroke: "#166534", tip: "#bbf7d0", value: 1, speed: 50 },
-    ripe:   { id: "ripe",   name: "Ripe",    next: "green",  r: 14, color: "#facc15", stroke: "#a16207", tip: "#fef08a", value: 2, speed: 60 },
-    gold:   { id: "gold",   name: "Golden",  next: "ripe",   r: 15, color: "#f59e0b", stroke: "#92400e", tip: "#fde68a", value: 3, speed: 72 },
-    purple: { id: "purple", name: "Meme",    next: "gold",   r: 16, color: "#c084fc", stroke: "#6b21a8", tip: "#e9d5ff", value: 4, speed: 88 },
-    star:   { id: "star",   name: "Cosmic",  next: "purple", r: 17, color: "#f472b6", stroke: "#9d174d", tip: "#fbcfe8", value: 5, speed: 105 },
-    zebra:  { id: "zebra",  name: "Zebra",   next: "star",   r: 18, color: "#f8fafc", stroke: "#0f172a", tip: "#e2e8f0", value: 7, speed: 96 }
+    green:  { id: "green",  name: "Unripe",  next: null,     r: 13, color: "#86efac", stroke: "#166534", tip: "#bbf7d0", value: 2, speed: 50 },
+    ripe:   { id: "ripe",   name: "Ripe",    next: "green",  r: 14, color: "#facc15", stroke: "#a16207", tip: "#fef08a", value: 3, speed: 60 },
+    gold:   { id: "gold",   name: "Golden",  next: "ripe",   r: 15, color: "#f59e0b", stroke: "#92400e", tip: "#fde68a", value: 5, speed: 72 },
+    purple: { id: "purple", name: "Meme",    next: "gold",   r: 16, color: "#c084fc", stroke: "#6b21a8", tip: "#e9d5ff", value: 7, speed: 88 },
+    star:   { id: "star",   name: "Cosmic",  next: "purple", r: 17, color: "#f472b6", stroke: "#9d174d", tip: "#fbcfe8", value: 9, speed: 105 },
+    zebra:  { id: "zebra",  name: "Zebra",   next: "star",   r: 18, color: "#f8fafc", stroke: "#0f172a", tip: "#e2e8f0", value: 12, speed: 96 }
   };
   var LAYER_ORDER = ["green", "ripe", "gold", "purple", "star", "zebra"];
 
@@ -282,18 +355,18 @@
   var TOWER_BY_ID = {};
   for (var ti = 0; ti < TOWER_DEFS.length; ti++) TOWER_BY_ID[TOWER_DEFS[ti].id] = TOWER_DEFS[ti];
   var MAX_TIER = 5;
-  var MAX_WAVE = 100;
+  var MAX_WAVE = 150;
 
   // Difficulty
   var DIFFS = {
-    normal:   { name: "Normal",   ban: 850, lives: 300, scale: 1,    dens: 1,    reward: 1 },
-    hard:     { name: "Hard",     ban: 700, lives: 200, scale: 1.35, dens: 1.15, reward: 1.25 },
-    starship: { name: "Starship", ban: 600, lives: 140, scale: 1.75, dens: 1.3,  reward: 1.55 }
+    normal:   { name: "Normal",   ban: 900, lives: 300, scale: 1,    dens: 1,    reward: 1 },
+    hard:     { name: "Hard",     ban: 750, lives: 200, scale: 1.35, dens: 1.15, reward: 1.3 },
+    starship: { name: "Starship", ban: 650, lives: 140, scale: 1.75, dens: 1.3,  reward: 1.6 }
   };
   var difficulty = "normal";
 
   // State
-  var ban = 850, lives = 300, wave = 0, pops = 0, banEarned = 0;
+  var ban = 900, lives = 300, wave = 0, pops = 0, banEarned = 0;
   var running = false, paused = false, gameOver = false;
   var speed = 1;
   var selectedShop = "dart";
@@ -303,7 +376,17 @@
   var hover = null, lastTs = 0, animT = 0, toastT = 0, airdropT = 0;
   var totalBuilt = 0, shake = 0;
   var mapCache = null, mapDirty = true;
-  var MAX_PARTICLES = 280, MAX_FLOATS = 56, quality = 1;
+  var MAX_PARTICLES = 280, MAX_FLOATS = 64, quality = 1;
+
+  // Live round economy
+  var roundKillBan = 0;   // BAN earned from kills this wave (already paid out live)
+  var roundKills = 0;
+  var roundLeak = false;
+  var killStreak = 0;
+  var killStreakT = 0;
+  var floatBanThrottle = 0; // reduce float spam when many pops
+  var lastRoundSummary = null;
+  var chapterPending = false;
 
   // Abilities (cooldowns in seconds, charge via waves)
   var abilities = {
@@ -473,9 +556,27 @@
   }
 
   function interestPreview() {
-    //  Bank interest: 10% of BAN, capped
-    var cap = difficulty === "starship" ? 400 : difficulty === "hard" ? 300 : 250;
-    return Math.min(cap, Math.floor(ban * 0.1));
+    // Bank interest: 12% of BAN, capped by difficulty
+    var cap = difficulty === "starship" ? 500 : difficulty === "hard" ? 380 : 300;
+    return Math.min(cap, Math.floor(ban * 0.12));
+  }
+
+  function killBounty(base) {
+    // Live kill payout scales with wave + streak
+    var streakMul = 1 + Math.min(0.5, killStreak * 0.02);
+    var waveMul = 1 + wave * 0.012;
+    var mult = DIFFS[difficulty].reward * streakMul * waveMul;
+    return Math.max(1, Math.floor(base * mult));
+  }
+
+  function specialBounty(th) {
+    var base = th.value || 10;
+    // Boss kills pay out hard so you feel rich mid-round
+    if (th.kind === "superstarship") base = Math.max(base, 900);
+    else if (th.kind === "starship") base = Math.max(base, 400);
+    else if (th.kind === "boss") base = Math.max(base, 180);
+    else if (th.kind === "ceramic") base = Math.max(base, 28);
+    return killBounty(base);
   }
 
   function makeLayerThreat(layerId, distAlong, flags) {
@@ -497,7 +598,7 @@
       return {
         kind: "ceramic", dist: distAlong, x: 0, y: 0, ang: 0, r: 19, speed: 44,
         camo: false, lead: false, alive: true,
-        hp: Math.floor(14 * sc), maxHp: Math.floor(14 * sc), value: 16,
+        hp: Math.floor(14 * sc), maxHp: Math.floor(14 * sc), value: 32,
         freezeT: 0, slowMul: 1, children: "zebra", childCount: 2, wobble: Math.random() * TWO_PI
       };
     }
@@ -505,7 +606,7 @@
       return {
         kind: "boss", dist: distAlong, x: 0, y: 0, ang: 0, r: 32, speed: 24,
         camo: false, lead: true, alive: true,
-        hp: Math.floor(260 * sc), maxHp: Math.floor(260 * sc), value: 140,
+        hp: Math.floor(260 * sc), maxHp: Math.floor(260 * sc), value: 220,
         freezeT: 0, slowMul: 1, children: "ceramic", childCount: 4, wobble: Math.random() * TWO_PI
       };
     }
@@ -513,7 +614,7 @@
       return {
         kind: "starship", dist: distAlong, x: 0, y: 0, ang: 0, r: 40, speed: 16,
         camo: false, lead: true, alive: true,
-        hp: Math.floor(800 * sc), maxHp: Math.floor(800 * sc), value: 360,
+        hp: Math.floor(800 * sc), maxHp: Math.floor(800 * sc), value: 500,
         freezeT: 0, slowMul: 1, children: "boss", childCount: 2, wobble: Math.random() * TWO_PI
       };
     }
@@ -521,7 +622,7 @@
       return {
         kind: "superstarship", dist: distAlong, x: 0, y: 0, ang: 0, r: 48, speed: 12,
         camo: false, lead: true, alive: true,
-        hp: Math.floor(2000 * sc), maxHp: Math.floor(2000 * sc), value: 900,
+        hp: Math.floor(2000 * sc), maxHp: Math.floor(2000 * sc), value: 1200,
         freezeT: 0, slowMul: 1, children: "starship", childCount: 2, wobble: Math.random() * TWO_PI
       };
     }
@@ -533,9 +634,35 @@
     th.x = p.x; th.y = p.y; th.ang = p.ang;
   }
 
-  function addBan(n, x, y) {
-    ban += n; banEarned += n;
-    if (x != null) floatTxt(x, y, "+" + n, "#ffe566", 12);
+  function addBan(n, x, y, opts) {
+    opts = opts || {};
+    n = Math.floor(n);
+    if (n <= 0) return 0;
+    ban += n;
+    banEarned += n;
+    if (opts.kill) {
+      roundKillBan += n;
+      roundKills++;
+      killStreak++;
+      killStreakT = 2.8;
+      if (mission && mission.type === "streak" && waveActive) {
+        missionProgress = Math.max(missionProgress, killStreak);
+      }
+    }
+    // Always show float for kills / bonuses when position given
+    if (x != null && y != null) {
+      if (!opts.kill || floatBanThrottle <= 0 || n >= 8 || opts.forceFloat) {
+        floatTxt(x, y, "+" + n, opts.color || "#ffe566", opts.size || (n >= 20 ? 15 : 12));
+        if (opts.kill) floatBanThrottle = 0.05;
+      }
+    }
+    if (hudRoundEarn) hudRoundEarn.textContent = "Round +" + Math.floor(roundKillBan);
+    if (hudStreak) {
+      hudStreak.textContent = killStreak >= 5 ? "🔥 x" + killStreak : "🔥 —";
+      hudStreak.style.opacity = killStreak >= 5 ? "1" : "0.55";
+    }
+    if (hudBan) hudBan.textContent = String(Math.floor(ban));
+    return n;
   }
 
   function popLayerEntity(th, popsLeft, canLead) {
@@ -546,7 +673,8 @@
       burst(th.x, th.y, "#f5d041", 3 + Math.min(6, popsLeft));
       if (th.hp <= 0) {
         th.alive = false;
-        addBan(th.value, th.x, th.y - 12);
+        var pay = specialBounty(th);
+        addBan(pay, th.x, th.y - 14, { kill: true, forceFloat: true, size: 16, color: "#ffe566" });
         sfxPop();
         shake = Math.max(shake, th.kind === "superstarship" ? 0.5 : th.kind === "starship" ? 0.35 : 0.18);
         trackMission("boss", th.kind);
@@ -560,7 +688,7 @@
           syncThreatPos(child); threats.push(child);
         }
         burst(th.x, th.y, th.kind === "superstarship" ? "#38bdf8" : "#fb923c", 24);
-        floatTxt(th.x, th.y, th.kind === "superstarship" ? "MEGA POP!" : "POP!", "#fff", 16);
+        floatTxt(th.x, th.y + 6, th.kind === "superstarship" ? "MEGA POP!" : "POP!", "#fff", 14);
       }
       return 0;
     }
@@ -568,7 +696,9 @@
     while (popsLeft > 0 && th.alive) {
       var L = LAYERS[th.layer];
       if (!L) { th.alive = false; break; }
-      addBan(L.value, null, null); pops += 1; popsLeft -= 1; sfxPop();
+      var bounty = killBounty(L.value);
+      addBan(bounty, th.x, th.y - 10, { kill: true, color: L.color });
+      pops += 1; popsLeft -= 1; sfxPop();
       burst(th.x, th.y, L.color, 5);
       trackMission("pop", th.layer);
       if (L.next) {
@@ -621,11 +751,12 @@
   // ── Missions ──
   function rollMission() {
     var pool = [
-      { id: "pops", text: "Pop <em>80</em> banana layers this round", need: 80, type: "pop", reward: 120 },
-      { id: "cash", text: "Earn <em>200 BAN</em> from pops this round", need: 200, type: "ban", reward: 100 },
-      { id: "camo", text: "Destroy <em>12</em> camo bananas", need: 12, type: "camo", reward: 140 },
-      { id: "no_leak", text: "Clear the round with <em>0 leaks</em>", need: 1, type: "noleak", reward: 160 },
-      { id: "boss", text: "Crush a <em>boss-class</em> banana", need: 1, type: "boss", reward: 180 }
+      { id: "pops", text: "Pop <em>100</em> banana layers this round", need: 100, type: "pop", reward: 160 },
+      { id: "cash", text: "Earn <em>300 BAN</em> from kill bounties this round", need: 300, type: "ban", reward: 180 },
+      { id: "camo", text: "Destroy <em>15</em> camo bananas", need: 15, type: "camo", reward: 200 },
+      { id: "no_leak", text: "Clear the round with <em>0 leaks</em>", need: 1, type: "noleak", reward: 220 },
+      { id: "boss", text: "Crush a <em>boss-class</em> banana", need: 1, type: "boss", reward: 260 },
+      { id: "streak", text: "Hit a <em>20</em> kill streak", need: 20, type: "streak", reward: 200 }
     ];
     mission = pool[(Math.random() * pool.length) | 0];
     missionProgress = 0;
@@ -637,9 +768,7 @@
   function trackMission(kind, detail) {
     if (!mission || !waveActive) return;
     if (mission.type === "pop" && kind === "pop") missionProgress++;
-    if (mission.type === "camo" && kind === "pop" && detail) {
-      // counted in leak? actually we need camo flag - track when popping camo threats
-    }
+    if (mission.type === "streak") missionProgress = Math.max(missionProgress, killStreak);
     if (mission.type === "boss" && kind === "boss") {
       if (detail === "boss" || detail === "starship" || detail === "superstarship") missionProgress = 1;
     }
@@ -666,45 +795,24 @@
   function updateMissionUI() {
     if (!missionBox) return;
     if (!mission) {
-      missionBox.innerHTML = "Complete rounds to unlock side missions for bonus BAN.";
+      missionBox.innerHTML = "Kill bananas for live BAN. Clear rounds for big bonuses. Missions pay extra.";
       return;
     }
     var prog = missionProgress;
-    if (mission.type === "ban") prog = Math.max(0, banEarned - (mission._banStart || 0));
+    if (mission.type === "ban") prog = Math.floor(roundKillBan);
+    if (mission.type === "streak") prog = Math.max(missionProgress, killStreak);
     if (mission.type === "noleak") prog = mission._leaked ? 0 : 1;
     var need = mission.need;
-    var done = mission.type === "noleak" ? !mission._leaked && !waveActive && prog : prog >= need;
+    var done = mission.type === "noleak" ? !mission._leaked : prog >= need;
     missionBox.innerHTML = mission.text + "<br><em>" + Math.min(prog, need) + " / " + need + "</em>" +
-      (done && !waveActive ? " · ✅ Ready to claim on clear" : "") +
+      (done ? " · Claim on round clear" : "") +
       " · Reward <em>" + mission.reward + " BAN</em>";
   }
 
-  function completeMissionIfAny() {
-    if (!mission) return 0;
-    var prog = missionProgress;
-    if (mission.type === "ban") prog = Math.max(0, banEarned - (mission._banStart || 0));
-    var ok = false;
-    if (mission.type === "noleak") ok = !mission._leaked;
-    else ok = prog >= mission.need;
-    if (ok) {
-      var reward = Math.floor(mission.reward * DIFFS[difficulty].reward);
-      addBan(reward, W / 2, 140);
-      showToast("MISSION COMPLETE · +" + reward + " BAN");
-      missionsDone++;
-      confettiBurst();
-      mission = null;
-      return reward;
-    }
-    mission = null;
-    updateMissionUI();
-    return 0;
-  }
-
-  // ── Waves (100) ──
   function buildWave(n) {
     var q = [];
     var dens = DIFFS[difficulty].dens;
-    var scale = 1 + Math.max(0, n - 40) * 0.04;
+    var scale = 1 + Math.max(0, n - 40) * 0.045;
 
     function add(layer, count, gap, flags) {
       count = Math.max(1, Math.round(count * dens));
@@ -714,65 +822,230 @@
       for (var i = 0; i < count; i++) q.push({ t: kind, special: true, gap: gap, scale: scale });
     }
 
-    if (n <= 4) add("green", 12 + n * 6, 0.48);
-    else if (n <= 8) { add("green", 14, 0.36); add("ripe", 12 + n, 0.4); }
-    else if (n <= 12) { add("ripe", 16, 0.3); add("gold", 12, 0.34); add("green", 10, 0.26); }
+    if (n <= 4) add("green", 14 + n * 6, 0.45);
+    else if (n <= 8) { add("green", 16, 0.34); add("ripe", 14 + n, 0.38); }
+    else if (n <= 12) { add("ripe", 18, 0.28); add("gold", 14, 0.32); add("green", 12, 0.24); }
     else if (n <= 18) {
-      add("gold", 18, 0.26); add("purple", 12, 0.3); add("ripe", 14, 0.24);
-      if (n >= 14) add("ripe", 10, 0.26, { camo: true });
+      add("gold", 20, 0.24); add("purple", 14, 0.28); add("ripe", 16, 0.22);
+      if (n >= 14) add("ripe", 12, 0.24, { camo: true });
     } else if (n <= 25) {
-      add("purple", 18, 0.22); add("star", 12, 0.28); add("gold", 16, 0.2);
-      add("ripe", 12, 0.24, { camo: true }); add("gold", 8, 0.3, { regrow: true });
+      add("purple", 20, 0.2); add("star", 14, 0.26); add("gold", 18, 0.18);
+      add("ripe", 14, 0.22, { camo: true }); add("gold", 10, 0.28, { regrow: true });
       if (n === 20 || n === 25) addSpecial("boss", 1, 1.1);
-    } else if (n <= 35) {
-      add("star", 20, 0.18); add("zebra", 8, 0.28); addSpecial("ceramic", 3 + (n - 25), 0.65);
-      add("gold", 14, 0.2, { camo: true }); add("purple", 10, 0.24, { regrow: true });
-      if (n % 5 === 0) addSpecial("boss", 1, 0.95);
-    } else if (n <= 50) {
-      addSpecial("ceramic", 8, 0.42); add("zebra", 16, 0.16); add("star", 24, 0.14, { camo: true });
-      addSpecial("boss", 1 + ((n - 36) / 7 | 0), 0.9);
-      if (n === 40 || n === 50) addSpecial("starship", 1, 1.2);
-      for (var L = 0; L < 6; L++) q.push({ t: "gold", gap: 0.38, flags: { lead: true } });
-    } else if (n <= 70) {
-      addSpecial("ceramic", 14, 0.3); add("zebra", 22, 0.12, { camo: true, regrow: true });
-      addSpecial("boss", 2, 0.75); addSpecial("starship", 1 + ((n - 50) / 10 | 0), 1.05);
-      if (n === 60 || n === 70) addSpecial("superstarship", 1, 1.25);
-      for (var L2 = 0; L2 < 10; L2++) q.push({ t: "purple", gap: 0.3, flags: { lead: true, camo: true } });
-    } else if (n <= 90) {
-      addSpecial("ceramic", 18, 0.24); add("zebra", 30, 0.1, { camo: true, regrow: true });
-      addSpecial("boss", 3, 0.6); addSpecial("starship", 2, 0.85);
-      if (n % 10 === 0) addSpecial("superstarship", 1, 1.3);
-      for (var L3 = 0; L3 < 12; L3++) q.push({ t: "zebra", gap: 0.22, flags: { lead: true, camo: true } });
+    } else if (n <= 40) {
+      add("star", 22, 0.16); add("zebra", 12, 0.24); addSpecial("ceramic", 4 + (n - 25), 0.55);
+      add("gold", 16, 0.18, { camo: true }); add("purple", 12, 0.22, { regrow: true });
+      if (n % 5 === 0) addSpecial("boss", 1, 0.9);
+      if (n === 40) addSpecial("starship", 1, 1.15);
+    } else if (n <= 60) {
+      addSpecial("ceramic", 10, 0.38); add("zebra", 20, 0.14); add("star", 28, 0.12, { camo: true });
+      addSpecial("boss", 1 + ((n - 40) / 8 | 0), 0.85);
+      if (n === 50 || n === 60) addSpecial("starship", 1, 1.15);
+      for (var L = 0; L < 8; L++) q.push({ t: "gold", gap: 0.35, flags: { lead: true } });
+    } else if (n <= 85) {
+      addSpecial("ceramic", 16, 0.28); add("zebra", 26, 0.11, { camo: true, regrow: true });
+      addSpecial("boss", 2, 0.7); addSpecial("starship", 1 + ((n - 60) / 12 | 0), 1.0);
+      if (n === 75 || n === 85) addSpecial("superstarship", 1, 1.2);
+      for (var L2 = 0; L2 < 12; L2++) q.push({ t: "purple", gap: 0.28, flags: { lead: true, camo: true } });
+    } else if (n <= 110) {
+      addSpecial("ceramic", 20, 0.22); add("zebra", 34, 0.09, { camo: true, regrow: true });
+      addSpecial("boss", 3, 0.55); addSpecial("starship", 2, 0.8);
+      if (n % 10 === 0) addSpecial("superstarship", 1, 1.25);
+      for (var L3 = 0; L3 < 14; L3++) q.push({ t: "zebra", gap: 0.2, flags: { lead: true, camo: true } });
+    } else if (n <= 130) {
+      addSpecial("ceramic", 24, 0.18); add("zebra", 42, 0.08, { camo: true, regrow: true });
+      addSpecial("boss", 4, 0.48); addSpecial("starship", 3, 0.7);
+      addSpecial("superstarship", 1 + ((n - 110) / 15 | 0), 1.3);
+      for (var L4 = 0; L4 < 16; L4++) q.push({ t: "zebra", gap: 0.16, flags: { lead: true, camo: true, regrow: true } });
     } else {
-      addSpecial("ceramic", 24, 0.2); add("zebra", 40, 0.08, { camo: true, regrow: true });
-      addSpecial("boss", 4, 0.5); addSpecial("starship", 3, 0.7);
-      addSpecial("superstarship", n === 100 ? 3 : 1, 1.4 + (n - 90) * 0.08);
-      for (var L4 = 0; L4 < 16; L4++) q.push({ t: "zebra", gap: 0.18, flags: { lead: true, camo: true, regrow: true } });
+      // Endgame 131–150
+      addSpecial("ceramic", 28, 0.15); add("zebra", 50, 0.07, { camo: true, regrow: true });
+      addSpecial("boss", 5, 0.4); addSpecial("starship", 4, 0.55);
+      addSpecial("superstarship", n >= 145 ? 3 : 2, 1.5 + (n - 130) * 0.05);
+      for (var L5 = 0; L5 < 20; L5++) q.push({ t: "zebra", gap: 0.14, flags: { lead: true, camo: true, regrow: true } });
     }
-    if (n >= 18 && n < 55 && n % 4 === 0) {
-      for (var li = 0; li < 6; li++) q.push({ t: "gold", gap: 0.4, flags: { lead: true } });
+    if (n >= 18 && n < 70 && n % 4 === 0) {
+      for (var li = 0; li < 8; li++) q.push({ t: "gold", gap: 0.38, flags: { lead: true } });
     }
     return q;
   }
 
   function startWave() {
     if (!running || gameOver || paused || waveActive || wave >= MAX_WAVE) return;
+    if (chapterPending || (roundOv && !roundOv.classList.contains("hidden"))) return;
     wave += 1;
     spawnQueue = buildWave(wave);
     spawnTimer = 0.3;
     waveActive = true;
     airdropT = 6 + Math.random() * 12;
+    roundKillBan = 0;
+    roundKills = 0;
+    roundLeak = false;
+    killStreak = 0;
     if (wave % 5 === 1) rollMission();
     else if (!mission) rollMission();
 
-    var label = "WAVE " + wave;
-    if (wave === 20) label = "BOSS · MEGA BUNCH";
-    if (wave === 40) label = "STARSHIP INBOUND";
-    if (wave === 60) label = "FULL STACK ASSAULT";
-    if (wave === 80) label = "ORBITAL SIEGE";
-    if (wave === 100) label = "FINAL · RAPTOR PROTOCOL";
+    var label = "WAVE " + wave + " / " + MAX_WAVE;
+    if (wave === 25) label = "BOSS · MEGA BUNCH";
+    if (wave === 50) label = "STARSHIP INBOUND";
+    if (wave === 75) label = "FULL STACK ASSAULT";
+    if (wave === 100) label = "ORBITAL SIEGE";
+    if (wave === 125) label = "GAUNTLET PROTOCOL";
+    if (wave === 150) label = "FINAL · RAPTOR PROTOCOL";
+    if (playMode === "campaign") {
+      var ch = getChapterForWave(wave);
+      if (ch) label = ch.title + " · W" + waveInChapter(wave);
+    }
     showToast(label);
-    if (wave === 40 || wave === 60 || wave === 100) sfxBoss(); else sfxWave();
+    if (wave === 50 || wave === 100 || wave === 150) sfxBoss(); else sfxWave();
+    refreshUI();
+  }
+
+  function getChapterForWave(w) {
+    var acc = 0;
+    for (var i = 0; i < CHAPTERS.length; i++) {
+      acc += CHAPTERS[i].waves;
+      if (w <= acc) return CHAPTERS[i];
+    }
+    return CHAPTERS[CHAPTERS.length - 1];
+  }
+  function waveInChapter(w) {
+    var acc = 0;
+    for (var i = 0; i < CHAPTERS.length; i++) {
+      if (w <= acc + CHAPTERS[i].waves) return w - acc;
+      acc += CHAPTERS[i].waves;
+    }
+    return w;
+  }
+  function chapterIndexForWave(w) {
+    var acc = 0;
+    for (var i = 0; i < CHAPTERS.length; i++) {
+      acc += CHAPTERS[i].waves;
+      if (w <= acc) return i;
+    }
+    return CHAPTERS.length - 1;
+  }
+
+  function finishRoundEconomy() {
+    // End-of-round bonus breakdown (kill money already paid live)
+    var rewardMul = DIFFS[difficulty].reward;
+    var clearBase = Math.floor((100 + wave * 14 + wave * wave * 0.1) * rewardMul);
+    var perfect = roundLeak ? 0 : Math.floor((50 + wave * 8) * rewardMul);
+    var farmInc = 0;
+    for (var vj = 0; vj < towers.length; vj++) {
+      if (towers[vj].def.support || towers[vj].def.farm) farmInc += getStats(towers[vj]).income || 0;
+    }
+    farmInc = Math.floor(farmInc * rewardMul);
+    var interest = interestPreview();
+    var streakBonus = killStreak >= 15 ? Math.floor(30 + killStreak * 2) : (killStreak >= 8 ? 20 : 0);
+    streakBonus = Math.floor(streakBonus * rewardMul);
+
+    var missionPay = 0;
+    if (mission) {
+      var prog = missionProgress;
+      if (mission.type === "ban") prog = Math.floor(roundKillBan);
+      if (mission.type === "streak") prog = Math.max(prog, killStreak);
+      var ok = mission.type === "noleak" ? !roundLeak : prog >= mission.need;
+      if (ok) missionPay = Math.floor(mission.reward * rewardMul);
+    }
+
+    addBan(clearBase, W / 2, 90, { forceFloat: true, color: "#f5d041", size: 16 });
+    if (perfect > 0) addBan(perfect, W / 2, 120, { forceFloat: true, color: "#86efac", size: 14 });
+    if (farmInc > 0) addBan(farmInc, W / 2, 150, { forceFloat: true, color: "#84cc16", size: 13 });
+    if (interest > 0) addBan(interest, W / 2, 175, { forceFloat: true, color: "#67e8f9", size: 13 });
+    if (streakBonus > 0) addBan(streakBonus, W / 2, 200, { forceFloat: true, color: "#fb923c", size: 13 });
+    if (missionPay > 0) {
+      addBan(missionPay, W / 2, 225, { forceFloat: true, color: "#c084fc", size: 14 });
+      missionsDone++;
+      mission = null;
+    } else {
+      mission = null;
+    }
+
+    var totalBonus = clearBase + perfect + farmInc + interest + streakBonus + missionPay;
+    lastRoundSummary = {
+      wave: wave,
+      kills: roundKills,
+      killBan: Math.floor(roundKillBan),
+      clear: clearBase,
+      perfect: perfect,
+      farm: farmInc,
+      interest: interest,
+      streak: streakBonus,
+      mission: missionPay,
+      totalBonus: totalBonus,
+      totalRound: Math.floor(roundKillBan) + totalBonus
+    };
+
+    showRoundSummary(lastRoundSummary);
+    if (wave % 5 === 0) confettiBurst();
+    abilities.storm.cd = Math.max(0, abilities.storm.cd - 8);
+    abilities.freeze.cd = Math.max(0, abilities.freeze.cd - 8);
+    abilities.cash.cd = Math.max(0, abilities.cash.cd - 6);
+    killStreak = 0;
+    refreshUI();
+  }
+
+  function showRoundSummary(s) {
+    if (!roundOv || !roundSummaryEl) {
+      showToast("ROUND " + s.wave + " CLEAR · +" + s.totalBonus + " bonus (kills +" + s.killBan + ")");
+      afterRoundSummary();
+      return;
+    }
+    var html = "";
+    html += "<div class='rs-row'><span>🍌 Kill bounties (live)</span><b>+" + s.killBan + "</b></div>";
+    html += "<div class='rs-row'><span>🏁 Clear bonus</span><b>+" + s.clear + "</b></div>";
+    if (s.perfect) html += "<div class='rs-row perfect'><span>✨ Perfect (no leaks)</span><b>+" + s.perfect + "</b></div>";
+    if (s.farm) html += "<div class='rs-row'><span>🌴 Farm / village</span><b>+" + s.farm + "</b></div>";
+    if (s.interest) html += "<div class='rs-row'><span>💰 Bank interest</span><b>+" + s.interest + "</b></div>";
+    if (s.streak) html += "<div class='rs-row'><span>🔥 Streak bonus</span><b>+" + s.streak + "</b></div>";
+    if (s.mission) html += "<div class='rs-row'><span>🎯 Mission</span><b>+" + s.mission + "</b></div>";
+    html += "<div class='rs-total'><span>Round total</span><b>+" + s.totalRound + " BAN</b></div>";
+    html += "<div class='rs-meta'>" + s.kills + " pops · Wave " + s.wave + "/" + MAX_WAVE + "</div>";
+    roundSummaryEl.innerHTML = html;
+    roundOv.classList.remove("hidden");
+    paused = true; // hold the game until continue
+  }
+
+  function afterRoundSummary() {
+    if (wave >= MAX_WAVE) {
+      endWin();
+      return;
+    }
+    // Campaign chapter transition every 25 waves
+    if (playMode === "campaign" && wave % 25 === 0 && wave < MAX_WAVE) {
+      advanceCampaignChapter();
+    }
+  }
+
+  function dismissRoundSummary() {
+    if (roundOv) roundOv.classList.add("hidden");
+    paused = false;
+    afterRoundSummary();
+    refreshUI();
+  }
+
+  function advanceCampaignChapter() {
+    var nextIdx = chapterIndexForWave(wave + 1);
+    if (nextIdx <= campaignChapter && wave < MAX_WAVE) nextIdx = campaignChapter + 1;
+    if (nextIdx >= CHAPTERS.length) return;
+    campaignChapter = nextIdx;
+    var ch = CHAPTERS[campaignChapter];
+    currentMap = ch.map;
+    // Keep BAN + lives; reset board for new path
+    towers = []; threats = []; projectiles = []; particles = []; floats = [];
+    selectedTower = null;
+    rebuildPath();
+    initDecor();
+    // Chapter clear bonus
+    var chBonus = 250 + campaignChapter * 120;
+    addBan(chBonus, W / 2, H / 2, { forceFloat: true, size: 18, color: "#f472b6" });
+    showToast(ch.title.toUpperCase() + " · +" + chBonus + " BAN");
+    confettiBurst();
+    // sync map picker UI
+    document.querySelectorAll("#mapPick .chip-btn").forEach(function (b) {
+      b.classList.toggle("on", b.getAttribute("data-map") === currentMap);
+    });
     refreshUI();
   }
 
@@ -924,6 +1197,11 @@
       ["storm", "freeze", "cash"].forEach(function (k) {
         if (abilities[k].cd > 0) abilities[k].cd = Math.max(0, abilities[k].cd - dt);
       });
+      if (floatBanThrottle > 0) floatBanThrottle -= dt;
+      if (killStreakT > 0) {
+        killStreakT -= dt;
+        if (killStreakT <= 0) killStreak = 0;
+      }
     }
 
     if (!running || gameOver || paused) return;
@@ -987,7 +1265,9 @@
         else if (th.kind === "ceramic") loss = 14;
         else if (th.kind === "layer") loss = LAYER_ORDER.indexOf(th.layer) + 1;
         lives -= loss;
+        roundLeak = true;
         if (mission) mission._leaked = true;
+        killStreak = 0;
         sfxLeak(); shake = Math.max(shake, 0.22);
         floatTxt(th.x, th.y, "-" + loss + " ❤️", "#f87171", 14);
         if (lives <= 0) { lives = 0; endLose(); return; }
@@ -1063,23 +1343,7 @@
 
     if (waveActive && spawnQueue.length === 0 && threats.length === 0) {
       waveActive = false;
-      var bonus = 60 + wave * 7 + Math.floor(wave * wave * 0.06);
-      for (var vj = 0; vj < towers.length; vj++) {
-        if (towers[vj].def.support) bonus += getStats(towers[vj]).income || 0;
-      }
-      var interest = interestPreview();
-      bonus = Math.floor(bonus * DIFFS[difficulty].reward);
-      addBan(bonus, W / 2, 100);
-      if (interest > 0) addBan(interest, W / 2, 130);
-      completeMissionIfAny();
-      showToast("ROUND CLEAR · +" + bonus + " BAN" + (interest ? " · 💰 +" + interest : ""));
-      if (wave % 5 === 0) confettiBurst();
-      // refund a bit of ability CD on clear
-      abilities.storm.cd = Math.max(0, abilities.storm.cd - 8);
-      abilities.freeze.cd = Math.max(0, abilities.freeze.cd - 8);
-      abilities.cash.cd = Math.max(0, abilities.cash.cd - 6);
-      refreshUI();
-      if (wave >= MAX_WAVE) endWin();
+      finishRoundEconomy();
     }
   }
 
@@ -1429,8 +1693,16 @@
     hudWave.textContent = String(wave);
     if (hudWaveMax) hudWaveMax.textContent = String(MAX_WAVE);
     hudPops.textContent = String(pops);
-    if (hudInterest) hudInterest.textContent = "💰 +" + interestPreview();
-    if (hudMapName) hudMapName.textContent = MAPS[currentMap].short + " · " + DIFFS[difficulty].name;
+    if (hudInterest) hudInterest.textContent = "💰 EoR +" + interestPreview();
+    if (hudRoundEarn) hudRoundEarn.textContent = "Round +" + Math.floor(roundKillBan);
+    if (hudStreak) {
+      hudStreak.textContent = killStreak >= 5 ? "🔥 x" + killStreak : "🔥 —";
+      hudStreak.style.opacity = killStreak >= 5 ? "1" : "0.55";
+    }
+    if (hudMapName) {
+      var modeTag = playMode === "campaign" ? "Campaign" : DIFFS[difficulty].name;
+      hudMapName.textContent = MAPS[currentMap].short + " · " + modeTag;
+    }
     buildShop();
     refreshAbilities();
     updateMissionUI();
@@ -1462,37 +1734,54 @@
       btnUp.disabled = true; btnUp.textContent = "Upgrade";
       btnSell.disabled = true; btnSell.textContent = "Sell";
     }
-    btnWave.disabled = !running || gameOver || paused || waveActive || wave >= MAX_WAVE;
+    var hold = chapterPending || (roundOv && !roundOv.classList.contains("hidden"));
+    btnWave.disabled = !running || gameOver || paused || waveActive || wave >= MAX_WAVE || hold;
   }
 
   function resetGame() {
     var d = DIFFS[difficulty];
+    if (playMode === "campaign") {
+      campaignChapter = 0;
+      currentMap = CHAPTERS[0].map;
+      document.querySelectorAll("#mapPick .chip-btn").forEach(function (b) {
+        b.classList.toggle("on", b.getAttribute("data-map") === currentMap);
+      });
+    }
     ban = d.ban; lives = d.lives; wave = 0; pops = 0; banEarned = 0;
     running = true; paused = false; gameOver = false;
     selectedShop = "dart"; selectedTower = null;
     towers = []; threats = []; projectiles = []; particles = []; floats = [];
     spawnQueue = []; spawnTimer = 0; waveActive = false; totalBuilt = 0; shake = 0;
     missionsDone = 0; mission = null;
+    roundKillBan = 0; roundKills = 0; roundLeak = false; killStreak = 0;
+    chapterPending = false; lastRoundSummary = null;
     abilities.storm.cd = 0; abilities.freeze.cd = 0; abilities.cash.cd = 0;
     rebuildPath(); initDecor();
     startOv.classList.add("hidden"); winOv.classList.add("hidden");
     loseOv.classList.add("hidden"); pauseOv.classList.add("hidden");
-    showToast(MAPS[currentMap].name.toUpperCase() + " · " + d.name.toUpperCase());
+    if (roundOv) roundOv.classList.add("hidden");
+    var label = playMode === "campaign"
+      ? "CAMPAIGN · " + CHAPTERS[0].title
+      : MAPS[currentMap].name.toUpperCase() + " · " + d.name.toUpperCase();
+    showToast(label);
     refreshUI(); sfxPlace();
   }
 
   function endWin() {
-    gameOver = true; running = false;
+    gameOver = true; running = false; paused = false;
+    if (roundOv) roundOv.classList.add("hidden");
     document.getElementById("winMsg").textContent =
-      MAX_WAVE + " waves on " + MAPS[currentMap].name + " (" + DIFFS[difficulty].name + ")! Pops " +
-      pops + " · BAN " + banEarned + " · MonKeys " + totalBuilt + " · Missions " + missionsDone + ". Legendary.";
+      MAX_WAVE + " waves" + (playMode === "campaign" ? " campaign" : " on " + MAPS[currentMap].name) +
+      " (" + DIFFS[difficulty].name + ")! Pops " + pops + " · BAN earned " + Math.floor(banEarned) +
+      " · MonKeys " + totalBuilt + " · Missions " + missionsDone + ". Legendary.";
     winOv.classList.remove("hidden"); confettiBurst(); confettiBurst(); sfxWin();
   }
   function endLose() {
-    gameOver = true; running = false; waveActive = false;
+    gameOver = true; running = false; waveActive = false; paused = false;
+    if (roundOv) roundOv.classList.add("hidden");
     document.getElementById("loseMsg").textContent =
       "Wave " + wave + "/" + MAX_WAVE + " on " + MAPS[currentMap].short + " · Pops " + pops +
-      " · BAN " + banEarned + ". Refuel and relaunch.";
+      " · BAN earned " + Math.floor(banEarned) + ". Refuel and relaunch.";
     loseOv.classList.remove("hidden"); sfxLeak();
   }
 
@@ -1572,11 +1861,25 @@
   if (btnAbilityStorm) btnAbilityStorm.addEventListener("click", function () { ensureAudio(); useStorm(); });
   if (btnAbilityFreeze) btnAbilityFreeze.addEventListener("click", function () { ensureAudio(); useFreeze(); });
   if (btnAbilityCash) btnAbilityCash.addEventListener("click", function () { ensureAudio(); useCash(); });
+  if (btnRoundContinue) btnRoundContinue.addEventListener("click", function () { ensureAudio(); dismissRoundSummary(); });
+
+  document.querySelectorAll("#modePick .chip-btn").forEach(function (b) {
+    b.addEventListener("click", function () {
+      if (running && !gameOver) return;
+      playMode = b.getAttribute("data-mode") || "skirmish";
+      document.querySelectorAll("#modePick .chip-btn").forEach(function (x) { x.classList.remove("on"); });
+      b.classList.add("on");
+      var mapPick = document.getElementById("mapPick");
+      if (mapPick) mapPick.style.opacity = playMode === "campaign" ? "0.45" : "1";
+      refreshUI();
+    });
+  });
 
   window.addEventListener("keydown", function (e) {
     var k = e.key;
     if (k === " " || e.code === "Space") {
       e.preventDefault(); ensureAudio();
+      if (roundOv && !roundOv.classList.contains("hidden")) { dismissRoundSummary(); return; }
       if (!running) { /* wait for start button with map pick */ }
       else startWave();
     }

@@ -330,6 +330,40 @@
       background: rgba(0,0,0,0.35);
     }
     .wave-toast.show { opacity: 1; }
+    .round-summary {
+      text-align: left;
+      margin: 0.5rem auto 1rem;
+      max-width: 22rem;
+      font-size: 0.88rem;
+      color: rgba(232,245,216,0.85);
+    }
+    .round-summary .rs-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 0.35rem 0.45rem;
+      border-bottom: 1px solid rgba(245,208,65,0.12);
+    }
+    .round-summary .rs-row b { color: #f5d041; font-family: Fredoka, system-ui, sans-serif; }
+    .round-summary .rs-row.perfect b { color: #86efac; }
+    .round-summary .rs-total {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 0.55rem;
+      padding: 0.55rem 0.45rem;
+      border-radius: 10px;
+      background: rgba(245,208,65,0.12);
+      font-family: Fredoka, system-ui, sans-serif;
+      font-size: 1.05rem;
+      color: #fff8d6;
+    }
+    .round-summary .rs-total b { color: #ffe566; }
+    .round-summary .rs-meta {
+      margin-top: 0.45rem;
+      font-size: 0.78rem;
+      color: rgba(232,245,216,0.55);
+      text-align: center;
+    }
     @media (max-width: 700px) {
       .td-app { width: 100%; padding-inline: 0.25rem; }
       .td-stage-wrap { min-height: auto; }
@@ -378,18 +412,20 @@
   <main id="main" class="td-app">
     <div class="td-title">
       <h1>Banano TD · Epic</h1>
-      <p>Full-window battlefield · 40×25 grid · 3 maps · 100 waves · 9 towers · abilities</p>
+      <p>Full-window battlefield · 6 maps · 150 waves · live kill bounties · end-of-round bonuses</p>
     </div>
 
     <div class="td-layout">
       <div class="td-stage-wrap" id="stage">
         <div class="td-hud">
           <div class="hud-left">
-            <span class="pill">🍌 BAN <b id="hudBan">850</b></span>
+            <span class="pill">🍌 BAN <b id="hudBan">900</b></span>
             <span class="pill">❤️ <b id="hudLives">300</b></span>
-            <span class="pill">🌊 <b id="hudWave">0</b>/<span id="hudWaveMax">100</span></span>
+            <span class="pill">🌊 <b id="hudWave">0</b>/<span id="hudWaveMax">150</span></span>
             <span class="pill">💥 <b id="hudPops">0</b></span>
-            <span class="pill" id="hudInterest" title="Interest next round">💰 +0</span>
+            <span class="pill" id="hudRoundEarn" title="BAN earned from kills this round">Round +0</span>
+            <span class="pill" id="hudStreak" title="Kill streak" style="opacity:0.55">🔥 —</span>
+            <span class="pill" id="hudInterest" title="Bank interest on round clear">💰 EoR +0</span>
             <span class="pill" id="hudMapName">Canyon</span>
           </div>
           <div class="hud-right">
@@ -407,20 +443,40 @@
         <canvas id="game" width="1600" height="1000" aria-label="Banano TD epic map"></canvas>
         <div class="wave-toast" id="toast">WAVE 1</div>
 
+        <!-- End of round scoreboard -->
+        <div class="overlay hidden" id="roundOv">
+          <div class="overlay-card">
+            <h2>Round Clear! 🍌</h2>
+            <p>Kill bounties paid as you popped. Here’s the end-of-round bonus.</p>
+            <div id="roundSummary" class="round-summary"></div>
+            <button type="button" class="btn btn-primary" id="btnRoundContinue">CONTINUE (Space)</button>
+          </div>
+        </div>
+
         <div class="overlay" id="startOv">
           <div class="overlay-card">
             <h2>Epic Banana Defense 🍌🚀</h2>
             <p>
-              A massive jungle battlefield. Choose your map and difficulty, then stack 5-tier MonKeys
-              against 100 waves of layered bananas, armor, camo, and Starship bosses.
+              Earn BAN <strong>live</strong> from every peel, then cash a fat end-of-round bonus.
+              Six maps, 150 waves, campaign chapters, kill streaks, farms, and Starship bosses.
             </p>
             <div class="setup-block">
               <div class="setup-row" style="margin-bottom:0.75rem;">
+                <label>Mode</label>
+                <div class="chip-row" id="modePick">
+                  <button type="button" class="chip-btn on" data-mode="skirmish">Skirmish (pick map)</button>
+                  <button type="button" class="chip-btn" data-mode="campaign">Campaign (6 chapters)</button>
+                </div>
+              </div>
+              <div class="setup-row" style="margin-bottom:0.75rem;">
                 <label>Battlefield</label>
                 <div class="chip-row" id="mapPick">
-                  <button type="button" class="chip-btn on" data-map="canyon">Potassium Canyon</button>
-                  <button type="button" class="chip-btn" data-map="helix">Double Helix</button>
-                  <button type="button" class="chip-btn" data-map="runway">Starship Runway</button>
+                  <button type="button" class="chip-btn on" data-map="canyon">Canyon</button>
+                  <button type="button" class="chip-btn" data-map="helix">Helix</button>
+                  <button type="button" class="chip-btn" data-map="spiral">Spiral</button>
+                  <button type="button" class="chip-btn" data-map="fork">Fork</button>
+                  <button type="button" class="chip-btn" data-map="runway">Runway</button>
+                  <button type="button" class="chip-btn" data-map="gauntlet">Gauntlet</button>
                 </div>
               </div>
               <div class="setup-row">
