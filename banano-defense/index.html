@@ -92,43 +92,38 @@
       </div>
 
       <aside class="sidebar">
-        <section class="panel shop-panel">
-          <div class="panel-head">
-            <h2>🍌 Arsenal</h2>
-            <span class="panel-hint">1–7 keys</span>
-          </div>
-          <div id="tower-shop" class="tower-shop"></div>
+        <section class="sidebar-block">
+          <header class="sidebar-label">
+            <span>Build</span>
+            <span class="sidebar-keys"><kbd>1</kbd>–<kbd>7</kbd></span>
+          </header>
+          <div id="tower-shop" class="tower-shop tower-shop-compact"></div>
         </section>
 
-        <section class="panel">
-          <div class="panel-head"><h2>Selected monKey</h2></div>
+        <section class="sidebar-block sidebar-tower is-empty" id="tower-panel">
+          <header class="sidebar-label"><span>Tower</span></header>
           <div id="selected-info" class="selected-info">
-            <p class="muted">Click a tower to upgrade, retarget, or sell for BAN.</p>
+            <p class="muted empty-hint">Tap a tower on the map to upgrade or sell.</p>
           </div>
         </section>
 
-        <section class="panel controls">
-          <button id="btn-start-wave" class="btn primary pulse">Start Wave · Space</button>
-          <div class="btn-row">
-            <button id="btn-speed" class="btn">Speed ×1</button>
-            <button id="btn-pause" class="btn">Pause</button>
+        <section class="sidebar-block sidebar-wave">
+          <button id="btn-start-wave" class="btn primary pulse btn-wave">Start Wave</button>
+          <div class="wave-toolbar">
+            <button id="btn-speed" class="btn btn-ghost" title="Cycle speed (+)">×1</button>
+            <button id="btn-pause" class="btn btn-ghost" title="Pause (Esc)">Pause</button>
           </div>
-          <p class="controls-hint">Space wave/resume · 1–7 towers · Q/E · Esc pause · <kbd>?</kbd> hotkeys</p>
-        </section>
-
-        <section class="panel next-wave-panel">
-          <h2>📡 FUD Forecast</h2>
-          <div id="next-wave" class="next-wave">
-            <p class="muted">Start peeling when ready.</p>
+          <div id="next-wave" class="wave-preview">
+            <p class="muted">Ready when you are.</p>
           </div>
         </section>
 
-        <section class="panel settings-panel">
-          <h2>⚙️ Jungle Settings</h2>
-          <div class="settings-list">
+        <details class="sidebar-fold">
+          <summary>Settings</summary>
+          <div class="fold-body settings-list">
             <label class="setting-row">
               <input type="checkbox" id="opt-show-ranges" />
-              <span>Show all tower ranges</span>
+              <span>Show ranges</span>
             </label>
             <label class="setting-row">
               <input type="checkbox" id="opt-reduce-particles" />
@@ -140,37 +135,33 @@
             </label>
             <label class="setting-row">
               <input type="checkbox" id="opt-show-debug" />
-              <span>Debug overlay (FPS / entities)</span>
+              <span>Debug overlay</span>
             </label>
           </div>
-          <button id="btn-hotkeys" type="button" class="btn">⌨️ Hotkeys · ?</button>
-        </section>
+        </details>
 
-        <section class="panel meta-panel">
-          <h2>Lifetime Stats</h2>
-          <div class="meta-grid">
-            <div><span>Lifetime peels</span><b id="meta-kills">0</b></div>
-            <div><span>Achievements</span><b id="meta-achs">0</b></div>
-            <div><span>Best combo</span><b id="meta-combo">0</b></div>
-            <div><span>Campaigns won</span><b id="meta-wins">0</b></div>
-          </div>
-        </section>
-
-        <section class="panel legend">
-          <h2>Hostile Memes</h2>
-          <ul class="enemy-legend">
+        <details class="sidebar-fold">
+          <summary>Enemy guide</summary>
+          <ul class="enemy-legend fold-body">
             <li><span class="dot paper"></span> Paperhands</li>
             <li><span class="dot fud"></span> FUD Bot</li>
             <li><span class="dot bear"></span> Bear</li>
             <li><span class="dot spam"></span> Scam Spam</li>
             <li><span class="dot whale"></span> Whale</li>
             <li><span class="dot bot"></span> Sniper Bot</li>
-            <li><span class="dot shill"></span> Shill <small class="legend-note">(heals allies)</small></li>
-            <li><span class="dot boss"></span> Rugpull <small class="legend-note">(3 phases)</small></li>
-            <li><span class="dot tick"></span> Gas Fee Tick <small class="legend-note">(steals BAN)</small></li>
-            <li><span class="dot hodler"></span> Diamond HODLer <small class="legend-note">(regens once)</small></li>
+            <li><span class="dot shill"></span> Shill <small class="legend-note">heals</small></li>
+            <li><span class="dot boss"></span> Rugpull <small class="legend-note">3 phases</small></li>
+            <li><span class="dot tick"></span> Gas Fee <small class="legend-note">steals BAN</small></li>
+            <li><span class="dot hodler"></span> HODLer <small class="legend-note">regens</small></li>
           </ul>
-        </section>
+        </details>
+
+        <footer class="sidebar-foot">
+          <button id="btn-hotkeys" type="button" class="link-btn" title="Hotkeys (?)">?</button>
+          <span class="sidebar-stats">
+            <span id="meta-kills">0</span> peels · <span id="meta-achs">0</span> 🏆 · <span id="meta-combo">0</span>× · <span id="meta-wins">0</span> wins
+          </span>
+        </footer>
       </aside>
     </main>
   </div>
@@ -254,7 +245,8 @@
         <li><kbd>1</kbd>–<kbd>7</kbd> Select tower from Arsenal</li>
         <li><kbd>Q</kbd> Banano Airdrop (aim + click)</li>
         <li><kbd>E</kbd> Jungle Rage</li>
-        <li><kbd>Esc</kbd> Pause · cancel aim · deselect</li>
+        <li><kbd>Esc</kbd> Deselect / cancel aim · pause if nothing selected</li>
+        <li><kbd>+</kbd> / <kbd>]</kbd> Cycle speed ×1 → ×2 → ×3</li>
         <li><kbd>M</kbd> Mute / unmute</li>
         <li><kbd>?</kbd> or <kbd>H</kbd> This help screen</li>
         <li><kbd>R-Click</kbd> Cancel shop / tower selection</li>

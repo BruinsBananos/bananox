@@ -37,13 +37,13 @@
   const TARGET_MODES = ["first", "last", "strong", "close"];
   const TARGET_MODE_LABELS = {
     first: { label: "First", tip: "Farthest along the BAN path" },
-    last: { label: "Last", tip: "Closest to the wallet" },
+    last: { label: "Last", tip: "Newest on the path — closest to spawn" },
     strong: { label: "Strong", tip: "Highest HP" },
     close: { label: "Close", tip: "Nearest to this tower" },
   };
   const TOWER_SELECT_RADIUS = 24;
   const TOWER_SHOP_KEYS = ["cannon", "sniper", "splash", "frost", "tesla", "monkey", "hammer"];
-  const DEFAULT_SETTINGS = { showAllRanges: false, reduceParticles: false, volume: 0.32, showDebug: false };
+  const DEFAULT_SETTINGS = { showAllRanges: false, reduceParticles: false, volume: 0.32, showDebug: false, muted: false };
 
   const MEMES = [
     "Rich in potassium! 🍌",
@@ -281,6 +281,7 @@
     meta.settings.reduceParticles = !!meta.settings.reduceParticles;
     meta.settings.showDebug = !!meta.settings.showDebug;
     meta.settings.volume = clamp(Number(meta.settings.volume ?? DEFAULT_SETTINGS.volume), 0.05, 0.55);
+    meta.settings.muted = !!meta.settings.muted;
   }
 
   function fxCount(n) {
@@ -404,12 +405,16 @@
     return null;
   }
 
-  function towerEffectiveRange(tower) {
-    let r = tower.range;
+  function effectiveRangeFromBase(range) {
+    let r = range;
     if (state.waveEvent?.id === "fog" && state.waveEventTimer > 0) {
       r *= state.waveEvent.rangeMod || 0.82;
     }
     return r;
+  }
+
+  function towerEffectiveRange(tower) {
+    return effectiveRangeFromBase(tower.range);
   }
 
   const hpScale = (wave) => 1 + (wave - 1) * 0.15 + Math.floor((wave - 1) / 10) * 0.1;
@@ -420,6 +425,13 @@
 
   const AudioFX = (() => {
     let ctx = null, master = null, muted = false, ambient = null;
+
+    function persistMute() {
+      if (typeof meta !== "undefined" && meta.settings) {
+        meta.settings.muted = muted;
+        saveMeta();
+      }
+    }
 
     function ensure() {
       if (ctx) return true;
@@ -476,9 +488,14 @@
     return {
       resume,
       isMuted: () => muted,
+      syncMutedFromSettings() {
+        muted = !!(typeof meta !== "undefined" && meta.settings && meta.settings.muted);
+        applyMasterVolume();
+      },
       toggleMute() {
         muted = !muted;
         applyMasterVolume();
+        persistMute();
         if (muted) this.stopAmbient();
         else if (typeof state !== "undefined" && state.phase === "playing") this.startAmbient();
         return muted;
@@ -613,6 +630,7 @@
     statGold: document.getElementById("stat-gold"),
     shop: document.getElementById("tower-shop"),
     selectedInfo: document.getElementById("selected-info"),
+    towerPanel: document.getElementById("tower-panel"),
     nextWave: document.getElementById("next-wave"),
     btnStartWave: document.getElementById("btn-start-wave"),
     btnSpeed: document.getElementById("btn-speed"),
@@ -683,6 +701,15 @@
     showGameToast._t = setTimeout(() => el.gameToast.classList.add("hidden"), 2200);
   }
 
+  function formatRangeHtml(rangeOrTower) {
+    const base = Math.round(typeof rangeOrTower === "number" ? rangeOrTower : rangeOrTower.range);
+    const eff = Math.round(
+      typeof rangeOrTower === "number" ? effectiveRangeFromBase(rangeOrTower) : towerEffectiveRange(rangeOrTower)
+    );
+    if (eff < base) return `${eff} <span class="range-fog">🌫 base ${base}</span>`;
+    return String(base);
+  }
+
   function towerSpecialStats(def, level, tower) {
     const rows = [];
     if (def.beam) rows.push({ label: "Pierce", value: `${(def.pierce || 0) + level - 1} targets` });
@@ -743,14 +770,22 @@
     });
   }
 
-  function selectShopTower(type) {
+  function selectShopTower(type, opts = {}) {
     if (state.phase !== "playing" && state.phase !== "paused") return;
-    if (!isTowerUnlocked(type)) return;
+    if (!isTowerUnlocked(type)) {
+      const def = TOWER_DEFS[type];
+      if (opts.fromKey) {
+        showGameToast(`${def?.name || "Tower"} locked — ${getTowerUnlockHint(type)}`, "info");
+        AudioFX.ui();
+      }
+      return;
+    }
     state.selectedShop = state.selectedShop === type ? null : type;
     state.selectedTower = null;
     state.abilityAiming = false;
     updateShopUI();
     updateSelectedUI();
+    updateAbilityUI();
   }
 
   function updateShopUI() {
@@ -767,15 +802,42 @@
     });
   }
 
+  function setTowerPanelEmpty(empty) {
+    if (el.towerPanel) el.towerPanel.classList.toggle("is-empty", empty);
+  }
+
   function updateSelectedUI() {
     const t = state.selectedTower;
     if (!t) {
-      el.selectedInfo.innerHTML = '<p class="muted">Click a tower to upgrade, retarget, or sell for BAN.</p>';
+      if (state.selectedShop) {
+        setTowerPanelEmpty(false);
+        const def = TOWER_DEFS[state.selectedShop];
+        const afford = state.gold >= def.cost;
+        const rageNote = state.rageTimer > 0 ? '<p class="placement-hint rage-hint">🙉 Jungle Rage active — +35% peel power</p>' : "";
+        const fogNote = state.waveEvent?.id === "fog" && state.waveEventTimer > 0
+          ? '<p class="placement-hint fog-hint">🌫 Regulatory fog — shorter placement range</p>'
+          : "";
+        el.selectedInfo.innerHTML = `
+          <div class="name" style="color:${def.color}">${def.icon} Placing <strong>${def.name}</strong></div>
+          <p class="muted">Click valid jungle tile · Esc / R-click cancel</p>
+          <div class="detail-row"><span>Cost</span><b class="${afford ? "afford-ok" : "afford-no"}">🍌${def.cost}</b></div>
+          <div class="detail-row"><span>Range</span><b>${formatRangeHtml(def.range)}</b></div>
+          <div class="detail-row"><span>Damage</span><b>${Math.round(def.damage)}</b></div>
+          <div class="detail-row"><span>Fire rate</span><b>${def.fireRate.toFixed(2)}/s</b></div>
+          ${fogNote}${rageNote}
+        `;
+        return;
+      }
+      setTowerPanelEmpty(true);
+      el.selectedInfo.innerHTML = '<p class="muted empty-hint">Tap a tower on the map to upgrade or sell.</p>';
       return;
     }
+    setTowerPanelEmpty(false);
     const def = TOWER_DEFS[t.type];
     const upgradeCost = Math.floor(def.upgradeCost * Math.pow(1.38, t.level - 1));
     const sellValue = Math.floor(t.invested * SELL_REFUND);
+    const atMax = t.level >= 3;
+    const canUpgrade = !atMax && state.gold >= upgradeCost;
     const chips = TARGET_MODES.map((m) => {
       const meta = TARGET_MODE_LABELS[m];
       return `<button class="chip ${t.targetMode === m ? "active" : ""}" data-mode="${m}" title="${meta.tip}">${meta.label}</button>`;
@@ -784,10 +846,11 @@
       .map((r) => `<div class="detail-row"><span>${r.label}</span><b>${r.value}</b></div>`)
       .join("");
     const activeTarget = TARGET_MODE_LABELS[t.targetMode] || TARGET_MODE_LABELS.first;
+    const upgradeLabel = atMax ? "MAX ⭐" : state.gold < upgradeCost ? `Need 🍌${upgradeCost}` : `🍌${upgradeCost}`;
     el.selectedInfo.innerHTML = `
-      <div class="name" style="color:${def.color}">${def.icon} ${def.name} · LV ${t.level}${t.level >= 3 ? " ⭐" : ""}</div>
-      <div class="detail-row"><span>Damage</span><b>${Math.round(t.damage)}</b></div>
-      <div class="detail-row"><span>Range</span><b>${Math.round(t.range)}</b></div>
+      <div class="name" style="color:${def.color}">${def.icon} ${def.name} · LV ${t.level}${atMax ? " ⭐" : ""}</div>
+      <div class="detail-row"><span>Damage</span><b>${Math.round(t.damage)}${state.rageTimer > 0 ? ' <span class="rage-boost">+35%</span>' : ""}</b></div>
+      <div class="detail-row"><span>Range</span><b>${formatRangeHtml(t)}</b></div>
       <div class="detail-row"><span>Fire rate</span><b>${t.fireRate.toFixed(2)}/s</b></div>
       <div class="detail-row"><span>Crit</span><b>${Math.round(t.critChance * 100)}%</b></div>
       ${specialRows}
@@ -795,10 +858,10 @@
       <p class="targeting-hint">Target: <b>${activeTarget.label}</b> — ${activeTarget.tip}</p>
       <div class="targeting-row">${chips}</div>
       <div class="selected-actions">
-        <button class="btn primary" id="btn-upgrade" ${state.gold < upgradeCost || t.level >= 3 ? "disabled" : ""}>
-          Upgrade ${t.level >= 3 ? "MAX" : "🍌" + upgradeCost}
+        <button class="btn primary" id="btn-upgrade" ${!canUpgrade ? "disabled" : ""} title="${atMax ? "Fully ripe" : state.gold < upgradeCost ? `Need ${upgradeCost - state.gold} more BAN` : "Upgrade tower"}">
+          Upgrade ${upgradeLabel}
         </button>
-        <button class="btn danger" id="btn-sell">Sell 🍌${sellValue}</button>
+        <button class="btn danger" id="btn-sell" title="Refund 60% of invested BAN">Sell 🍌${sellValue}</button>
       </div>
     `;
     el.selectedInfo.querySelectorAll(".chip").forEach((chip) => {
@@ -814,23 +877,36 @@
     if (sell) sell.addEventListener("click", () => sellTower(t));
   }
 
+  const WAVE_THREAT_ORDER = ["boss", "whale", "hodler", "tick", "bear", "shill", "bot", "fud", "spam", "paper"];
+
   function updateNextWaveUI() {
     const next = state.wave + 1;
     if (state.mode === "campaign" && next > CAMPAIGN_WAVES) {
-      el.nextWave.innerHTML = '<p class="muted">Final peel complete. Victory is ripe!</p>';
+      el.nextWave.innerHTML = '<p class="muted">Campaign complete — victory is ripe!</p>';
       return;
     }
-    const comp = waveComposition(next);
-    const bits = comp.map((g) => {
-      const d = ENEMY_DEFS[g.type];
-      return `<span class="bit"><span class="dot ${g.type}"></span>${d.name} <b>×${g.count}</b></span>`;
-    }).join("");
+    const comp = [...waveComposition(next)].sort(
+      (a, b) => WAVE_THREAT_ORDER.indexOf(a.type) - WAVE_THREAT_ORDER.indexOf(b.type)
+    );
     const named = WAVE_NAMES[next];
     const boss = next % 5 === 0;
     const ev = getWaveEvent(next);
+    const tags = [];
+    if (boss) tags.push('<span class="wave-tag boss">Rugpull</span>');
+    if (ev) tags.push(`<span class="wave-tag event">${ev.name}</span>`);
+    const shown = comp.slice(0, 4);
+    const total = comp.reduce((sum, g) => sum + g.count, 0);
+    const shownTotal = shown.reduce((sum, g) => sum + g.count, 0);
+    const threatRows = shown.map((g) => {
+      const d = ENEMY_DEFS[g.type];
+      return `<li><span class="threat-name"><span class="dot ${g.type}"></span>${d.name}</span><b>×${g.count}</b></li>`;
+    }).join("");
+    const more = total > shownTotal ? `<p class="wave-more">+${total - shownTotal} more FUD</p>` : "";
     el.nextWave.innerHTML = `
-      <div>Wave <b style="color:var(--banano)">${next}</b>${boss ? ' · <b style="color:#ff4d94">RUGPULL</b> <small class="legend-note">(3 phases)</small>' : ""}${ev ? ` · <b style="color:#7ec8e3">${ev.name}</b>` : ""}${named ? `<br><small style="color:var(--muted)">${named}</small>` : ""}</div>
-      <div class="wave-bits">${bits}</div>
+      <div class="wave-preview-head">Next <b>Wave ${next}</b>${tags.join("")}</div>
+      ${named ? `<p class="wave-preview-sub">${named}</p>` : ""}
+      <ul class="wave-threats">${threatRows}</ul>
+      ${more}
     `;
   }
 
@@ -840,8 +916,11 @@
     const rReady = state.rageCd <= 0 && play && state.rageTimer <= 0;
     el.btnAbility.disabled = !aReady && !state.abilityAiming;
     el.btnAbility.classList.toggle("ready", aReady && !state.abilityAiming);
+    el.btnAbility.classList.toggle("on-cd", state.airdropCd > 0 && !state.abilityAiming);
     el.btnAbility2.disabled = !rReady;
     el.btnAbility2.classList.toggle("ready", rReady);
+    el.btnAbility2.classList.toggle("on-cd", state.rageCd > 0 && state.rageTimer <= 0);
+    el.btnAbility2.classList.toggle("active-rage", state.rageTimer > 0);
 
     if (state.abilityAiming) el.abilityCd.textContent = "Click map!";
     else if (state.airdropCd > 0) el.abilityCd.textContent = `${state.airdropCd.toFixed(1)}s`;
@@ -896,7 +975,16 @@
         : state.wave === 0
           ? "Start Wave 1 · Space"
           : `Start Wave ${state.wave + 1} · Space`;
-    el.btnSpeed.textContent = `Speed ×${state.speed}`;
+    const canStartWave =
+      state.phase === "playing" &&
+      !state.waveActive &&
+      !(state.mode === "campaign" && state.wave >= CAMPAIGN_WAVES);
+    el.btnStartWave.classList.toggle("pulse", canStartWave);
+    el.btnSpeed.textContent = `×${state.speed}`;
+    el.btnSpeed.classList.toggle(
+      "speed-active",
+      state.speed > 1 && (state.phase === "playing" || state.phase === "paused")
+    );
     el.btnPause.textContent = state.phase === "paused" ? "Resume · Space" : "Pause · Esc";
     updateShopUI();
     updateNextWaveUI();
@@ -1181,6 +1269,7 @@
     else if (isBoss && ev?.extraBoss) { shake(10); flash(0.35, "#ff4d94"); }
     checkAchievements();
     updateHUD();
+    if (state.selectedShop || state.selectedTower) updateSelectedUI();
   }
 
   function enemySpeedBase(def) {
@@ -1608,6 +1697,7 @@
     for (const t of state.towers) t.cooldown = 0;
     checkAchievements();
     updateAbilityUI();
+    updateSelectedUI();
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -1684,7 +1774,7 @@
 
     if (def.beam) {
       const ang = tower.angle;
-      const reach = tower.range + 20;
+      const reach = towerEffectiveRange(tower) + 12;
       const x2 = tower.x + Math.cos(ang) * reach;
       const y2 = tower.y + Math.sin(ang) * reach;
       state.beams.push({ x1: tower.x, y1: tower.y, x2, y2, color: def.color, life: 0.12, width: 3 + tower.level });
@@ -1899,19 +1989,28 @@
 
     if (state.comboTimer > 0) {
       state.comboTimer -= dt;
-      if (state.comboTimer <= 0) { state.combo = 0; updateHUD(); }
+      if (state.comboTimer <= 0) {
+        const ended = state.combo;
+        state.combo = 0;
+        if (ended >= 5) showGameToast(`Combo dropped at ${ended}×`, "info");
+        updateHUD();
+      }
     }
 
     if (state.airdropCd > 0) state.airdropCd = Math.max(0, state.airdropCd - dt);
     if (state.rageCd > 0 && state.rageTimer <= 0) state.rageCd = Math.max(0, state.rageCd - dt);
     if (state.rageTimer > 0) {
       state.rageTimer = Math.max(0, state.rageTimer - dt);
-      if (state.rageTimer <= 0) showMeme("Rage faded. Still rich in potassium.");
+      if (state.rageTimer <= 0) {
+        showMeme("Rage faded. Still rich in potassium.");
+        if (state.selectedTower || state.selectedShop) updateSelectedUI();
+      }
     }
     if (state.waveEventTimer > 0) {
       state.waveEventTimer = Math.max(0, state.waveEventTimer - dt);
       if (state.waveEventTimer <= 0 && state.waveEvent?.id === "fog") {
         showGameToast("Regulatory fog lifted — full range restored!", "ok");
+        if (state.selectedTower || state.selectedShop) updateSelectedUI();
       }
     }
     updateAbilityUI();
@@ -1955,6 +2054,7 @@
       }
     } else if (state.enemies.length === 0) {
       state.waveActive = false;
+      const doubleBan = state.waveEvent?.id === "double_ban";
       if (state.waveEvent?.id === "fog" && !state.waveLeaked) state.fogPerfectClears += 1;
       state.waveEvent = null;
       state.waveEventTimer = 0;
@@ -1970,10 +2070,15 @@
         state.perfectStreak = 0;
       }
       if (state.speed === 3) state.clearedOn3x += 1;
-      const interest = Math.min(WAVE_INTEREST_CAP, Math.floor(state.gold * WAVE_INTEREST_RATE));
+      let interest = Math.min(WAVE_INTEREST_CAP, Math.floor(state.gold * WAVE_INTEREST_RATE));
+      if (doubleBan) {
+        bonus = Math.floor(bonus * 2);
+        interest = Math.floor(interest * 2);
+      }
       state.gold += bonus + interest;
       state.score += state.wave * 70;
-      addFloatText(W / 2, 50, `WAVE CLEAR +${bonus + interest}🍌`, "#fbdd11", true);
+      const payoutLabel = doubleBan ? `DOUBLE BAN +${bonus + interest}🍌` : `WAVE CLEAR +${bonus + interest}🍌`;
+      addFloatText(W / 2, 50, payoutLabel, "#fbdd11", true);
       AudioFX.waveClear();
       showMeme(MEMES[(Math.random() * MEMES.length) | 0]);
       popStat(el.statGold);
@@ -2348,6 +2453,13 @@
       ctx.fillRect(bx - 1, by - 1, barW + 2, 6);
       ctx.fillStyle = pct > 0.5 ? "#5dde7a" : pct > 0.25 ? "#fbdd11" : "#ff5c6a";
       ctx.fillRect(bx, by, barW * pct, 4);
+      if (e.type === "boss" || e.type === "whale" || e.type === "hodler") {
+        ctx.font = "bold 8px Nunito, sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "bottom";
+        ctx.fillStyle = "rgba(255, 248, 220, 0.92)";
+        ctx.fillText(`${Math.ceil(e.hp)}`, e.x, by - 2);
+      }
     }
   }
 
@@ -2517,7 +2629,7 @@
     ctx.strokeStyle = ok ? "rgba(93, 222, 122, 0.45)" : "rgba(255, 255, 255, 0.2)";
     ctx.setLineDash([4, 4]);
     ctx.beginPath();
-    ctx.arc(c.x, c.y, def.range, 0, Math.PI * 2);
+    ctx.arc(c.x, c.y, effectiveRangeFromBase(def.range), 0, Math.PI * 2);
     ctx.stroke();
     ctx.setLineDash([]);
     ctx.globalAlpha = 0.75;
@@ -2535,6 +2647,10 @@
       ctx.font = "bold 9px Nunito, sans-serif";
       ctx.fillStyle = !placeOk ? "#ff9aaa" : "#fbdd11";
       ctx.fillText(hint, c.x, c.y - 16);
+    } else if (state.waveEvent?.id === "fog" && state.waveEventTimer > 0) {
+      ctx.font = "bold 8px Nunito, sans-serif";
+      ctx.fillStyle = "#7ec8e3";
+      ctx.fillText("🌫 fog range", c.x, c.y - 16);
     }
   }
 
@@ -2653,6 +2769,8 @@
       if (dist(p.x, p.y, t.x, t.y) <= TOWER_SELECT_RADIUS + (t.level - 1) * 2) {
         state.selectedTower = t;
         state.selectedShop = null;
+        const tdef = TOWER_DEFS[t.type];
+        spawnRing(t.x, t.y, tdef.color, 34, 0.28);
         AudioFX.ui();
         updateShopUI();
         updateSelectedUI();
@@ -2676,6 +2794,14 @@
     updateSelectedUI();
     updateAbilityUI();
   });
+
+  function cycleSpeed() {
+    if (state.phase !== "playing" && state.phase !== "paused") return;
+    state.speed = state.speed === 1 ? 2 : state.speed === 2 ? 3 : 1;
+    AudioFX.ui();
+    showGameToast(`Speed ×${state.speed}`, "info");
+    updateHUD();
+  }
 
   function togglePause() {
     if (state.phase === "playing") {
@@ -2760,11 +2886,12 @@
       if (el.overlayHotkeys && !el.overlayHotkeys.classList.contains("hidden")) { closeHotkeys(); return; }
       if (!el.overlayAchs.classList.contains("hidden")) { closeAchs(); return; }
       if (state.abilityAiming) { state.abilityAiming = false; updateAbilityUI(); return; }
+      const hadSelection = !!(state.selectedShop || state.selectedTower);
       state.selectedShop = null;
       state.selectedTower = null;
       updateShopUI();
       updateSelectedUI();
-      if (state.phase === "playing" || state.phase === "paused") togglePause();
+      if (!hadSelection && (state.phase === "playing" || state.phase === "paused")) togglePause();
     }
     if (k === " ") {
       evt.preventDefault();
@@ -2774,13 +2901,19 @@
     if (k === "q") beginAirdropAim();
     if (k === "e") activateRage();
     if (k === "m") {
-      el.btnMute.textContent = AudioFX.toggleMute() ? "🔇" : "🔊";
+      AudioFX.toggleMute();
+      syncMuteUI();
+    }
+    if ((k === "+" || k === "=" || k === "]") && (state.phase === "playing" || state.phase === "paused")) {
+      cycleSpeed();
     }
     if ((k === "?" || k === "h") && (state.phase === "playing" || state.phase === "paused")) {
       openHotkeys();
     }
     const num = parseInt(evt.key, 10);
-    if (num >= 1 && num <= TOWER_SHOP_KEYS.length) selectShopTower(TOWER_SHOP_KEYS[num - 1]);
+    if (num >= 1 && num <= TOWER_SHOP_KEYS.length && (state.phase === "playing" || state.phase === "paused")) {
+      selectShopTower(TOWER_SHOP_KEYS[num - 1], { fromKey: true });
+    }
   });
 
   // Mode select
@@ -2805,16 +2938,12 @@
     if (state.phase === "playing" || state.phase === "paused") togglePause();
   });
   el.btnStartWave.addEventListener("click", () => { AudioFX.ui(); startWave(); });
-  el.btnSpeed.addEventListener("click", () => {
-    if (state.phase !== "playing" && state.phase !== "paused") return;
-    state.speed = state.speed === 1 ? 2 : state.speed === 2 ? 3 : 1;
-    AudioFX.ui();
-    updateHUD();
-  });
+  el.btnSpeed.addEventListener("click", () => cycleSpeed());
   el.btnAbility.addEventListener("click", () => beginAirdropAim());
   el.btnAbility2.addEventListener("click", () => activateRage());
   el.btnMute.addEventListener("click", () => {
-    el.btnMute.textContent = AudioFX.toggleMute() ? "🔇" : "🔊";
+    AudioFX.toggleMute();
+    syncMuteUI();
   });
   el.btnAchs.addEventListener("click", openAchs);
   el.btnOpenAchs.addEventListener("click", openAchs);
@@ -2840,9 +2969,15 @@
     requestAnimationFrame(frame);
   }
 
+  function syncMuteUI() {
+    if (el.btnMute) el.btnMute.textContent = AudioFX.isMuted() ? "🔇" : "🔊";
+  }
+
   buildShop();
   syncSettingsUI();
+  AudioFX.syncMutedFromSettings();
   AudioFX.setVolume(meta.settings.volume);
+  syncMuteUI();
   updateHUD();
   updateSelectedUI();
   updateMetaUI();
