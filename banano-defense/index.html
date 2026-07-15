@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BANANO DEFENSE — Protect the Potassium!</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Orbitron:wght@700;900&family=Nunito:wght@500;700;800;900&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div class="bg-fx" aria-hidden="true">
+    <div class="bg-leaves"></div>
+    <div class="bg-glow bg-glow-a"></div>
+    <div class="bg-glow bg-glow-b"></div>
+    <div class="bg-bananas" id="bg-bananas"></div>
+  </div>
+
+  <div id="app">
+    <header class="top-bar">
+      <div class="brand">
+        <span class="brand-mark">🍌</span>
+        <div>
+          <h1>BANANO DEFENSE</h1>
+          <p class="brand-sub">RICH IN POTASSIUM · FEELESS FUN</p>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat" title="Potassium Lives" id="stat-lives">
+          <span class="stat-icon hearts">🐵</span>
+          <span id="lives">25</span>
+        </div>
+        <div class="stat" title="BAN" id="stat-gold">
+          <span class="stat-icon gold">🍌</span>
+          <span id="gold">250</span>
+        </div>
+        <div class="stat" title="Wave">
+          <span class="stat-icon wave">🌊</span>
+          <span id="wave-label">0</span>
+        </div>
+        <div class="stat" title="Score">
+          <span class="stat-icon score">⭐</span>
+          <span id="score">0</span>
+        </div>
+        <div class="stat combo-stat hidden" id="stat-combo" title="Peel combo">
+          <span class="stat-icon combo">🔥</span>
+          <span id="combo">0</span>
+        </div>
+      </div>
+      <div class="top-actions">
+        <button id="btn-achievements" class="btn icon-btn" title="Achievements">🏆</button>
+        <button id="btn-mute" class="btn icon-btn" title="Toggle sound">🔊</button>
+      </div>
+    </header>
+
+    <main class="game-layout">
+      <div class="canvas-wrap" id="canvas-wrap">
+        <canvas id="game" width="960" height="640"></canvas>
+        <div id="wave-banner" class="wave-banner hidden">
+          <div class="wave-banner-inner">
+            <span class="wave-banner-kicker" id="wave-banner-kicker">INCOMING FUD</span>
+            <span class="wave-banner-title" id="wave-banner-title">WAVE 1</span>
+          </div>
+        </div>
+        <div id="combo-toast" class="combo-toast hidden"></div>
+        <div id="ach-toast" class="ach-toast hidden">
+          <span class="ach-toast-icon">🏆</span>
+          <div>
+            <strong id="ach-toast-title">Achievement!</strong>
+            <small id="ach-toast-desc"></small>
+          </div>
+        </div>
+        <div id="meme-ticker" class="meme-ticker"></div>
+        <div id="game-toast" class="game-toast hidden" role="status" aria-live="polite"></div>
+        <div id="ability-bar" class="ability-bar">
+          <button id="btn-ability" class="ability-btn" title="Banano Airdrop (Q)">
+            <span class="ability-icon">🍌</span>
+            <span class="ability-meta">
+              <strong>AIRDROP</strong>
+              <small id="ability-cd">Ready · Q</small>
+            </span>
+          </button>
+          <button id="btn-ability2" class="ability-btn ability-alt" title="Jungle Rage (E)">
+            <span class="ability-icon">🙉</span>
+            <span class="ability-meta">
+              <strong>RAGE</strong>
+              <small id="ability2-cd">Ready · E</small>
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <aside class="sidebar">
+        <section class="panel shop-panel">
+          <div class="panel-head">
+            <h2>🍌 Arsenal</h2>
+            <span class="panel-hint">1–7 keys</span>
+          </div>
+          <div id="tower-shop" class="tower-shop"></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head"><h2>Selected monKey</h2></div>
+          <div id="selected-info" class="selected-info">
+            <p class="muted">Click a tower to upgrade, retarget, or sell for BAN.</p>
+          </div>
+        </section>
+
+        <section class="panel controls">
+          <button id="btn-start-wave" class="btn primary pulse">Start Wave · Space</button>
+          <div class="btn-row">
+            <button id="btn-speed" class="btn">Speed ×1</button>
+            <button id="btn-pause" class="btn">Pause</button>
+          </div>
+          <p class="controls-hint">Space wave/resume · 1–7 towers · Q/E · Esc pause · <kbd>?</kbd> hotkeys</p>
+        </section>
+
+        <section class="panel next-wave-panel">
+          <h2>📡 FUD Forecast</h2>
+          <div id="next-wave" class="next-wave">
+            <p class="muted">Start peeling when ready.</p>
+          </div>
+        </section>
+
+        <section class="panel settings-panel">
+          <h2>⚙️ Jungle Settings</h2>
+          <div class="settings-list">
+            <label class="setting-row">
+              <input type="checkbox" id="opt-show-ranges" />
+              <span>Show all tower ranges</span>
+            </label>
+            <label class="setting-row">
+              <input type="checkbox" id="opt-reduce-particles" />
+              <span>Reduce particles</span>
+            </label>
+            <label class="setting-row setting-volume">
+              <span>Volume</span>
+              <input type="range" id="opt-volume" min="5" max="55" value="32" />
+            </label>
+            <label class="setting-row">
+              <input type="checkbox" id="opt-show-debug" />
+              <span>Debug overlay (FPS / entities)</span>
+            </label>
+          </div>
+          <button id="btn-hotkeys" type="button" class="btn">⌨️ Hotkeys · ?</button>
+        </section>
+
+        <section class="panel meta-panel">
+          <h2>Lifetime Stats</h2>
+          <div class="meta-grid">
+            <div><span>Lifetime peels</span><b id="meta-kills">0</b></div>
+            <div><span>Achievements</span><b id="meta-achs">0</b></div>
+            <div><span>Best combo</span><b id="meta-combo">0</b></div>
+            <div><span>Campaigns won</span><b id="meta-wins">0</b></div>
+          </div>
+        </section>
+
+        <section class="panel legend">
+          <h2>Hostile Memes</h2>
+          <ul class="enemy-legend">
+            <li><span class="dot paper"></span> Paperhands</li>
+            <li><span class="dot fud"></span> FUD Bot</li>
+            <li><span class="dot bear"></span> Bear</li>
+            <li><span class="dot spam"></span> Scam Spam</li>
+            <li><span class="dot whale"></span> Whale</li>
+            <li><span class="dot bot"></span> Sniper Bot</li>
+            <li><span class="dot shill"></span> Shill <small class="legend-note">(heals allies)</small></li>
+            <li><span class="dot boss"></span> Rugpull <small class="legend-note">(3 phases)</small></li>
+            <li><span class="dot tick"></span> Gas Fee Tick <small class="legend-note">(steals BAN)</small></li>
+            <li><span class="dot hodler"></span> Diamond HODLer <small class="legend-note">(regens once)</small></li>
+          </ul>
+        </section>
+      </aside>
+    </main>
+  </div>
+
+  <!-- START -->
+  <div id="overlay-start" class="overlay">
+    <div class="modal hero-modal">
+      <div class="modal-glow"></div>
+      <p class="modal-kicker">// BANANO · BLOCK-LETTUCE · MEME ECONOMY</p>
+      <div class="title-row">
+        <span class="title-emoji">🍌</span>
+        <h1 class="title-glow">BANANO<br>DEFENSE</h1>
+        <span class="title-emoji">🐵</span>
+      </div>
+      <p class="tagline">Protect the potassium. Dump the FUD. Get that sweet, feeless BAN.</p>
+
+      <div class="mode-pick">
+        <button class="mode-card selected" data-mode="campaign" id="mode-campaign">
+          <span class="mode-emoji">🏝️</span>
+          <strong>Campaign</strong>
+          <small>50 waves · story bosses · unlocks</small>
+        </button>
+        <button class="mode-card" data-mode="endless" id="mode-endless">
+          <span class="mode-emoji">♾️</span>
+          <strong>Endless Jungle</strong>
+          <small>Infinite waves · score chase</small>
+        </button>
+      </div>
+
+      <div class="feature-grid">
+        <div class="feature"><span>🍌</span> 7 banana towers</div>
+        <div class="feature"><span>🏆</span> 40 achievements</div>
+        <div class="feature"><span>🔥</span> Combos & airdrops</div>
+        <div class="feature"><span>🙉</span> Jungle Rage mode</div>
+      </div>
+
+      <ul class="how-to">
+        <li>Build on <strong>jungle grass</strong> — never on the yellow path</li>
+        <li>Earn <strong>BAN</strong> by peeling FUD off the blockchain</li>
+        <li>Unlock towers & bonuses via <strong>achievements</strong></li>
+        <li><strong>Q</strong> Banano Airdrop · <strong>E</strong> Jungle Rage</li>
+      </ul>
+
+      <button id="btn-play" class="btn primary large glint">LET'S GET BANANAS 🍌</button>
+      <div class="start-actions">
+        <button id="btn-open-achs" class="btn">🏆 Achievements</button>
+      </div>
+      <p class="hotkeys">Space wave · 1–7 towers · Q/E abilities · Esc pause · M mute</p>
+    </div>
+  </div>
+
+  <!-- ACHIEVEMENTS -->
+  <div id="overlay-achs" class="overlay hidden">
+    <div class="modal ach-modal">
+      <div class="modal-glow"></div>
+      <h2>🏆 Potassium Achievements</h2>
+      <p class="tagline ach-progress"><span id="ach-progress-text">0 / 0</span> unlocked · rewards stick forever</p>
+      <div id="ach-list" class="ach-list"></div>
+      <button id="btn-close-achs" class="btn primary">Back to Jungle</button>
+    </div>
+  </div>
+
+  <!-- PAUSE -->
+  <div id="overlay-pause" class="overlay hidden">
+    <div class="modal compact">
+      <div class="modal-glow"></div>
+      <h2>⏸️ Jungle Nap</h2>
+      <p class="tagline">The FUD is paused. BAN remains feeless.</p>
+      <p class="hotkeys pause-hint">Space or button to resume · M mute · speed setting is kept</p>
+      <button id="btn-resume" class="btn primary">Wake Up · Peel More</button>
+    </div>
+  </div>
+
+  <!-- HOTKEYS -->
+  <div id="overlay-hotkeys" class="overlay hidden">
+    <div class="modal compact hotkeys-modal">
+      <div class="modal-glow"></div>
+      <h2>⌨️ monKey Hotkeys</h2>
+      <ul class="hotkey-list">
+        <li><kbd>Space</kbd> Start wave / resume from pause</li>
+        <li><kbd>1</kbd>–<kbd>7</kbd> Select tower from Arsenal</li>
+        <li><kbd>Q</kbd> Banano Airdrop (aim + click)</li>
+        <li><kbd>E</kbd> Jungle Rage</li>
+        <li><kbd>Esc</kbd> Pause · cancel aim · deselect</li>
+        <li><kbd>M</kbd> Mute / unmute</li>
+        <li><kbd>?</kbd> or <kbd>H</kbd> This help screen</li>
+        <li><kbd>R-Click</kbd> Cancel shop / tower selection</li>
+      </ul>
+      <button id="btn-close-hotkeys" class="btn primary">Got it 🍌</button>
+    </div>
+  </div>
+
+  <!-- END -->
+  <div id="overlay-end" class="overlay hidden">
+    <div class="modal">
+      <div class="modal-glow"></div>
+      <h1 id="end-title">Victory</h1>
+      <p id="end-message"></p>
+      <div class="end-stats">
+        <div><span>Score</span><strong id="end-score">0</strong></div>
+        <div><span>Best Combo</span><strong id="end-combo">0</strong></div>
+        <div><span>Peels</span><strong id="end-kills">0</strong></div>
+        <div><span>Wave</span><strong id="end-wave">0</strong></div>
+      </div>
+      <div class="end-bests" id="end-bests"></div>
+      <div class="end-ach-note" id="end-ach-note"></div>
+      <button id="btn-restart" class="btn primary large">Again! More Potassium 🍌</button>
+      <button id="btn-end-menu" class="btn" style="margin-top:8px;width:100%">Main Menu</button>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
