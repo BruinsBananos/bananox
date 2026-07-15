@@ -134,6 +134,10 @@
               <input type="range" id="opt-volume" min="5" max="55" value="32" />
             </label>
             <label class="setting-row">
+              <input type="checkbox" id="opt-mute" />
+              <span>Mute sound</span>
+            </label>
+            <label class="setting-row">
               <input type="checkbox" id="opt-show-debug" />
               <span>Debug overlay</span>
             </label>
@@ -150,14 +154,16 @@
             <li><span class="dot whale"></span> Whale</li>
             <li><span class="dot bot"></span> Sniper Bot</li>
             <li><span class="dot shill"></span> Shill <small class="legend-note">heals</small></li>
-            <li><span class="dot boss"></span> Rugpull <small class="legend-note">3 phases</small></li>
-            <li><span class="dot tick"></span> Gas Fee <small class="legend-note">steals BAN</small></li>
+            <li><span class="dot boss"></span> Rugpull <small class="legend-note">3 phases · 5 lives</small></li>
+            <li><span class="dot tick"></span> Gas Fee <small class="legend-note">steals up to 30 BAN</small></li>
             <li><span class="dot hodler"></span> HODLer <small class="legend-note">regens</small></li>
+            <li><span class="dot fomo"></span> FOMO Rocket <small class="legend-note">accelerates</small></li>
+            <li><span class="dot mint"></span> Mint Bot <small class="legend-note">spawns adds</small></li>
           </ul>
         </details>
 
         <footer class="sidebar-foot">
-          <button id="btn-hotkeys" type="button" class="link-btn" title="Hotkeys (?)">?</button>
+          <button id="btn-hotkeys" type="button" class="link-btn" title="Hotkeys (? or H)" aria-label="Show keyboard shortcuts">?</button>
           <span class="sidebar-stats">
             <span id="meta-kills">0</span> peels · <span id="meta-achs">0</span> 🏆 · <span id="meta-combo">0</span>× · <span id="meta-wins">0</span> wins
           </span>
@@ -193,7 +199,7 @@
 
       <div class="feature-grid">
         <div class="feature"><span>🍌</span> 7 banana towers</div>
-        <div class="feature"><span>🏆</span> 40 achievements</div>
+        <div class="feature"><span>🏆</span> 43 achievements</div>
         <div class="feature"><span>🔥</span> Combos & airdrops</div>
         <div class="feature"><span>🙉</span> Jungle Rage mode</div>
       </div>
@@ -208,8 +214,9 @@
       <button id="btn-play" class="btn primary large glint">LET'S GET BANANAS 🍌</button>
       <div class="start-actions">
         <button id="btn-open-achs" class="btn">🏆 Achievements</button>
+        <button id="btn-start-hotkeys" type="button" class="btn btn-ghost">⌨️ Hotkeys</button>
       </div>
-      <p class="hotkeys">Space wave · 1–7 towers · Q/E abilities · Esc pause · M mute</p>
+      <p class="hotkeys controls-hint">Space wave · <kbd>1</kbd>–<kbd>7</kbd> towers · <kbd>+</kbd> speed · <kbd>?</kbd> help · Esc pause · M mute</p>
     </div>
   </div>
 
@@ -256,21 +263,30 @@
   </div>
 
   <!-- END -->
-  <div id="overlay-end" class="overlay hidden">
-    <div class="modal">
+  <div id="overlay-end" class="overlay hidden" role="dialog" aria-labelledby="end-title" aria-modal="true">
+    <div class="modal end-modal">
       <div class="modal-glow"></div>
       <h1 id="end-title">Victory</h1>
-      <p id="end-message"></p>
+      <p id="end-message" class="tagline"></p>
+      <p class="end-mode" id="end-mode"></p>
       <div class="end-stats">
         <div><span>Score</span><strong id="end-score">0</strong></div>
         <div><span>Best Combo</span><strong id="end-combo">0</strong></div>
         <div><span>Peels</span><strong id="end-kills">0</strong></div>
         <div><span>Wave</span><strong id="end-wave">0</strong></div>
       </div>
+      <div class="end-stats end-stats-extended">
+        <div><span>Perfect Waves</span><strong id="end-perfect">0</strong></div>
+        <div><span>BAN Spent</span><strong id="end-spent">0</strong></div>
+        <div><span>Towers Built</span><strong id="end-towers">0</strong></div>
+        <div><span>Leaks</span><strong id="end-leaks">0</strong></div>
+      </div>
       <div class="end-bests" id="end-bests"></div>
       <div class="end-ach-note" id="end-ach-note"></div>
-      <button id="btn-restart" class="btn primary large">Again! More Potassium 🍌</button>
-      <button id="btn-end-menu" class="btn" style="margin-top:8px;width:100%">Main Menu</button>
+      <div class="end-actions">
+        <button id="btn-restart" class="btn primary large">Again! More Potassium 🍌</button>
+        <button id="btn-end-menu" class="btn">Main Menu</button>
+      </div>
     </div>
   </div>
 

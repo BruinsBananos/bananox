@@ -84,8 +84,8 @@ const TOWER_SHOP_KEYS = extractConst("TOWER_SHOP_KEYS");
 const DEFAULT_SETTINGS = extractConst("DEFAULT_SETTINGS");
 const PATH_TILES = extractConst("PATH_TILES");
 
-assert(ACHIEVEMENTS && ACHIEVEMENTS.length === 40, "40 achievements defined", `got ${ACHIEVEMENTS?.length}`);
-assert(indexHtml.includes("40 achievements"), "index.html shows 40 achievements");
+assert(ACHIEVEMENTS && ACHIEVEMENTS.length === 43, "43 achievements defined", `got ${ACHIEVEMENTS?.length}`);
+assert(indexHtml.includes("43 achievements"), "index.html shows 43 achievements");
 if (ACHIEVEMENTS) {
   const ids = ACHIEVEMENTS.map((a) => a.id);
   assert(ids.length === new Set(ids).size, "achievement IDs unique");
@@ -107,9 +107,12 @@ if (ENEMY_DEFS) {
   const types = Object.keys(ENEMY_DEFS);
   assert(types.includes("tick"), "Gas Fee Tick enemy");
   assert(types.includes("hodler"), "Diamond HODLer enemy");
+  assert(types.includes("fomo"), "FOMO Rocket enemy");
+  assert(types.includes("mint"), "Mint Bot enemy");
   assert(types.includes("boss"), "Rugpull boss");
-  assert(ENEMY_DEFS.boss.hp === 1400, "boss base HP 1400");
-  assert(ENEMY_DEFS.tick.goldSteal === 40, "tick steals 40 BAN");
+  assert(ENEMY_DEFS.boss.hp === 1320, "boss base HP 1320");
+  assert(ENEMY_DEFS.boss.lives === 5, "boss costs 5 lives on leak");
+  assert(ENEMY_DEFS.tick.goldSteal === 30, "tick steals up to 30 BAN");
 }
 
 if (DEFAULT_SETTINGS) {
@@ -123,12 +126,15 @@ if (WAVE_EVENTS) {
   assert(keys.includes(7) && keys.includes(48), "wave events 7-48 present");
   assert(WAVE_EVENTS[18]?.id === "fog", "wave 18 fog event");
   assert(WAVE_EVENTS[12]?.id === "double_ban", "wave 12 double BAN");
+  assert(WAVE_EVENTS[25]?.id === "fomo_friday", "wave 25 FOMO Friday");
+  assert(WAVE_EVENTS[33]?.id === "mint_rush", "wave 33 Mint & Run");
+  assert(WAVE_EVENTS[46]?.id === "ban_storm", "wave 46 BAN Storm");
 }
 
 // ── 4. Balance constants from source ─────────────────────────────────────────
-console.log("\n4. Balance & phase fixes (Phases 1–7)");
-assert(gameJs.includes("WAVE_INTEREST_CAP = 250"), "interest cap 250");
-assert(gameJs.includes("WAVE_INTEREST_RATE = 0.02"), "interest rate 2%");
+console.log("\n4. Balance & maintainability (Phases 1–6)");
+assert(gameJs.includes("WAVE_INTEREST_CAP = 220"), "interest cap 220");
+assert(gameJs.includes("WAVE_INTEREST_RATE = 0.017"), "interest rate 1.7%");
 assert(gameJs.includes('SAVE_KEY = "banano_defense_v1"'), "save key unchanged");
 assert(gameJs.includes("airdropCd: 3"), "starter airdropCd 3");
 assert(gameJs.includes("rageCd: 8"), "starter rageCd 8");
@@ -143,6 +149,18 @@ assert(gameJs.includes("lifetimeBosses: meta.lifetimeBosses"), "achievement snap
 assert(gameJs.includes("showGameToast"), "placement toast system");
 assert(gameJs.includes("towerEffectiveRange"), "fog range modifier");
 assert(gameJs.includes("tickDebug"), "debug overlay");
+assert(gameJs.includes("const ENDLESS_EVENT_CYCLE"), "endless event cycle constant");
+assert(gameJs.includes("const WAVE_THREAT_ORDER"), "wave threat order constant");
+assert(gameJs.includes("function createRunDefaults"), "createRunDefaults factory");
+assert(gameJs.includes("function applyRunReset"), "applyRunReset helper");
+assert(gameJs.includes("function bindGameInput"), "bindGameInput groups listeners");
+assert(gameJs.includes("function hideAllOverlays"), "hideAllOverlays helper");
+assert(gameJs.includes("RUN_START_GOLD_BASE = 250"), "run start gold constant");
+assert(
+  gameJs.includes('if (state.phase === "playing")') && gameJs.includes("state.rageTimer = Math.max"),
+  "gameplay timers freeze when not playing (pause/end)"
+);
+assert(gameJs.includes("state.enemies = []") && gameJs.includes("function endGame"), "endGame clears battlefield entities");
 
 // Pierce formula: sniper pierce=1, lv1 => 1 target
 const sniperPierce = 1 + 1 - 1;
@@ -155,7 +173,7 @@ const TILE = 40;
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const dist = (ax, ay, bx, by) => Math.hypot(bx - ax, by - ay);
 const tileCenter = (tx, ty) => ({ x: tx * TILE + TILE / 2, y: ty * TILE + TILE / 2 });
-const hpScale = (wave) => 1 + (wave - 1) * 0.15 + Math.floor((wave - 1) / 10) * 0.1;
+const hpScale = (wave) => 1 + (wave - 1) * 0.13 + Math.floor((wave - 1) / 10) * 0.08;
 
 assert(hpScale(1) === 1, "hpScale wave 1 = 1");
 assert(hpScale(10) > hpScale(5), "hpScale increases with wave");
@@ -207,15 +225,16 @@ if (BOSS_PHASE_CFG) {
 // Wave composition enemy types
 function waveComposition(wave) {
   const enemies = [];
-  const base = 8 + Math.floor(wave * 1.6);
+  const base = 8 + Math.floor(wave * 1.5);
   const w = wave;
   if (w % 10 === 0) {
-    enemies.push({ type: "boss", count: Math.min(2, 1 + Math.floor((w - 1) / 20)) });
+    const bossCount = w >= 50 ? 1 : Math.min(2, 1 + Math.floor((w - 1) / 20));
+    enemies.push({ type: "boss", count: bossCount });
     enemies.push({ type: "whale", count: 1 + Math.floor(w / 20) });
     enemies.push({ type: "bear", count: 2 + Math.floor(w / 10) });
     enemies.push({ type: "shill", count: 1 + Math.floor(w / 15) });
     enemies.push({ type: "paper", count: base });
-    enemies.push({ type: "spam", count: 6 + Math.floor(w * 0.85) });
+    enemies.push({ type: "spam", count: 5 + Math.floor(w * 0.72) });
   } else if (w % 5 === 0) {
     enemies.push({ type: "boss", count: 1 });
     enemies.push({ type: "bear", count: 2 + Math.floor(w / 10) });
@@ -227,7 +246,7 @@ function waveComposition(wave) {
     enemies.push({ type: "bot", count: 3 + Math.floor(w / 3) });
     enemies.push({ type: "paper", count: base });
   } else if (w % 3 === 0) {
-    enemies.push({ type: "spam", count: 10 + Math.floor(w * 1.5) });
+    enemies.push({ type: "spam", count: 8 + Math.floor(w * 1.35) });
     enemies.push({ type: "fud", count: 5 + w });
     enemies.push({ type: "bear", count: Math.max(1, Math.floor(w / 6)) });
   } else if (w % 2 === 0) {
@@ -243,7 +262,9 @@ function waveComposition(wave) {
     if (w > 22) enemies.push({ type: "whale", count: 1 });
   }
   if (w >= 14) enemies.push({ type: "tick", count: 1 + Math.floor(w / 14) });
+  if (w >= 16) enemies.push({ type: "fomo", count: 1 + Math.floor(w / 20) });
   if (w >= 20) enemies.push({ type: "hodler", count: Math.max(1, Math.floor(w / 22)) });
+  if (w >= 24) enemies.push({ type: "mint", count: 1 + Math.floor(w / 28) });
   return enemies;
 }
 
@@ -253,9 +274,13 @@ const w14 = waveComposition(14);
 assert(w14.some((g) => g.type === "tick"), "wave 14+ has ticks");
 const w20 = waveComposition(20);
 assert(w20.some((g) => g.type === "hodler"), "wave 20+ has hodlers");
+const w16 = waveComposition(16);
+assert(w16.some((g) => g.type === "fomo"), "wave 16+ has FOMO Rockets");
+const w24 = waveComposition(24);
+assert(w24.some((g) => g.type === "mint"), "wave 24+ has Mint Bots");
 const w50 = waveComposition(50);
 const bossCount50 = w50.find((g) => g.type === "boss")?.count ?? 0;
-assert(bossCount50 <= 2, "wave 50 boss cap at 2", `count=${bossCount50}`);
+assert(bossCount50 === 1, "wave 50 has single Rugpull finale", `count=${bossCount50}`);
 
 for (let w = 1; w <= 50; w++) {
   for (const g of waveComposition(w)) {
@@ -268,21 +293,21 @@ for (let w = 1; w <= 50; w++) {
 pass("waves 1–50 only use valid enemy types");
 
 // Interest cap
-const interest = Math.min(250, Math.floor(20000 * 0.02));
-assert(interest === 250, "interest capped at 250 for 20k gold");
+const interest = Math.min(220, Math.floor(20000 * 0.017));
+assert(interest === 220, "interest capped at 220 for 20k gold");
 
 // Endless wave events cycle
+const ENDLESS_EVENT_CYCLE = extractConst("ENDLESS_EVENT_CYCLE");
 function getWaveEvent(wave, mode) {
   if (WAVE_EVENTS[wave]) return { ...WAVE_EVENTS[wave] };
-  if (mode === "endless" && wave > 50) {
-    const cycle = [7, 12, 18, 22, 28, 35, 42, 48];
-    const key = cycle[(wave - 51) % cycle.length];
+  if (mode === "endless" && wave > 50 && ENDLESS_EVENT_CYCLE) {
+    const key = ENDLESS_EVENT_CYCLE[(wave - 51) % ENDLESS_EVENT_CYCLE.length];
     return WAVE_EVENTS[key] ? { ...WAVE_EVENTS[key] } : null;
   }
   return null;
 }
 assert(getWaveEvent(51, "endless")?.id === WAVE_EVENTS[7].id, "endless W51 cycles events");
-assert(getWaveEvent(58, "endless")?.id === WAVE_EVENTS[48].id, "endless event cycle wraps");
+assert(getWaveEvent(61, "endless")?.id === WAVE_EVENTS[48].id, "endless event cycle wraps");
 
 // ── 6. CSS sanity ────────────────────────────────────────────────────────────
 console.log("\n6. CSS / UI hooks");
@@ -290,6 +315,12 @@ assert(styleCss.includes(".game-toast"), "game toast styles");
 assert(styleCss.includes(".settings-panel") || styleCss.includes(".setting-row"), "settings panel styles");
 assert(styleCss.includes(".hotkeys-modal") || styleCss.includes(".hotkey-list"), "hotkeys overlay styles");
 assert(styleCss.includes(".end-bests"), "end screen bests styles");
+assert(styleCss.includes(".end-stats-extended"), "end screen extended stats styles");
+assert(styleCss.includes(".tower-key"), "shop key badge styles");
+assert(styleCss.includes(".stat-critical"), "critical lives HUD styles");
+assert(indexHtml.includes('id="end-perfect"'), "end screen perfect waves stat");
+assert(indexHtml.includes('id="end-spent"'), "end screen BAN spent stat");
+assert(indexHtml.includes('id="opt-mute"'), "settings mute toggle");
 assert(styleCss.includes("--banano"), "banano CSS variables");
 
 // ── 7. Boot smoke (mock DOM) ─────────────────────────────────────────────────

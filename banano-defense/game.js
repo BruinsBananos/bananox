@@ -1,6 +1,8 @@
 /**
  * BANANO DEFENSE — Protect the Potassium!
- * Single-file IIFE: constants → helpers → audio → state/DOM → game logic → render → input → loop
+ * Single-file IIFE layout:
+ *   CONSTANTS → helpers/meta/path → AUDIO → state+DOM → UI → FX → actions → sim → render → input → loop
+ * Run state: createRunDefaults() / applyRunReset() — keep boot and resetGame() in sync.
  * @version banano_defense_v1 (localStorage SAVE_KEY)
  */
 (() => {
@@ -17,13 +19,13 @@
   const H = ROWS * TILE;
   const CAMPAIGN_WAVES = 50;
   const SELL_REFUND = 0.6;
-  const AIRDROP_CD = 28;
-  const RAGE_CD = 42;
+  const AIRDROP_CD = 26;
+  const RAGE_CD = 40;
   const COMBO_WINDOW = 1.8;
   const WAVE_BONUS_BASE = 30;
   const WAVE_BONUS_PER = 10;
-  const WAVE_INTEREST_RATE = 0.02;
-  const WAVE_INTEREST_CAP = 250;
+  const WAVE_INTEREST_RATE = 0.017;
+  const WAVE_INTEREST_CAP = 220;
   const PERFECT_WAVE_MULT = 1.35;
   const COMBO_GOLD_CAP = 1.25;
   const SAVE_KEY = "banano_defense_v1";
@@ -43,7 +45,13 @@
   };
   const TOWER_SELECT_RADIUS = 24;
   const TOWER_SHOP_KEYS = ["cannon", "sniper", "splash", "frost", "tesla", "monkey", "hammer"];
-  const DEFAULT_SETTINGS = { showAllRanges: false, reduceParticles: false, volume: 0.32, showDebug: false, muted: false };
+  const WAVE_THREAT_ORDER = ["boss", "whale", "hodler", "mint", "fomo", "tick", "bear", "shill", "bot", "fud", "spam", "paper"];
+  const ENDLESS_EVENT_CYCLE = [7, 12, 18, 22, 25, 28, 33, 35, 42, 46, 48];
+  const RUN_START_LIVES = 25;
+  const RUN_START_GOLD_BASE = 250;
+  const RUN_START_GOLD_WIN_BONUS = 50;
+  const RUN_START_GOLD_RICH_BONUS = 25;
+  const DEFAULT_SETTINGS = { showAllRanges: false, reduceParticles: false, volume: 0.32, showDebug: false, muted: false, seenHotkeyHint: false };
 
   const MEMES = [
     "Rich in potassium! 🍌",
@@ -76,6 +84,12 @@
     "Regulatory fog can't stop potassium.",
     "Double BAN drops hit different.",
     "The jungle provides. Feelessly.",
+    "FOMO rockets don't read whitepapers.",
+    "Mint bot go brrr — peel the clones!",
+    "Yellow Cake makes FUD sticky.",
+    "BAN storm incoming — peel faster!",
+    "Block-lettuce never sleeps.",
+    "Your wallet called. It wants more potassium.",
   ];
 
   const WAVE_EVENTS = {
@@ -87,17 +101,24 @@
     35: { id: "fog", name: "Compliance Fog", rangeMod: 0.8, fogDuration: 16, meme: "Regulators hate fun. You love potassium." },
     42: { id: "double_ban", name: "Airdrop Echo", meme: "Echo airdrop vibes — double BAN peels! 🪂" },
     48: { id: "miniboss", name: "Pre-Peel Panic", extraBoss: 1, meme: "Rugpull rehearsal before THE GREAT PEEL!" },
+    25: { id: "fomo_friday", name: "FOMO Friday", extraFomo: 9, meme: "Charts only go up until they don't! 🚀" },
+    33: { id: "mint_rush", name: "Mint & Run", extraMint: 7, meme: "Infinite mint energy — peel the copies! 🪙" },
+    46: { id: "ban_storm", name: "BAN Storm", spawnScale: 0.58, extraFomo: 5, meme: "Feeless yields AND sprinting FUD? HODL your aim!" },
   };
 
   const WIN_MESSAGES = [
     "The Banano is safe. FUD has been peeled. The troop celebrates!",
     "Wallet secured. Potassium levels: CRITICAL (the good kind).",
     "Rugpulls rejected. Jungle law upheld. BAN flows feelessly.",
+    "FOMO Rockets grounded. Mint Bots melted. The canopy stands.",
+    "THE GREAT PEEL is complete. monKeys dance feelessly forever.",
   ];
   const LOSE_MESSAGES = [
     "The FUD breached the jungle. Rebuild and HODL harder.",
     "Paperhands reached the wallet. Touch banana leaves and try again.",
     "Gas fees and FUD won this round. The monKeys believe in you.",
+    "A FOMO Rocket hit the wallet at lightspeed. Slow down next time.",
+    "Mint Bots cloned your defeat. Peel the source earlier!",
   ];
 
   const WAVE_NAMES = {
@@ -111,6 +132,7 @@
     40: "Black Thursday",
     45: "Final FUD Siege",
     50: "THE GREAT PEEL",
+    33: "Mint Season",
   };
 
   // ── Towers ─────────────────────────────────────────────────────────────────
@@ -118,37 +140,37 @@
   const TOWER_DEFS = {
     cannon: {
       id: "cannon", name: "Peeler", icon: "🍌", cost: 50,
-      range: 115, damage: 24, fireRate: 1.0, color: "#fbdd11",
-      projectileSpeed: 450, description: "Classic banana blaster",
+      range: 115, damage: 26, fireRate: 1.05, color: "#fbdd11",
+      projectileSpeed: 450, description: "Cheap workhorse blaster — solid early peel",
       upgradeCost: 40, dmgScale: 1.5, rangeScale: 1.08, rateScale: 1.14,
       critChance: 0.1, unlock: null,
     },
     sniper: {
-      id: "sniper", name: "Yellow Rail", icon: "🎯", cost: 100,
-      range: 245, damage: 75, fireRate: 0.42, color: "#ff9f1c",
-      projectileSpeed: 1200, description: "Long-range ban-beam",
-      upgradeCost: 80, dmgScale: 1.55, rangeScale: 1.06, rateScale: 1.12,
-      critChance: 0.24, beam: true, pierce: 1, unlock: null,
+      id: "sniper", name: "Yellow Rail", icon: "🎯", cost: 110,
+      range: 228, damage: 68, fireRate: 0.38, color: "#ff9f1c",
+      projectileSpeed: 1200, description: "Long-range pierce beam — elite picks, not solo carry",
+      upgradeCost: 80, dmgScale: 1.52, rangeScale: 1.06, rateScale: 1.1,
+      critChance: 0.18, beam: true, pierce: 1, unlock: null,
     },
     splash: {
       id: "splash", name: "Potassium Bomb", icon: "💥", cost: 125,
       range: 140, damage: 38, fireRate: 0.5, color: "#ff6b35",
-      projectileSpeed: 280, splashRadius: 68, description: "Arcing peel AOE — great vs swarms",
+      projectileSpeed: 280, splashRadius: 68, description: "Arcing peel AOE — Lv3 Yellow Cake adds splash slow",
       upgradeCost: 90, dmgScale: 1.42, rangeScale: 1.08, rateScale: 1.12,
       critChance: 0.06, arc: true, unlock: null,
     },
     frost: {
       id: "frost", name: "Chill Ban", icon: "🧊", cost: 85,
-      range: 112, damage: 16, fireRate: 1.15, color: "#7ec8e3",
-      projectileSpeed: 400, slowFactor: 0.38, slowDuration: 2.5,
-      description: "Heavy slow — peel time from fast FUD",
-      upgradeCost: 60, dmgScale: 1.38, rangeScale: 1.1, rateScale: 1.15,
-      critChance: 0.07, unlock: null,
+      range: 112, damage: 20, fireRate: 1.2, color: "#7ec8e3",
+      projectileSpeed: 400, slowFactor: 0.32, slowDuration: 2.8,
+      description: "68% slow + steady peel — shuts down FUD sprints",
+      upgradeCost: 60, dmgScale: 1.4, rangeScale: 1.1, rateScale: 1.15,
+      critChance: 0.08, unlock: null,
     },
     tesla: {
-      id: "tesla", name: "Zapban", icon: "⚡", cost: 155,
-      range: 125, damage: 22, fireRate: 0.88, color: "#c4f542",
-      description: "Chain-lightning potassium",
+      id: "tesla", name: "Zapban", icon: "⚡", cost: 148,
+      range: 125, damage: 23, fireRate: 0.9, color: "#c4f542",
+      description: "Chain lightning — best vs grouped spam",
       upgradeCost: 100, dmgScale: 1.4, rangeScale: 1.07, rateScale: 1.12,
       critChance: 0.1, chain: 3, chainFalloff: 0.65, instant: true, unlock: null,
     },
@@ -161,8 +183,8 @@
     },
     hammer: {
       id: "hammer", name: "Banhammer", icon: "🔨", cost: 200,
-      range: 100, damage: 110, fireRate: 0.35, color: "#ff4d94",
-      projectileSpeed: 380, splashRadius: 52, description: "Mod smash — bosses & clusters",
+      range: 100, damage: 118, fireRate: 0.36, color: "#ff4d94",
+      projectileSpeed: 380, splashRadius: 52, description: "Mod smash — Rugpulls & tight clumps",
       upgradeCost: 140, dmgScale: 1.5, rangeScale: 1.06, rateScale: 1.1,
       critChance: 0.15, arc: true, unlock: "unlock_hammer",
     },
@@ -171,14 +193,16 @@
   const ENEMY_DEFS = {
     paper:  { name: "Paperhands", hp: 55,  speed: 58,  reward: 8,  radius: 12, color: "#e8d5a3", lives: 1 },
     fud:    { name: "FUD Bot",    hp: 40,  speed: 95,  reward: 10, radius: 10, color: "#ff7a7a", lives: 1 },
-    bear:   { name: "Bear",       hp: 260, speed: 30,  reward: 28, radius: 17, color: "#a67c52", lives: 2 },
+    bear:   { name: "Bear",       hp: 248, speed: 30,  reward: 28, radius: 17, color: "#a67c52", lives: 2 },
     spam:   { name: "Scam Spam",  hp: 28,  speed: 90,  reward: 5,  radius: 8,  color: "#c49bff", lives: 1 },
     whale:  { name: "Whale",      hp: 520, speed: 24,  reward: 45, radius: 20, color: "#5b9bff", lives: 3 },
     bot:    { name: "Sniper Bot", hp: 70,  speed: 70,  reward: 14, radius: 11, color: "#7dffb3", lives: 1 },
-    shill:  { name: "Shill",      hp: 100, speed: 50,  reward: 16, radius: 13, color: "#ffb347", lives: 1, healRate: 14, healRange: 75 },
-    boss:   { name: "Rugpull",    hp: 1400, speed: 25, reward: 140, radius: 26, color: "#ff4d94", lives: 6 },
-    tick:   { name: "Gas Fee Tick", hp: 34, speed: 108, reward: 12, radius: 9, color: "#9effc4", lives: 1, goldSteal: 40 },
+    shill:  { name: "Shill",      hp: 100, speed: 50,  reward: 16, radius: 13, color: "#ffb347", lives: 1, healRate: 12, healRange: 75 },
+    boss:   { name: "Rugpull",    hp: 1320, speed: 25, reward: 140, radius: 26, color: "#ff4d94", lives: 5 },
+    tick:   { name: "Gas Fee Tick", hp: 34, speed: 102, reward: 12, radius: 9, color: "#9effc4", lives: 1, goldSteal: 30 },
     hodler: { name: "Diamond HODLer", hp: 190, speed: 34, reward: 22, radius: 14, color: "#88d4ff", lives: 1, regen: 0.28 },
+    fomo:   { name: "FOMO Rocket", hp: 52, speed: 72, reward: 14, radius: 11, color: "#ff6eb4", lives: 1, fomoRamp: 1.35 },
+    mint:   { name: "Mint Bot", hp: 88, speed: 44, reward: 18, radius: 13, color: "#7cf4a8", lives: 1, mintSplit: 2 },
   };
 
   const BOSS_PHASE_CFG = {
@@ -231,6 +255,9 @@
     { id: "fog_walker", name: "Fog Walker", desc: "Perfect-clear a Regulatory Fog wave", icon: "🌫️", check: (s) => s.fogPerfectClears >= 1 },
     { id: "brain_freeze", name: "Brain Freeze", desc: "Ripe Chill Ban to Lv3 (Brain Freeze perk)", icon: "🧊", check: (s) => s.brainFreezeTowers >= 1 },
     { id: "rug_phase3", name: "Rug Survivor", desc: "Defeat a Rugpull during Rug Moment (phase 3)", icon: "🚨", check: (s) => s.bossPhase3Kills >= 1 },
+    { id: "fomo_hunter", name: "No FOMO", desc: "Peel 12 FOMO Rockets in one run", icon: "🚀", check: (s) => s.fomoKills >= 12 },
+    { id: "yellow_cake", name: "Yellow Cake", desc: "Ripe Potassium Bomb to Lv3 (Yellow Cake perk)", icon: "🧁", check: (s) => s.yellowCakeTowers >= 1 },
+    { id: "mint_burn", name: "Burn the Mint", desc: "Peel 8 Mint Bots in one run", icon: "🪙", check: (s) => s.mintKills >= 8 },
   ];
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -282,6 +309,7 @@
     meta.settings.showDebug = !!meta.settings.showDebug;
     meta.settings.volume = clamp(Number(meta.settings.volume ?? DEFAULT_SETTINGS.volume), 0.05, 0.55);
     meta.settings.muted = !!meta.settings.muted;
+    meta.settings.seenHotkeyHint = !!meta.settings.seenHotkeyHint;
   }
 
   function fxCount(n) {
@@ -354,16 +382,17 @@
 
   function waveComposition(wave) {
     const enemies = [];
-    const base = 8 + Math.floor(wave * 1.6);
+    const base = 8 + Math.floor(wave * 1.5);
     const w = wave;
 
     if (w % 10 === 0) {
-      enemies.push({ type: "boss", count: Math.min(2, 1 + Math.floor((w - 1) / 20)) });
+      const bossCount = w >= 50 ? 1 : Math.min(2, 1 + Math.floor((w - 1) / 20));
+      enemies.push({ type: "boss", count: bossCount });
       enemies.push({ type: "whale", count: 1 + Math.floor(w / 20) });
       enemies.push({ type: "bear", count: 2 + Math.floor(w / 10) });
       enemies.push({ type: "shill", count: 1 + Math.floor(w / 15) });
       enemies.push({ type: "paper", count: base });
-      enemies.push({ type: "spam", count: 6 + Math.floor(w * 0.85) });
+      enemies.push({ type: "spam", count: 5 + Math.floor(w * 0.72) });
     } else if (w % 5 === 0) {
       enemies.push({ type: "boss", count: 1 });
       enemies.push({ type: "bear", count: 2 + Math.floor(w / 10) });
@@ -375,7 +404,7 @@
       enemies.push({ type: "bot", count: 3 + Math.floor(w / 3) });
       enemies.push({ type: "paper", count: base });
     } else if (w % 3 === 0) {
-      enemies.push({ type: "spam", count: 10 + Math.floor(w * 1.5) });
+      enemies.push({ type: "spam", count: 8 + Math.floor(w * 1.35) });
       enemies.push({ type: "fud", count: 5 + w });
       enemies.push({ type: "bear", count: Math.max(1, Math.floor(w / 6)) });
     } else if (w % 2 === 0) {
@@ -391,15 +420,16 @@
       if (w > 22) enemies.push({ type: "whale", count: 1 });
     }
     if (w >= 14) enemies.push({ type: "tick", count: 1 + Math.floor(w / 14) });
+    if (w >= 16) enemies.push({ type: "fomo", count: 1 + Math.floor(w / 20) });
     if (w >= 20) enemies.push({ type: "hodler", count: Math.max(1, Math.floor(w / 22)) });
+    if (w >= 24) enemies.push({ type: "mint", count: 1 + Math.floor(w / 28) });
     return enemies;
   }
 
   function getWaveEvent(wave) {
     if (WAVE_EVENTS[wave]) return { ...WAVE_EVENTS[wave] };
     if (state.mode === "endless" && wave > 50) {
-      const cycle = [7, 12, 18, 22, 28, 35, 42, 48];
-      const key = cycle[(wave - 51) % cycle.length];
+      const key = ENDLESS_EVENT_CYCLE[(wave - 51) % ENDLESS_EVENT_CYCLE.length];
       return WAVE_EVENTS[key] ? { ...WAVE_EVENTS[key] } : null;
     }
     return null;
@@ -417,7 +447,7 @@
     return effectiveRangeFromBase(tower.range);
   }
 
-  const hpScale = (wave) => 1 + (wave - 1) * 0.15 + Math.floor((wave - 1) / 10) * 0.1;
+  const hpScale = (wave) => 1 + (wave - 1) * 0.13 + Math.floor((wave - 1) / 10) * 0.08;
 
   // ═══════════════════════════════════════════════════════════════════════════
   // AUDIO
@@ -560,59 +590,90 @@
   let meta = loadMeta();
   ensureSettings();
 
+  /** Per-run counters/queues — single source of truth for resetGame() and boot state. */
+  function createRunDefaults() {
+    return {
+      lives: RUN_START_LIVES,
+      score: 0,
+      wave: 0,
+      speed: 1,
+      selectedShop: null,
+      selectedTower: null,
+      towers: [],
+      enemies: [],
+      projectiles: [],
+      beams: [],
+      chains: [],
+      particles: [],
+      rings: [],
+      floatTexts: [],
+      shocks: [],
+      peels: [],
+      waveActive: false,
+      spawnQueue: [],
+      spawnTimer: 0,
+      shake: 0,
+      flash: 0,
+      hitstop: 0,
+      combo: 0,
+      comboTimer: 0,
+      bestCombo: 0,
+      kills: 0,
+      bossKills: 0,
+      leaks: 0,
+      airdropCd: 3,
+      rageCd: 8,
+      abilityAiming: false,
+      rageTimer: 0,
+      waveLeaked: false,
+      bannerTimer: 0,
+      perfectWaves: 0,
+      perfectStreak: 0,
+      maxedTowers: 0,
+      towersBuilt: 0,
+      airdrops: 0,
+      rages: 0,
+      spent: 0,
+      crits: 0,
+      typesBuiltSet: new Set(),
+      typesBuilt: 0,
+      clearedOn3x: 0,
+      wonCampaign: false,
+      memeTimer: 0,
+      waveEvent: null,
+      waveEventTimer: 0,
+      tickKills: 0,
+      hodlerBroken: 0,
+      fogPerfectClears: 0,
+      brainFreezeTowers: 0,
+      bossPhase3Kills: 0,
+      fomoKills: 0,
+      mintKills: 0,
+      yellowCakeTowers: 0,
+    };
+  }
+
+  function computeStartGold() {
+    return RUN_START_GOLD_BASE
+      + (meta.campaignWins > 0 ? RUN_START_GOLD_WIN_BONUS : 0)
+      + (meta.achievements.rich ? RUN_START_GOLD_RICH_BONUS : 0);
+  }
+
+  function applyRunReset(phase = "playing", extra = {}) {
+    Object.assign(state, createRunDefaults(), { phase, gold: computeStartGold(), ...extra });
+  }
+
   const state = {
+    ...createRunDefaults(),
     phase: "menu",
     mode: "campaign",
-    lives: 25,
-    gold: 250,
-    score: 0,
-    wave: 0,
-    speed: 1,
-    selectedShop: null,
-    selectedTower: null,
-    towers: [],
-    enemies: [],
-    projectiles: [],
-    beams: [],
-    chains: [],
-    particles: [],
-    rings: [],
-    floatTexts: [],
-    shocks: [],
-    peels: [],
-    waveActive: false,
-    spawnQueue: [],
-    spawnTimer: 0,
+    gold: computeStartGold(),
     hoverTile: null,
     mouse: { x: 0, y: 0 },
     animTime: 0,
-    shake: 0, shakeX: 0, shakeY: 0,
-    flash: 0, flashColor: "#fbdd11",
-    hitstop: 0,
-    combo: 0, comboTimer: 0, bestCombo: 0,
-    kills: 0, bossKills: 0,
-    airdropCd: 3, rageCd: 8,
-    abilityAiming: false,
-    rageTimer: 0,
-    waveLeaked: false,
-    bannerTimer: 0,
-    perfectWaves: 0, perfectStreak: 0,
-    maxedTowers: 0, towersBuilt: 0,
-    airdrops: 0, rages: 0,
-    spent: 0, crits: 0,
-    typesBuiltSet: new Set(),
-    typesBuilt: 0,
-    clearedOn3x: 0,
-    wonCampaign: false,
-    lifetimeBosses: 0,
-    memeTimer: 0,
-    waveEvent: null,
-    waveEventTimer: 0,
-    tickKills: 0,
-    hodlerBroken: 0,
-    fogPerfectClears: 0,
-    brainFreezeTowers: 0,
-    bossPhase3Kills: 0,
+    shakeX: 0,
+    shakeY: 0,
+    flashColor: "#fbdd11",
   };
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -659,6 +720,12 @@
     endCombo: document.getElementById("end-combo"),
     endKills: document.getElementById("end-kills"),
     endWave: document.getElementById("end-wave"),
+    endPerfect: document.getElementById("end-perfect"),
+    endSpent: document.getElementById("end-spent"),
+    endTowers: document.getElementById("end-towers"),
+    endLeaks: document.getElementById("end-leaks"),
+    endMode: document.getElementById("end-mode"),
+    btnStartHotkeys: document.getElementById("btn-start-hotkeys"),
     endAchNote: document.getElementById("end-ach-note"),
     waveBanner: document.getElementById("wave-banner"),
     waveBannerTitle: document.getElementById("wave-banner-title"),
@@ -678,12 +745,21 @@
     optShowRanges: document.getElementById("opt-show-ranges"),
     optReduceParticles: document.getElementById("opt-reduce-particles"),
     optVolume: document.getElementById("opt-volume"),
+    optMute: document.getElementById("opt-mute"),
     optShowDebug: document.getElementById("opt-show-debug"),
     overlayHotkeys: document.getElementById("overlay-hotkeys"),
     btnHotkeys: document.getElementById("btn-hotkeys"),
     btnCloseHotkeys: document.getElementById("btn-close-hotkeys"),
     endBests: document.getElementById("end-bests"),
   };
+
+  function hideAllOverlays() {
+    el.overlayStart?.classList.add("hidden");
+    el.overlayPause?.classList.add("hidden");
+    el.overlayEnd?.classList.add("hidden");
+    el.overlayAchs?.classList.add("hidden");
+    el.overlayHotkeys?.classList.add("hidden");
+  }
 
   function popStat(node) {
     if (!node) return;
@@ -718,6 +794,7 @@
     if (def.slowFactor) rows.push({ label: "Slow", value: `${Math.round((1 - def.slowFactor) * 100)}% for ${def.slowDuration}s` });
     if (def.multishot) rows.push({ label: "Shots", value: `${def.multishot + level - 1}/volley` });
     if (tower?.brainFreeze) rows.push({ label: "Lv3 perk", value: "Brain Freeze (22%)" });
+    if (tower?.yellowCake) rows.push({ label: "Lv3 perk", value: "Yellow Cake (+14 splash, slow)" });
     return rows;
   }
 
@@ -742,13 +819,15 @@
 
   function buildShop() {
     el.shop.innerHTML = "";
-    Object.keys(TOWER_DEFS).forEach((key, idx) => {
+    TOWER_SHOP_KEYS.forEach((key, idx) => {
       const def = TOWER_DEFS[key];
       const unlocked = isTowerUnlocked(key);
+      const keyNum = idx + 1;
       const btn = document.createElement("button");
       btn.className = "tower-card" + (unlocked ? "" : " locked");
       btn.dataset.type = key;
       btn.innerHTML = `
+        <span class="tower-key" aria-hidden="true">${keyNum}</span>
         <div class="tower-icon ${key}">${unlocked ? def.icon : "🔒"}</div>
         <div class="tower-meta">
           <strong>${unlocked ? def.name : "Locked"}</strong>
@@ -758,6 +837,7 @@
       `;
       btn.addEventListener("click", () => {
         if (!unlocked) {
+          showGameToast(`${def.name} locked — ${getTowerUnlockHint(key)}`, "info");
           showMeme("Unlock this with achievements! 🔒");
           AudioFX.ui();
           return;
@@ -765,7 +845,7 @@
         AudioFX.ui();
         selectShopTower(key);
       });
-      btn.title = unlocked ? `${def.name} · 🍌${def.cost} · key ${idx + 1}` : `${getTowerUnlockHint(key)}`;
+      btn.title = unlocked ? `${def.name} · 🍌${def.cost} · key ${keyNum}` : `Locked — ${getTowerUnlockHint(key)}`;
       el.shop.appendChild(btn);
     });
   }
@@ -793,12 +873,21 @@
       const type = card.dataset.type;
       const def = TOWER_DEFS[type];
       const unlocked = isTowerUnlocked(type);
+      const playable = state.phase === "playing" || state.phase === "paused";
+      const canAfford = unlocked && playable && state.gold >= def.cost;
       card.classList.toggle("selected", state.selectedShop === type);
       card.classList.toggle("locked", !unlocked);
-      const playable = state.phase === "playing" || state.phase === "paused";
       card.disabled = !unlocked || state.phase === "menu";
       card.classList.toggle("cant-afford", unlocked && playable && state.gold < def.cost);
-      card.classList.toggle("affordable", unlocked && playable && state.gold >= def.cost);
+      card.classList.toggle("affordable", canAfford && state.selectedShop !== type);
+      card.setAttribute("aria-disabled", String(!unlocked || state.phase === "menu"));
+      if (!unlocked) {
+        card.setAttribute("aria-label", `${def.name} locked — ${getTowerUnlockHint(type)}`);
+      } else if (playable && state.gold < def.cost) {
+        card.setAttribute("aria-label", `${def.name} — need ${def.cost - state.gold} more BAN`);
+      } else {
+        card.setAttribute("aria-label", `${def.name} — ${def.cost} BAN`);
+      }
     });
   }
 
@@ -849,9 +938,9 @@
     const upgradeLabel = atMax ? "MAX ⭐" : state.gold < upgradeCost ? `Need 🍌${upgradeCost}` : `🍌${upgradeCost}`;
     el.selectedInfo.innerHTML = `
       <div class="name" style="color:${def.color}">${def.icon} ${def.name} · LV ${t.level}${atMax ? " ⭐" : ""}</div>
-      <div class="detail-row"><span>Damage</span><b>${Math.round(t.damage)}${state.rageTimer > 0 ? ' <span class="rage-boost">+35%</span>' : ""}</b></div>
+      <div class="detail-row"><span>Damage</span><b>${Math.round(t.damage)}${state.rageTimer > 0 ? ' <span class="rage-boost">+35% dmg</span>' : ""}</b></div>
       <div class="detail-row"><span>Range</span><b>${formatRangeHtml(t)}</b></div>
-      <div class="detail-row"><span>Fire rate</span><b>${t.fireRate.toFixed(2)}/s</b></div>
+      <div class="detail-row"><span>Fire rate</span><b>${t.fireRate.toFixed(2)}/s${state.rageTimer > 0 ? ' <span class="rage-boost">+30% rate</span>' : ""}</b></div>
       <div class="detail-row"><span>Crit</span><b>${Math.round(t.critChance * 100)}%</b></div>
       ${specialRows}
       <div class="detail-row"><span>Peels</span><b>${t.kills}</b></div>
@@ -876,8 +965,6 @@
     if (up) up.addEventListener("click", () => upgradeTower(t));
     if (sell) sell.addEventListener("click", () => sellTower(t));
   }
-
-  const WAVE_THREAT_ORDER = ["boss", "whale", "hodler", "tick", "bear", "shill", "bot", "fud", "spam", "paper"];
 
   function updateNextWaveUI() {
     const next = state.wave + 1;
@@ -956,6 +1043,7 @@
     }
 
     el.statLives.classList.toggle("low-lives", state.lives > 0 && state.lives <= 5);
+    el.statLives.classList.toggle("stat-critical", state.lives > 0 && state.lives <= 3);
     const minCost = cheapestUnlockedCost();
     const broke = state.phase === "playing" && minCost > 0 && state.gold < minCost;
     el.statGold.classList.toggle("broke-gold", broke);
@@ -965,7 +1053,6 @@
       el.combo.textContent = String(state.combo);
     } else el.statCombo.classList.add("hidden");
 
-    const maxW = state.mode === "campaign" ? CAMPAIGN_WAVES : Infinity;
     el.btnStartWave.disabled =
       state.waveActive || state.phase !== "playing" || (state.mode === "campaign" && state.wave >= CAMPAIGN_WAVES);
     el.btnStartWave.textContent = state.waveActive
@@ -981,11 +1068,13 @@
       !(state.mode === "campaign" && state.wave >= CAMPAIGN_WAVES);
     el.btnStartWave.classList.toggle("pulse", canStartWave);
     el.btnSpeed.textContent = `×${state.speed}`;
+    el.btnSpeed.title = `Cycle speed (+) — currently ×${state.speed}`;
     el.btnSpeed.classList.toggle(
       "speed-active",
       state.speed > 1 && (state.phase === "playing" || state.phase === "paused")
     );
     el.btnPause.textContent = state.phase === "paused" ? "Resume · Space" : "Pause · Esc";
+    el.btnPause.title = state.phase === "paused" ? "Resume (Space)" : "Pause (Esc)";
     updateShopUI();
     updateNextWaveUI();
     updateAbilityUI();
@@ -1166,59 +1255,13 @@
 
   function resetGame() {
     AudioFX.resume();
-    const startGold = 250 + (meta.campaignWins > 0 ? 50 : 0) + (meta.achievements.rich ? 25 : 0);
-    Object.assign(state, {
-      phase: "playing",
-      lives: 25,
-      gold: startGold,
-      score: 0,
-      wave: 0,
-      speed: 1,
-      selectedShop: null,
-      selectedTower: null,
-      towers: [],
-      enemies: [],
-      projectiles: [],
-      beams: [],
-      chains: [],
-      particles: [],
-      rings: [],
-      floatTexts: [],
-      shocks: [],
-      peels: [],
-      waveActive: false,
-      spawnQueue: [],
-      spawnTimer: 0,
-      shake: 0, flash: 0, hitstop: 0,
-      combo: 0, comboTimer: 0, bestCombo: 0,
-      kills: 0, bossKills: 0,
-      airdropCd: 3, rageCd: 8,
-      abilityAiming: false,
-      rageTimer: 0,
-      waveLeaked: false,
-      bannerTimer: 0,
-      perfectWaves: 0, perfectStreak: 0,
-      maxedTowers: 0, towersBuilt: 0,
-      airdrops: 0, rages: 0,
-      spent: 0, crits: 0,
-      typesBuiltSet: new Set(),
-      typesBuilt: 0,
-      clearedOn3x: 0,
-      wonCampaign: false,
-      memeTimer: 4,
-      waveEvent: null,
-      waveEventTimer: 0,
-      tickKills: 0,
-      hodlerBroken: 0,
-      fogPerfectClears: 0,
-      brainFreezeTowers: 0,
-      bossPhase3Kills: 0,
-    });
-    el.overlayStart.classList.add("hidden");
-    el.overlayPause.classList.add("hidden");
-    el.overlayEnd.classList.add("hidden");
-    el.overlayAchs.classList.add("hidden");
-    if (el.overlayHotkeys) el.overlayHotkeys.classList.add("hidden");
+    const mode = state.mode;
+    applyRunReset("playing", { memeTimer: 4 });
+    state.mode = mode;
+    state.hoverTile = null;
+    state.flash = 0;
+    state.flashColor = "#fbdd11";
+    hideAllOverlays();
     el.waveBanner.classList.add("hidden");
     AudioFX.startAmbient();
     showBanner("JUNGLE PROTOCOL", "PROTECT THE BAN 🍌", 1.5);
@@ -1226,6 +1269,14 @@
     buildShop();
     updateHUD();
     updateSelectedUI();
+    ensureSettings();
+    if (!meta.settings.seenHotkeyHint) {
+      meta.settings.seenHotkeyHint = true;
+      saveMeta();
+      setTimeout(() => {
+        showGameToast("Press ? for hotkeys · + for speed", "info");
+      }, 2400);
+    }
   }
 
   function startWave() {
@@ -1244,6 +1295,12 @@
     state.waveEventTimer = ev?.id === "fog" ? (ev.fogDuration || 14) : 0;
     if (ev?.extraBoss) {
       for (let i = 0; i < ev.extraBoss; i++) state.spawnQueue.push("boss");
+    }
+    if (ev?.extraFomo) {
+      for (let i = 0; i < ev.extraFomo; i++) state.spawnQueue.push("fomo");
+    }
+    if (ev?.extraMint) {
+      for (let i = 0; i < ev.extraMint; i++) state.spawnQueue.push("mint");
     }
     for (let i = state.spawnQueue.length - 1; i > 0; i--) {
       if (Math.random() < 0.4) {
@@ -1273,14 +1330,14 @@
   }
 
   function enemySpeedBase(def) {
-    return def.speed * (1 + state.wave * 0.0045);
+    return def.speed * (1 + state.wave * 0.004);
   }
 
   function buildEnemy(type, progress = 0, opts = {}) {
     const def = ENEMY_DEFS[type];
     const scale = hpScale(state.wave);
     const endlessBoost = state.mode === "endless" && state.wave > 50
-      ? 1 + (state.wave - 50) * 0.035
+      ? 1 + (state.wave - 50) * 0.028
       : 1;
     const hpMult = opts.hpMult ?? 1;
     const pos = posAlongPath(progress);
@@ -1448,6 +1505,11 @@
         state.brainFreezeTowers += 1;
         addFloatText(t.x, t.y - 30, "BRAIN FREEZE! 🧊", "#7ec8e3", true);
       }
+      if (t.type === "splash" && !t.yellowCake) {
+        t.yellowCake = true;
+        state.yellowCakeTowers += 1;
+        addFloatText(t.x, t.y - 30, "YELLOW CAKE! 🧁", "#ff6b35", true);
+      }
     }
     spawnParticles(t.x, t.y, def.color, 22, 180);
     spawnRing(t.x, t.y, "#fbdd11", 50, 0.4);
@@ -1464,6 +1526,9 @@
     state.gold += refund;
     popStat(el.statGold);
     state.towers = state.towers.filter((x) => x !== t);
+    for (const p of state.projectiles) {
+      if (p.tower === t) p.tower = null;
+    }
     state.towersBuilt = state.towers.length;
     refreshTypesBuilt();
     if (state.selectedTower === t) state.selectedTower = null;
@@ -1474,7 +1539,27 @@
     updateSelectedUI();
   }
 
+  function triggerMintSplit(enemy) {
+    if (enemy.type !== "mint" || enemy._mintSplit) return;
+    enemy._mintSplit = true;
+    const def = ENEMY_DEFS.mint;
+    const count = def.mintSplit || 2;
+    for (let i = 0; i < count; i++) spawnMinionAt("paper", enemy.progress - 14 - i * 9, 0.55);
+    spawnRing(enemy.x, enemy.y, "#7cf4a8", 42, 0.38);
+    addFloatText(enemy.x, enemy.y - enemy.radius - 14, "MINTED!", "#7cf4a8", true);
+    spawnParticles(enemy.x, enemy.y, "#7cf4a8", 10, 120);
+  }
+
+  function applySlowToEnemy(enemy, slowFactor, duration) {
+    if (!enemy.alive) return;
+    let sf = slowFactor;
+    if (enemy.type === "fomo") sf = Math.max(sf, 0.58);
+    enemy.slowFactor = Math.min(enemy.slowFactor, sf);
+    enemy.slowTimer = Math.max(enemy.slowTimer, duration);
+  }
+
   function registerKill(enemy, sourceTower) {
+    triggerMintSplit(enemy);
     state.kills += 1;
     meta.lifetimeKills += 1;
     state.combo += 1;
@@ -1488,6 +1573,8 @@
       if (enemy.bossPhase >= 3) state.bossPhase3Kills += 1;
     }
     if (enemy.type === "tick") state.tickKills += 1;
+    if (enemy.type === "fomo") state.fomoKills += 1;
+    if (enemy.type === "mint") state.mintKills += 1;
     if (enemy.type === "hodler" && enemy.regenUsed) state.hodlerBroken += 1;
 
     const mult = 1 + Math.min(COMBO_GOLD_CAP, Math.floor(state.combo / 5) * 0.2);
@@ -1566,6 +1653,7 @@
   function enemyReachedEnd(enemy) {
     enemy.alive = false;
     state.lives = Math.max(0, state.lives - enemy.lives);
+    state.leaks += 1;
     state.waveLeaked = true;
     state.combo = 0;
     state.perfectStreak = 0;
@@ -1593,6 +1681,11 @@
     state.phase = won ? "won" : "lost";
     state.waveActive = false;
     state.abilityAiming = false;
+    state.spawnQueue = [];
+    state.enemies = [];
+    state.projectiles = [];
+    state.beams = [];
+    state.chains = [];
     AudioFX.stopAmbient();
 
     const newScoreRecord = state.score > meta.bestScore;
@@ -1628,6 +1721,14 @@
     el.endCombo.textContent = String(state.bestCombo);
     el.endKills.textContent = String(state.kills);
     el.endWave.textContent = String(state.wave);
+    if (el.endMode) {
+      const modeLabel = state.mode === "endless" ? "Endless Jungle" : "Campaign";
+      el.endMode.textContent = `${modeLabel} · Wave ${state.wave}${won && state.mode === "campaign" ? " · cleared" : ""}`;
+    }
+    if (el.endPerfect) el.endPerfect.textContent = String(state.perfectWaves);
+    if (el.endSpent) el.endSpent.textContent = String(state.spent);
+    if (el.endTowers) el.endTowers.textContent = String(state.towersBuilt);
+    if (el.endLeaks) el.endLeaks.textContent = String(state.leaks);
     if (el.endBests) {
       const scoreLine = newScoreRecord
         ? `<span class="record-new">⭐ New best score!</span>`
@@ -1669,7 +1770,7 @@
     for (let i = 0; i < 10; i++) spawnPeel(x + rand(-40, 40), y + rand(-40, 40));
 
     const radius = 120;
-    const dmg = 180 + state.wave * 28;
+    const dmg = 190 + state.wave * 25;
     for (const e of state.enemies) {
       if (!e.alive) continue;
       const d = dist(x, y, e.x, e.y);
@@ -1686,12 +1787,12 @@
   function activateRage() {
     if (state.rageCd > 0 || state.phase !== "playing" || state.rageTimer > 0) return;
     state.rageCd = RAGE_CD;
-    state.rageTimer = 7;
+    state.rageTimer = 8;
     state.rages += 1;
     AudioFX.rage();
     flash(0.4, "#ff6b35");
     shake(10);
-    showBanner("🙉 JUNGLE RAGE", "1.35× DMG · 1.35× BAN", 1.4);
+    showBanner("🙉 JUNGLE RAGE", "1.35× DMG · 8s", 1.4);
     showMeme("monKeys are UNHINGED! 🙉🔥");
     // buff fire rate temporarily via rageTimer checks
     for (const t of state.towers) t.cooldown = 0;
@@ -1741,7 +1842,6 @@
     tower.recoil = 1;
     tower.muzzle = 0.12;
     AudioFX.shoot(tower.type);
-    const rateBoost = state.rageTimer > 0 ? 1.3 : 1;
 
     if (def.instant && def.chain) {
       const hit = [target];
@@ -1793,7 +1893,7 @@
       const maxPierce = (def.pierce || 0) + tower.level - 1;
       for (const o of sorted) {
         if (pierced >= maxPierce) break;
-        damageEnemy(o.e, tower.damage * (pierced === 0 ? 1 : 0.6), tower);
+        damageEnemy(o.e, tower.damage * (pierced === 0 ? 1 : 0.52), tower);
         pierced++;
       }
       return;
@@ -1819,7 +1919,9 @@
         color: def.color,
         type: tower.type,
         tower,
-        splashRadius: def.splashRadius ? def.splashRadius * (1 + (tower.level - 1) * 0.15) : 0,
+        splashRadius: def.splashRadius
+          ? def.splashRadius * (1 + (tower.level - 1) * 0.15) + (tower.yellowCake ? 14 : 0)
+          : 0,
         slowFactor: def.slowFactor || 0,
         slowDuration: def.slowDuration || 0,
         radius: isArc ? 7 : 4,
@@ -1856,6 +1958,7 @@
         const d = dist(cx, cy, e.x, e.y);
         if (d <= p.splashRadius) {
           damageEnemy(e, p.damage * (1 - (d / p.splashRadius) * 0.45), p.tower);
+          if (p.tower?.yellowCake) applySlowToEnemy(e, 0.55, 1.0);
         }
       }
       spawnParticles(cx, cy, p.color, 22, 200);
@@ -1866,13 +1969,11 @@
     } else if (p.target && p.target.alive) {
       damageEnemy(p.target, p.damage, p.tower);
       if (p.tower?.brainFreeze && Math.random() < 0.22) {
-        p.target.slowFactor = Math.min(p.target.slowFactor, 0.12);
-        p.target.slowTimer = Math.max(p.target.slowTimer, 1.1);
+        applySlowToEnemy(p.target, 0.12, 1.1);
         addFloatText(p.target.x, p.target.y - p.target.radius - 8, "BRAIN FREEZE!", "#7ec8e3", true);
         spawnParticles(p.target.x, p.target.y, "#7ec8e3", 8, 60);
       } else if (p.slowFactor > 0) {
-        p.target.slowFactor = Math.min(p.target.slowFactor, p.slowFactor);
-        p.target.slowTimer = Math.max(p.target.slowTimer, p.slowDuration);
+        applySlowToEnemy(p.target, p.slowFactor, p.slowDuration);
         spawnParticles(p.target.x, p.target.y, "#7ec8e3", 5, 50);
       }
     }
@@ -1917,6 +2018,10 @@
       if (e.slowTimer > 0) {
         e.slowTimer -= dt;
         if (e.slowTimer <= 0) e.slowFactor = 1;
+      }
+      if (e.type === "fomo") {
+        const ramp = 1 + (e.progress / totalPathLen) * (ENEMY_DEFS.fomo.fomoRamp || 1.35);
+        e.baseSpeed = enemySpeedBase(ENEMY_DEFS.fomo) * ramp;
       }
       e.progress += e.baseSpeed * e.slowFactor * dt;
       if (e.progress >= totalPathLen) { enemyReachedEnd(e); continue; }
@@ -1987,30 +2092,32 @@
 
     state.flash = Math.max(0, state.flash - dt * 2.2);
 
-    if (state.comboTimer > 0) {
-      state.comboTimer -= dt;
-      if (state.comboTimer <= 0) {
-        const ended = state.combo;
-        state.combo = 0;
-        if (ended >= 5) showGameToast(`Combo dropped at ${ended}×`, "info");
-        updateHUD();
+    if (state.phase === "playing") {
+      if (state.comboTimer > 0) {
+        state.comboTimer -= dt;
+        if (state.comboTimer <= 0) {
+          const ended = state.combo;
+          state.combo = 0;
+          if (ended >= 5) showGameToast(`Combo dropped at ${ended}×`, "info");
+          updateHUD();
+        }
       }
-    }
 
-    if (state.airdropCd > 0) state.airdropCd = Math.max(0, state.airdropCd - dt);
-    if (state.rageCd > 0 && state.rageTimer <= 0) state.rageCd = Math.max(0, state.rageCd - dt);
-    if (state.rageTimer > 0) {
-      state.rageTimer = Math.max(0, state.rageTimer - dt);
-      if (state.rageTimer <= 0) {
-        showMeme("Rage faded. Still rich in potassium.");
-        if (state.selectedTower || state.selectedShop) updateSelectedUI();
+      if (state.airdropCd > 0) state.airdropCd = Math.max(0, state.airdropCd - dt);
+      if (state.rageCd > 0 && state.rageTimer <= 0) state.rageCd = Math.max(0, state.rageCd - dt);
+      if (state.rageTimer > 0) {
+        state.rageTimer = Math.max(0, state.rageTimer - dt);
+        if (state.rageTimer <= 0) {
+          showMeme("Rage faded. Still rich in potassium.");
+          if (state.selectedTower || state.selectedShop) updateSelectedUI();
+        }
       }
-    }
-    if (state.waveEventTimer > 0) {
-      state.waveEventTimer = Math.max(0, state.waveEventTimer - dt);
-      if (state.waveEventTimer <= 0 && state.waveEvent?.id === "fog") {
-        showGameToast("Regulatory fog lifted — full range restored!", "ok");
-        if (state.selectedTower || state.selectedShop) updateSelectedUI();
+      if (state.waveEventTimer > 0) {
+        state.waveEventTimer = Math.max(0, state.waveEventTimer - dt);
+        if (state.waveEventTimer <= 0 && state.waveEvent?.id === "fog") {
+          showGameToast("Regulatory fog lifted — full range restored!", "ok");
+          if (state.selectedTower || state.selectedShop) updateSelectedUI();
+        }
       }
     }
     updateAbilityUI();
@@ -2157,6 +2264,15 @@
           ctx.fillText("🍌", tx * TILE + 12, ty * TILE + 24);
           ctx.globalAlpha = 1;
         }
+        const nearPath = (
+          pathSet.has(`${tx + 1},${ty}`) || pathSet.has(`${tx - 1},${ty}`) ||
+          pathSet.has(`${tx},${ty + 1}`) || pathSet.has(`${tx},${ty - 1}`)
+        );
+        if (nearPath) {
+          ctx.strokeStyle = "rgba(72, 130, 52, 0.22)";
+          ctx.lineWidth = 1;
+          ctx.strokeRect(tx * TILE + 3, ty * TILE + 3, TILE - 6, TILE - 6);
+        }
       }
     }
   }
@@ -2215,6 +2331,9 @@
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText("🍌", start.x, start.y);
+    ctx.font = "bold 8px Fredoka, sans-serif";
+    ctx.fillStyle = "rgba(251, 221, 17, 0.75)";
+    ctx.fillText("AIRDROP IN", start.x, start.y - 22);
 
     // wallet core
     const cp = 1 + Math.sin(state.animTime * 3) * 0.1;
@@ -2366,6 +2485,17 @@
         ctx.fillText(`${phaseCfg.label} · ${phaseCfg.name.toUpperCase()}`, e.x, e.y - e.radius - 16);
         ctx.shadowBlur = 0;
       }
+      if (e.type === "fomo") {
+        const prog = e.progress / totalPathLen;
+        const back = posAlongPath(Math.max(0, e.progress - 10 - prog * 32));
+        ctx.strokeStyle = rgba(e.color, 0.18 + prog * 0.4);
+        ctx.lineWidth = 2;
+        ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.moveTo(back.x, back.y);
+        ctx.lineTo(e.x, e.y);
+        ctx.stroke();
+      }
       ctx.save();
       if (e.healRate > 0) {
         ctx.strokeStyle = rgba("#ffb347", 0.25);
@@ -2397,14 +2527,18 @@
         }
         ctx.closePath();
         ctx.fill();
-      } else if (e.type === "fud" || e.type === "bot") {
-        ctx.rotate(Math.sin(e.wobble) * 0.2);
+      } else if (e.type === "fud" || e.type === "bot" || e.type === "fomo") {
+        ctx.rotate((e.type === "fomo" ? Math.PI / 4 : 0) + Math.sin(e.wobble) * 0.2);
         ctx.beginPath();
-        ctx.moveTo(0, -e.radius);
+        ctx.moveTo(0, -e.radius - (e.type === "fomo" ? 2 : 0));
         ctx.lineTo(e.radius, e.radius * 0.7);
         ctx.lineTo(-e.radius, e.radius * 0.7);
         ctx.closePath();
         ctx.fill();
+      } else if (e.type === "mint") {
+        ctx.rotate(state.animTime * 0.6);
+        const s = e.radius * 0.88;
+        ctx.fillRect(-s, -s, s * 2, s * 2);
       } else {
         ctx.beginPath();
         ctx.arc(0, 0, e.radius, 0, Math.PI * 2);
@@ -2430,6 +2564,14 @@
         ctx.font = "12px serif";
         ctx.textAlign = "center";
         ctx.fillText("⛽", 0, 1);
+      } else if (e.type === "fomo") {
+        ctx.font = "12px serif";
+        ctx.textAlign = "center";
+        ctx.fillText("🚀", 0, 1);
+      } else if (e.type === "mint") {
+        ctx.font = "12px serif";
+        ctx.textAlign = "center";
+        ctx.fillText("🪙", 0, 1);
       } else if (e.type === "hodler") {
         ctx.font = "12px serif";
         ctx.textAlign = "center";
@@ -2844,6 +2986,7 @@
     if (el.optShowRanges) el.optShowRanges.checked = meta.settings.showAllRanges;
     if (el.optReduceParticles) el.optReduceParticles.checked = meta.settings.reduceParticles;
     if (el.optShowDebug) el.optShowDebug.checked = meta.settings.showDebug;
+    if (el.optMute) el.optMute.checked = meta.settings.muted;
     if (el.optVolume) el.optVolume.value = String(Math.round(meta.settings.volume * 100));
   }
 
@@ -2852,6 +2995,12 @@
     if (el.optShowRanges) meta.settings.showAllRanges = el.optShowRanges.checked;
     if (el.optReduceParticles) meta.settings.reduceParticles = el.optReduceParticles.checked;
     if (el.optShowDebug) meta.settings.showDebug = el.optShowDebug.checked;
+    if (el.optMute) {
+      const wantMute = el.optMute.checked;
+      if (wantMute !== AudioFX.isMuted()) AudioFX.toggleMute();
+      meta.settings.muted = AudioFX.isMuted();
+      syncMuteUI();
+    }
     if (el.optVolume) {
       meta.settings.volume = clamp(Number(el.optVolume.value) / 100, 0.05, 0.55);
       AudioFX.setVolume(meta.settings.volume);
@@ -2873,14 +3022,12 @@
   function goMenu() {
     state.phase = "menu";
     AudioFX.stopAmbient();
-    el.overlayEnd.classList.add("hidden");
-    el.overlayPause.classList.add("hidden");
-    if (el.overlayHotkeys) el.overlayHotkeys.classList.add("hidden");
+    hideAllOverlays();
     el.overlayStart.classList.remove("hidden");
     updateMetaUI();
   }
 
-  window.addEventListener("keydown", (evt) => {
+  function onKeyDown(evt) {
     const k = evt.key.toLowerCase();
     if (k === "escape") {
       if (el.overlayHotkeys && !el.overlayHotkeys.classList.contains("hidden")) { closeHotkeys(); return; }
@@ -2907,53 +3054,58 @@
     if ((k === "+" || k === "=" || k === "]") && (state.phase === "playing" || state.phase === "paused")) {
       cycleSpeed();
     }
-    if ((k === "?" || k === "h") && (state.phase === "playing" || state.phase === "paused")) {
-      openHotkeys();
+    if (k === "?" || k === "h") {
+      if (state.phase === "menu" || state.phase === "playing" || state.phase === "paused") openHotkeys();
     }
     const num = parseInt(evt.key, 10);
     if (num >= 1 && num <= TOWER_SHOP_KEYS.length && (state.phase === "playing" || state.phase === "paused")) {
       selectShopTower(TOWER_SHOP_KEYS[num - 1], { fromKey: true });
     }
-  });
+  }
 
-  // Mode select
-  el.modeCampaign.addEventListener("click", () => {
-    state.mode = "campaign";
-    el.modeCampaign.classList.add("selected");
-    el.modeEndless.classList.remove("selected");
-    AudioFX.ui();
-  });
-  el.modeEndless.addEventListener("click", () => {
-    state.mode = "endless";
-    el.modeEndless.classList.add("selected");
-    el.modeCampaign.classList.remove("selected");
-    AudioFX.ui();
-  });
+  function bindGameInput() {
+    window.addEventListener("keydown", onKeyDown);
 
-  el.btnPlay.addEventListener("click", () => { AudioFX.ui(); resetGame(); });
-  el.btnRestart.addEventListener("click", () => { AudioFX.ui(); resetGame(); });
-  el.btnEndMenu.addEventListener("click", () => { AudioFX.ui(); goMenu(); });
-  el.btnResume.addEventListener("click", () => togglePause());
-  el.btnPause.addEventListener("click", () => {
-    if (state.phase === "playing" || state.phase === "paused") togglePause();
-  });
-  el.btnStartWave.addEventListener("click", () => { AudioFX.ui(); startWave(); });
-  el.btnSpeed.addEventListener("click", () => cycleSpeed());
-  el.btnAbility.addEventListener("click", () => beginAirdropAim());
-  el.btnAbility2.addEventListener("click", () => activateRage());
-  el.btnMute.addEventListener("click", () => {
-    AudioFX.toggleMute();
-    syncMuteUI();
-  });
-  el.btnAchs.addEventListener("click", openAchs);
-  el.btnOpenAchs.addEventListener("click", openAchs);
-  el.btnCloseAchs.addEventListener("click", closeAchs);
-  if (el.optShowRanges) el.optShowRanges.addEventListener("change", onSettingChange);
-  if (el.optReduceParticles) el.optReduceParticles.addEventListener("change", onSettingChange);
-  if (el.optShowDebug) el.optShowDebug.addEventListener("change", onSettingChange);
-  if (el.optVolume) el.optVolume.addEventListener("input", onSettingChange);
-  if (el.btnHotkeys) el.btnHotkeys.addEventListener("click", openHotkeys);
-  if (el.btnCloseHotkeys) el.btnCloseHotkeys.addEventListener("click", closeHotkeys);
+    el.modeCampaign.addEventListener("click", () => {
+      state.mode = "campaign";
+      el.modeCampaign.classList.add("selected");
+      el.modeEndless.classList.remove("selected");
+      AudioFX.ui();
+    });
+    el.modeEndless.addEventListener("click", () => {
+      state.mode = "endless";
+      el.modeEndless.classList.add("selected");
+      el.modeCampaign.classList.remove("selected");
+      AudioFX.ui();
+    });
+
+    el.btnPlay.addEventListener("click", () => { AudioFX.ui(); resetGame(); });
+    el.btnRestart.addEventListener("click", () => { AudioFX.ui(); resetGame(); });
+    el.btnEndMenu.addEventListener("click", () => { AudioFX.ui(); goMenu(); });
+    el.btnResume.addEventListener("click", () => togglePause());
+    el.btnPause.addEventListener("click", () => {
+      if (state.phase === "playing" || state.phase === "paused") togglePause();
+    });
+    el.btnStartWave.addEventListener("click", () => { AudioFX.ui(); startWave(); });
+    el.btnSpeed.addEventListener("click", () => cycleSpeed());
+    el.btnAbility.addEventListener("click", () => beginAirdropAim());
+    el.btnAbility2.addEventListener("click", () => activateRage());
+    el.btnMute.addEventListener("click", () => {
+      AudioFX.toggleMute();
+      syncMuteUI();
+    });
+    el.btnAchs.addEventListener("click", openAchs);
+    el.btnOpenAchs.addEventListener("click", openAchs);
+    el.btnCloseAchs.addEventListener("click", closeAchs);
+    if (el.optShowRanges) el.optShowRanges.addEventListener("change", onSettingChange);
+    if (el.optReduceParticles) el.optReduceParticles.addEventListener("change", onSettingChange);
+    if (el.optShowDebug) el.optShowDebug.addEventListener("change", onSettingChange);
+    if (el.optVolume) el.optVolume.addEventListener("input", onSettingChange);
+    if (el.optMute) el.optMute.addEventListener("change", onSettingChange);
+    if (el.btnHotkeys) el.btnHotkeys.addEventListener("click", openHotkeys);
+    if (el.btnStartHotkeys) el.btnStartHotkeys.addEventListener("click", openHotkeys);
+    if (el.btnCloseHotkeys) el.btnCloseHotkeys.addEventListener("click", closeHotkeys);
+  }
 
   // ═══════════════════════════════════════════════════════════════════════════
   // LOOP
@@ -2970,9 +3122,12 @@
   }
 
   function syncMuteUI() {
-    if (el.btnMute) el.btnMute.textContent = AudioFX.isMuted() ? "🔇" : "🔊";
+    const muted = AudioFX.isMuted();
+    if (el.btnMute) el.btnMute.textContent = muted ? "🔇" : "🔊";
+    if (el.optMute) el.optMute.checked = muted;
   }
 
+  bindGameInput();
   buildShop();
   syncSettingsUI();
   AudioFX.syncMutedFromSettings();
