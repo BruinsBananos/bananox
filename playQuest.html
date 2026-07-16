@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Banano Browser Quest · Banano X</title>
+  <meta name="description" content="Banano Browser Quest — HTML5 mini-MMORPG remake of BrowserQuest with Banano energy. Play from Banano X.">
+  <meta name="theme-color" content="#030806">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="favicon.svg">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Banano X">
+  <meta property="og:url" content="https://bananox.com/playQuest.html">
+  <meta property="og:title" content="Banano Browser Quest · Banano X">
+  <meta property="og:description" content="HTML5 mini-MMORPG — explore, fight, loot, and party up with potassium energy.">
+  <meta property="og:image" content="https://bananox.com/og-image.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Banano Browser Quest · Banano X">
+  <meta name="twitter:description" content="HTML5 mini-MMORPG — explore, fight, loot, and party up with potassium energy.">
+  <meta name="twitter:image" content="https://bananox.com/og-image.jpg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .quest-stage {
+      position: relative;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 20%, rgba(245, 208, 65, 0.12), transparent 55%),
+        radial-gradient(ellipse 60% 50% at 20% 80%, rgba(184, 232, 106, 0.08), transparent 50%),
+        linear-gradient(165deg, rgba(12, 28, 20, 0.9), rgba(3, 8, 6, 0.95));
+      overflow: hidden;
+      min-height: min(62vh, 520px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2rem 1.25rem;
+      margin: 0 auto 2.5rem;
+      box-shadow: var(--glow-soft);
+    }
+    .quest-stage::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(245, 208, 65, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(245, 208, 65, 0.04) 1px, transparent 1px);
+      background-size: 32px 32px;
+      mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, #000 20%, transparent 75%);
+      pointer-events: none;
+    }
+    .quest-stage > * { position: relative; z-index: 1; }
+    .quest-emoji {
+      font-size: clamp(2.5rem, 6vw, 3.5rem);
+      line-height: 1;
+      margin-bottom: 0.75rem;
+      filter: drop-shadow(0 8px 24px rgba(245, 208, 65, 0.35));
+    }
+    .quest-stage h2 {
+      font-family: var(--font-display);
+      font-size: clamp(1.5rem, 3.5vw, 2.15rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--banana-bright);
+      margin-bottom: 0.65rem;
+    }
+    .quest-stage p {
+      max-width: 36rem;
+      color: var(--text-muted);
+      margin: 0 auto 1.35rem;
+      line-height: 1.55;
+    }
+    .quest-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.65rem;
+      justify-content: center;
+    }
+    .quest-note {
+      margin-top: 1.25rem;
+      font-size: 0.82rem;
+      color: rgba(232, 245, 216, 0.45);
+      max-width: 28rem;
+    }
+  </style>
+</head>
+<body>
+  <a href="#main" class="skip-link">Skip to content</a>
+
+  <header class="nav">
+    <div class="nav-inner">
+      <a href="index.html" class="logo">
+        <img src="favicon.svg" alt="" class="logo-mark" width="36" height="36">
+        <span>BANANO X</span>
+      </a>
+      <button class="nav-toggle" type="button" aria-label="Menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-links">
+        <li class="has-dropdown">
+          <button type="button" class="nav-drop-btn" aria-expanded="false" aria-haspopup="true">
+            Play <span class="chev" aria-hidden="true"></span>
+          </button>
+          <ul class="nav-dropdown" role="menu">
+            <li role="none"><a role="menuitem" href="playTD.html">Defend · Banano TD</a></li>
+            <li role="none"><a role="menuitem" href="play.html">Climb · Potassium Tower</a></li>
+            <li role="none"><a role="menuitem" href="playQuest.html" aria-current="page">Quest · Banano Browser Quest</a></li>
+          </ul>
+        </li>
+        <li class="has-dropdown">
+          <button type="button" class="nav-drop-btn" aria-expanded="false" aria-haspopup="true">
+            Explore <span class="chev" aria-hidden="true"></span>
+          </button>
+          <ul class="nav-dropdown" role="menu">
+            <li role="none"><a role="menuitem" href="facts.html">Facts</a></li>
+            <li role="none"><a role="menuitem" href="ecosystem.html">Ecosystem</a></li>
+            <li role="none"><a role="menuitem" href="https://node.bananox.com/">Live Node</a></li>
+          </ul>
+        </li>
+        <li><a href="faucets.html">Get BAN</a></li>
+        <li><a href="community.html">Community</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main id="main" class="page">
+    <div class="container">
+      <div class="section-header reveal">
+        <div class="badge" style="margin-bottom: 1rem;">
+          <span class="badge-dot" aria-hidden="true"></span>
+          Mini-MMORPG
+        </div>
+        <h1 class="glow-text">Banano Browser Quest</h1>
+        <p>
+          A Banano-flavored remake of the classic HTML5 multiplayer adventure.
+          Explore the map, slay mobs, grab loot, and party up — pure potassium chaos in the browser.
+        </p>
+      </div>
+
+      <div class="quest-stage reveal">
+        <div class="quest-emoji" aria-hidden="true">⚔️🍌</div>
+        <h2>Adventure hub</h2>
+        <p>
+          This tab is live on Banano X. The full multiplayer world needs a dedicated game server
+          (Node.js + Redis + WebSockets) — not just static hosting like the rest of this site.
+        </p>
+        <div class="quest-actions">
+          <a href="https://github.com/tombertrand/nanobrowserquest" class="btn btn-primary btn-lg" target="_blank" rel="noopener">
+            View full game source
+          </a>
+          <a href="https://github.com/BruinsBananos/NanoBrowserQuest" class="btn btn-ghost btn-lg" target="_blank" rel="noopener">
+            Your GitHub copy
+          </a>
+        </div>
+        <p class="quest-note">
+          Original by Tom Bertrand (running-coder). When a Banano X game server is online,
+          this page will open the live client here.
+        </p>
+      </div>
+
+      <div class="stats-strip reveal" style="max-width: 820px; margin: 0 auto 2.5rem;" role="list">
+        <div class="stat-cell" role="listitem">
+          <span class="stat-value">HTML5</span>
+          <span class="stat-label">Browser game</span>
+        </div>
+        <div class="stat-cell" role="listitem">
+          <span class="stat-value">MMO</span>
+          <span class="stat-label">Multiplayer</span>
+        </div>
+        <div class="stat-cell" role="listitem">
+          <span class="stat-value">BAN</span>
+          <span class="stat-label">Crypto roots</span>
+        </div>
+        <div class="stat-cell" role="listitem">
+          <span class="stat-value">2012</span>
+          <span class="stat-label">BrowserQuest OG</span>
+        </div>
+      </div>
+
+      <div class="section-header reveal" style="margin-bottom: 1.5rem;">
+        <h2 style="font-size: clamp(1.5rem, 3vw, 2rem);">What you get in-game</h2>
+        <p>Same jungle vibes as the original BrowserQuest experiment — with Banano energy.</p>
+      </div>
+
+      <div class="grid-3" style="margin-bottom: 2.5rem;">
+        <article class="card reveal">
+          <div class="card-icon" aria-hidden="true">🗺️</div>
+          <h3>Explore</h3>
+          <p>Wander the map, chat with other players, and discover loot across the world.</p>
+        </article>
+        <article class="card reveal reveal-delay-1">
+          <div class="card-icon" aria-hidden="true">💀</div>
+          <h3>Fight</h3>
+          <p>Battle mobs, unlock gear, and take on the big bosses when your party is ready.</p>
+        </article>
+        <article class="card reveal reveal-delay-2">
+          <div class="card-icon" aria-hidden="true">⚡</div>
+          <h3>Instant vibes</h3>
+          <p>Built around feeless micro-rewards in the original Banano / Nano faucet editions.</p>
+        </article>
+      </div>
+
+      <div class="section-header reveal" style="margin-bottom: 1.5rem;">
+        <h2 style="font-size: clamp(1.5rem, 3vw, 2rem);">How it lands on Banano X</h2>
+        <p>TD and Climb run entirely in your browser. Quest needs a live backend.</p>
+      </div>
+
+      <div class="timeline reveal" style="margin-bottom: 2.5rem;">
+        <div class="timeline-item">
+          <span class="when">Done</span>
+          <h3>Play tab on the site</h3>
+          <p>Nav, footer, and this hub page so monkeys can find Banano Browser Quest anytime.</p>
+        </div>
+        <div class="timeline-item">
+          <span class="when">Next</span>
+          <h3>Host the game server</h3>
+          <p>Spin up Node + Redis (VPS, Railway, Fly.io, etc.) with the full NanoBrowserQuest / Banano client.</p>
+        </div>
+        <div class="timeline-item">
+          <span class="when">Then</span>
+          <h3>Wire the live client</h3>
+          <p>Point this page at your hosted world so Play → Quest opens the real multiplayer game.</p>
+        </div>
+      </div>
+
+      <div class="cta-band reveal">
+        <h2>More ways to play now</h2>
+        <p>While the quest world spins up, defend the core or climb the icy tower — zero install.</p>
+        <div class="hero-actions">
+          <a href="playTD.html" class="btn btn-primary">Banano TD</a>
+          <a href="play.html" class="btn btn-ghost">Potassium Climb</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="index.html" class="logo">
+            <img src="favicon.svg" alt="" class="logo-mark" width="36" height="36">
+            <span>BANANO X</span>
+          </a>
+          <p>Feeless. Instant. Meme-fueled crypto. A fan site for the midnight jungle.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Play</h4>
+          <ul>
+            <li><a href="playTD.html">Banano TD</a></li>
+            <li><a href="play.html">Potassium Tower</a></li>
+            <li><a href="playQuest.html">Browser Quest</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Explore</h4>
+          <ul>
+            <li><a href="facts.html">Facts</a></li>
+            <li><a href="ecosystem.html">Ecosystem</a></li>
+            <li><a href="faucets.html">Faucets</a></li>
+            <li><a href="https://node.bananox.com/">Live Node</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <ul>
+            <li><a href="community.html">Community</a></li>
+            <li><a href="https://banano.cc" target="_blank" rel="noopener">Official Banano</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>Built for billions · Fan site · Official: <a class="footer-official" href="https://banano.cc" target="_blank" rel="noopener">banano.cc</a></p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="site.js"></script>
+</body>
+</html>
