@@ -572,11 +572,13 @@ a.card:focus-visible {
 }
 
 .hero h1 {
-  font-size: clamp(3rem, 10vw, 5.5rem);
+  font-size: clamp(2.45rem, 9.5vw, 5.5rem);
   font-weight: 800;
   letter-spacing: -0.05em;
   line-height: 0.95;
   margin: 1.25rem 0 1.5rem;
+  max-width: 100%;
+  padding-inline: 0.06em; /* keep glyph glow from clipping on narrow screens */
   background: linear-gradient(180deg, #fff8d6 0%, var(--banana) 45%, var(--banana-deep) 100%);
   -webkit-background-clip: text;
   background-clip: text;

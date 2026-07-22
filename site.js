@@ -271,7 +271,8 @@
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   if (reveals.length && !reduceMotion && "IntersectionObserver" in window) {
-    const fold = window.innerHeight * 0.92;
+    // Anything in/near the first screen paints instantly (no blank strip under hero)
+    const fold = window.innerHeight + 120;
     const io = new IntersectionObserver(
       (entries) => {
         entries.forEach((e) => {
@@ -282,7 +283,7 @@
           }
         });
       },
-      { threshold: 0.08, rootMargin: "0px 0px -32px 0px" }
+      { threshold: 0.06, rootMargin: "80px 0px -24px 0px" }
     );
 
     reveals.forEach((el) => {
