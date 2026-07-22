@@ -778,8 +778,7 @@ a.card:focus-visible {
     radial-gradient(ellipse 70% 60% at 50% 50%, color-mix(in srgb, var(--banana) 16%, transparent), transparent 70%);
   pointer-events: none;
   z-index: 0;
-  filter: blur(2px);
-  opacity: 0.9;
+  opacity: 0.95;
 }
 
 .hero-particles {

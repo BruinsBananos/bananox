@@ -1,6 +1,7 @@
 /* Banano X — lightweight shell cache for instant revisits */
-const CACHE = "bananox-shell-v2";
+const CACHE = "bananox-shell-v3";
 
+/* Keep install fast — heavy game HTML/JS cache on first visit, not at SW install */
 const PRECACHE = [
   "./",
   "./index.html",
@@ -15,10 +16,6 @@ const PRECACHE = [
   "./community.html",
   "./node.html",
   "./playQuest.html",
-  "./play.html",
-  "./playTD.html",
-  "./playNFR.html",
-  "./playBlaster.html",
 ];
 
 self.addEventListener("install", (event) => {

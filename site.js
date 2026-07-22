@@ -300,17 +300,14 @@
     { passive: true }
   );
 
-  // Idle-prefetch top content destinations
+  // Idle-prefetch light content pages only (games HTML/JS stay hover-prefetch)
   const IDLE_PREFETCH = [
     "facts.html",
     "ecosystem.html",
     "faucets.html",
     "community.html",
-    "playTD.html",
-    "play.html",
+    "node.html",
     "playQuest.html",
-    "playNFR.html",
-    "playBlaster.html",
   ];
 
   function idlePrefetch() {
