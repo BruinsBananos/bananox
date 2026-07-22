@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arcade · Banano X</title>
+  <meta name="description" content="Browse Banano X games in a retro arcade — Banano TD, Potassium Climb, Browser Quest, Neon Frequency Runner, and Banano Blaster.">
+  <meta name="theme-color" content="#000000">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="favicon.svg">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Banano X">
+  <meta property="og:url" content="https://bananox.com/arcade.html">
+  <meta property="og:title" content="Arcade · Banano X">
+  <meta property="og:description" content="Pick a cabinet. Insert potassium. Play free Banano browser games.">
+  <meta property="og:image" content="https://bananox.com/og-image.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Arcade · Banano X">
+  <meta name="twitter:description" content="Pick a cabinet. Insert potassium. Play free Banano browser games.">
+  <meta name="twitter:image" content="https://bananox.com/og-image.jpg">
+  <script>
+    (function () {
+      try {
+        var k = "bx-theme";
+        var t = localStorage.getItem(k);
+        if (t !== "light" && t !== "dark") {
+          t = matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+        }
+        document.documentElement.setAttribute("data-theme", t);
+        document.documentElement.style.colorScheme = t;
+      } catch (e) {
+        document.documentElement.setAttribute("data-theme", "dark");
+      }
+    })();
+  </script>
+  <link rel="preload" href="fonts/syne-700.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/dm-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a href="#main" class="skip-link">Skip to content</a>
+
+  <header class="nav">
+    <div class="nav-inner">
+      <a href="index.html" class="logo">
+        <img src="favicon.svg" alt="" class="logo-mark" width="36" height="36" decoding="async">
+        <span>BANANO X</span>
+      </a>
+      <ul class="nav-links">
+        <li class="has-dropdown">
+          <button type="button" class="nav-drop-btn" aria-expanded="false" aria-haspopup="true">
+            Play <span class="chev" aria-hidden="true"></span>
+          </button>
+          <ul class="nav-dropdown" role="menu">
+            <li role="none"><a role="menuitem" href="arcade.html">Arcade · Browse games</a></li>
+            <li role="none"><a role="menuitem" href="playTD.html">Defend · Banano TD</a></li>
+            <li role="none"><a role="menuitem" href="play.html">Climb · Potassium Tower</a></li>
+            <li role="none"><a role="menuitem" href="playQuest.html">Quest · Banano Browser Quest</a></li>
+            <li role="none"><a role="menuitem" href="playNFR.html">Fly · Neon Frequency Runner</a></li>
+            <li role="none"><a role="menuitem" href="playBlaster.html">Blast · Banano Blaster</a></li>
+          </ul>
+        </li>
+        <li class="has-dropdown">
+          <button type="button" class="nav-drop-btn" aria-expanded="false" aria-haspopup="true">
+            Explore <span class="chev" aria-hidden="true"></span>
+          </button>
+          <ul class="nav-dropdown" role="menu">
+            <li role="none"><a role="menuitem" href="facts.html">Facts</a></li>
+            <li role="none"><a role="menuitem" href="ecosystem.html">Ecosystem</a></li>
+            <li role="none"><a role="menuitem" href="https://node.bananox.com/">Live Node</a></li>
+          </ul>
+        </li>
+        <li><a href="faucets.html">Get BAN</a></li>
+        <li><a href="community.html">Community</a></li>
+      </ul>
+      <div class="nav-tools">
+        <button type="button" class="theme-toggle" aria-label="Toggle color theme" title="Toggle theme">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M21 14.5A8.5 8.5 0 1 1 9.5 3 7 7 0 0 0 21 14.5z"/></svg>
+        </button>
+        <button class="nav-toggle" type="button" aria-label="Menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" class="page arcade-page">
+    <div class="container">
+      <div class="section-header reveal">
+        <div class="badge" style="margin-bottom: 1rem;">
+          <span class="badge-dot" aria-hidden="true"></span>
+          Free to play
+        </div>
+        <h1 class="glow-text">Potassium Arcade</h1>
+        <p>Browse the cabinets. Each screen is a free browser game — no install, no wallet required to play.</p>
+      </div>
+
+      <div class="arcade-floor reveal" aria-label="Game cabinets">
+        <!-- Banano TD -->
+        <a class="arcade-cab" href="playTD.html">
+          <div class="arcade-marquee" aria-hidden="true">
+            <span class="arcade-marquee-text">BANANO TD</span>
+          </div>
+          <div class="arcade-bezel">
+            <div class="arcade-screen arcade-screen-td">
+              <div class="arcade-scanlines" aria-hidden="true"></div>
+              <svg class="arcade-art" viewBox="0 0 160 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <rect width="160" height="100" fill="#0a1a10"/>
+                <path d="M8 78 L40 78 L52 58 L78 58 L90 78 L152 78" fill="none" stroke="#3d8b4f" stroke-width="4" stroke-linejoin="round"/>
+                <circle cx="28" cy="72" r="5" fill="#f5d041"/>
+                <circle cx="68" cy="52" r="5" fill="#f5d041"/>
+                <circle cx="118" cy="72" r="5" fill="#f5d041"/>
+                <rect x="24" y="60" width="8" height="12" rx="1" fill="#b8e86a"/>
+                <rect x="64" y="40" width="8" height="12" rx="1" fill="#b8e86a"/>
+                <rect x="114" y="60" width="8" height="12" rx="1" fill="#b8e86a"/>
+                <circle cx="48" cy="70" r="4" fill="#ffe566"/>
+                <circle cx="88" cy="56" r="3.5" fill="#fbdd11"/>
+                <circle cx="130" cy="74" r="3" fill="#c9a227"/>
+                <text x="80" y="22" text-anchor="middle" fill="#f5d041" font-family="system-ui,sans-serif" font-size="9" font-weight="700">WAVE 12</text>
+                <text x="80" y="34" text-anchor="middle" fill="#b8e86a" font-family="system-ui,sans-serif" font-size="6">DEFEND THE CORE</text>
+              </svg>
+              <span class="arcade-insert">INSERT COIN</span>
+            </div>
+          </div>
+          <div class="arcade-panel">
+            <span class="arcade-tag">Tower defense</span>
+            <h2>Banano TD</h2>
+            <p>Live kill bounties, 6 maps, dual upgrade paths, and 150 waves of banana chaos.</p>
+            <div class="arcade-meta">
+              <span>9 towers</span>
+              <span>150 waves</span>
+              <span>Campaign</span>
+            </div>
+            <span class="btn btn-primary btn-sm arcade-play">Play</span>
+          </div>
+          <div class="arcade-controls" aria-hidden="true">
+            <span class="cab-btn"></span>
+            <span class="cab-btn cab-btn-red"></span>
+            <span class="cab-stick"></span>
+          </div>
+        </a>
+
+        <!-- Potassium Climb -->
+        <a class="arcade-cab" href="play.html">
+          <div class="arcade-marquee" aria-hidden="true">
+            <span class="arcade-marquee-text">K+ CLIMB</span>
+          </div>
+          <div class="arcade-bezel">
+            <div class="arcade-screen arcade-screen-climb">
+              <div class="arcade-scanlines" aria-hidden="true"></div>
+              <svg class="arcade-art" viewBox="0 0 160 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <defs>
+                  <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#0a1628"/>
+                    <stop offset="100%" stop-color="#122038"/>
+                  </linearGradient>
+                </defs>
+                <rect width="160" height="100" fill="url(#sky)"/>
+                <rect x="20" y="78" width="44" height="8" rx="2" fill="#a8d4f0" opacity="0.85"/>
+                <rect x="70" y="58" width="38" height="8" rx="2" fill="#c5e4f7" opacity="0.9"/>
+                <rect x="40" y="38" width="42" height="8" rx="2" fill="#a8d4f0" opacity="0.85"/>
+                <rect x="90" y="22" width="36" height="8" rx="2" fill="#dff0fb"/>
+                <circle cx="58" cy="70" r="5" fill="#f5d041"/>
+                <circle cx="92" cy="50" r="4" fill="#ffe566"/>
+                <circle cx="108" cy="14" r="3.5" fill="#f5d041"/>
+                <text x="80" y="96" text-anchor="middle" fill="#7eb8e8" font-family="system-ui,sans-serif" font-size="6" font-weight="600">↑ HEIGHT 842m</text>
+              </svg>
+              <span class="arcade-insert">INSERT COIN</span>
+            </div>
+          </div>
+          <div class="arcade-panel">
+            <span class="arcade-tag">Icy climber</span>
+            <h2>Potassium Climb</h2>
+            <p>Slippery ice platforms, wall-jumps, BAN coins, combos, and worlds to unlock.</p>
+            <div class="arcade-meta">
+              <span>Physics</span>
+              <span>Upgrades</span>
+              <span>Worlds</span>
+            </div>
+            <span class="btn btn-primary btn-sm arcade-play">Play</span>
+          </div>
+          <div class="arcade-controls" aria-hidden="true">
+            <span class="cab-btn"></span>
+            <span class="cab-btn cab-btn-red"></span>
+            <span class="cab-stick"></span>
+          </div>
+        </a>
+
+        <!-- Browser Quest -->
+        <a class="arcade-cab" href="playQuest.html">
+          <div class="arcade-marquee" aria-hidden="true">
+            <span class="arcade-marquee-text">QUEST</span>
+          </div>
+          <div class="arcade-bezel">
+            <div class="arcade-screen arcade-screen-quest">
+              <div class="arcade-scanlines" aria-hidden="true"></div>
+              <svg class="arcade-art" viewBox="0 0 160 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <rect width="160" height="100" fill="#1a1208"/>
+                <rect x="0" y="70" width="160" height="30" fill="#2d4a1e"/>
+                <rect x="10" y="40" width="18" height="30" fill="#3d2810"/>
+                <rect x="50" y="48" width="14" height="22" fill="#4a3018"/>
+                <rect x="120" y="36" width="22" height="34" fill="#3d2810"/>
+                <circle cx="80" cy="62" r="6" fill="#f5d041"/>
+                <rect x="77" y="68" width="6" height="10" fill="#4a90d9"/>
+                <circle cx="40" cy="66" r="4" fill="#c44"/>
+                <circle cx="110" cy="64" r="4" fill="#8b5cf6"/>
+                <text x="80" y="18" text-anchor="middle" fill="#f5d041" font-family="system-ui,sans-serif" font-size="8" font-weight="700">BROWSER QUEST</text>
+                <text x="80" y="30" text-anchor="middle" fill="#b8e86a" font-family="system-ui,sans-serif" font-size="5.5">EXPLORE · FIGHT · LOOT</text>
+              </svg>
+              <span class="arcade-insert">INSERT COIN</span>
+            </div>
+          </div>
+          <div class="arcade-panel">
+            <span class="arcade-tag">Mini-MMORPG</span>
+            <h2>Browser Quest</h2>
+            <p>Classic HTML5 multiplayer adventure vibes — explore, fight, loot, party up.</p>
+            <div class="arcade-meta">
+              <span>Hub page</span>
+              <span>Loot</span>
+              <span>Bosses</span>
+            </div>
+            <span class="btn btn-primary btn-sm arcade-play">Open hub</span>
+          </div>
+          <div class="arcade-controls" aria-hidden="true">
+            <span class="cab-btn"></span>
+            <span class="cab-btn cab-btn-red"></span>
+            <span class="cab-stick"></span>
+          </div>
+        </a>
+
+        <!-- Neon Frequency -->
+        <a class="arcade-cab" href="playNFR.html">
+          <div class="arcade-marquee" aria-hidden="true">
+            <span class="arcade-marquee-text">NEON FREQ</span>
+          </div>
+          <div class="arcade-bezel">
+            <div class="arcade-screen arcade-screen-nfr">
+              <div class="arcade-scanlines" aria-hidden="true"></div>
+              <svg class="arcade-art" viewBox="0 0 160 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <rect width="160" height="100" fill="#0a0614"/>
+                <polygon points="20,80 50,40 80,80" fill="none" stroke="#ff2bd6" stroke-width="1.5" opacity="0.7"/>
+                <polygon points="90,70 120,30 150,70" fill="none" stroke="#00f0ff" stroke-width="1.5" opacity="0.7"/>
+                <line x1="0" y1="85" x2="160" y2="85" stroke="#7b2fff" stroke-width="1" opacity="0.4"/>
+                <circle cx="70" cy="55" r="5" fill="#f5d041"/>
+                <path d="M60 55 L50 52 M60 55 L50 58" stroke="#00f0ff" stroke-width="1.5"/>
+                <rect x="100" y="20" width="12" height="12" fill="none" stroke="#ff2bd6" stroke-width="1.2" transform="rotate(20 106 26)"/>
+                <text x="80" y="16" text-anchor="middle" fill="#00f0ff" font-family="system-ui,sans-serif" font-size="7" font-weight="700">FREQUENCY</text>
+              </svg>
+              <span class="arcade-insert">INSERT COIN</span>
+            </div>
+          </div>
+          <div class="arcade-panel">
+            <span class="arcade-tag">Neon flyer</span>
+            <h2>Neon Frequency</h2>
+            <p>Dodge pulsing geometry, skim for combos, and boost on the beat.</p>
+            <div class="arcade-meta">
+              <span>Beat boosts</span>
+              <span>Combos</span>
+              <span>Biomes</span>
+            </div>
+            <span class="btn btn-primary btn-sm arcade-play">Play</span>
+          </div>
+          <div class="arcade-controls" aria-hidden="true">
+            <span class="cab-btn"></span>
+            <span class="cab-btn cab-btn-red"></span>
+            <span class="cab-stick"></span>
+          </div>
+        </a>
+
+        <!-- Banano Blaster -->
+        <a class="arcade-cab" href="playBlaster.html">
+          <div class="arcade-marquee" aria-hidden="true">
+            <span class="arcade-marquee-text">BLASTER</span>
+          </div>
+          <div class="arcade-bezel">
+            <div class="arcade-screen arcade-screen-blaster">
+              <div class="arcade-scanlines" aria-hidden="true"></div>
+              <svg class="arcade-art" viewBox="0 0 160 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <rect width="160" height="100" fill="#07070c"/>
+                <g fill="none" stroke="#f5d041" stroke-width="1.2">
+                  <polygon points="80,72 74,82 86,82"/>
+                  <line x1="80" y1="72" x2="80" y2="62"/>
+                </g>
+                <polygon points="40,30 48,38 40,46 32,38" fill="none" stroke="#e67e22" stroke-width="1.2"/>
+                <polygon points="120,40 130,48 120,56 110,48" fill="none" stroke="#e67e22" stroke-width="1.2"/>
+                <polygon points="95,20 100,26 95,32 90,26" fill="none" stroke="#f4d03f" stroke-width="1"/>
+                <circle cx="55" cy="55" r="2" fill="#2ecc71"/>
+                <circle cx="110" cy="70" r="2" fill="#2ecc71"/>
+                <line x1="80" y1="62" x2="80" y2="48" stroke="#ffe566" stroke-width="1"/>
+                <text x="80" y="14" text-anchor="middle" fill="#f5d041" font-family="system-ui,sans-serif" font-size="7" font-weight="700">BANANO BLASTER</text>
+              </svg>
+              <span class="arcade-insert">INSERT COIN</span>
+            </div>
+          </div>
+          <div class="arcade-panel">
+            <span class="arcade-tag">Asteroids</span>
+            <h2>Banano Blaster</h2>
+            <p>Pilot a banana rocket, peel hostile rocks, grab power-ups, stack BANANOS.</p>
+            <div class="arcade-meta">
+              <span>Retro vector</span>
+              <span>Power-ups</span>
+              <span>Levels</span>
+            </div>
+            <span class="btn btn-primary btn-sm arcade-play">Play</span>
+          </div>
+          <div class="arcade-controls" aria-hidden="true">
+            <span class="cab-btn"></span>
+            <span class="cab-btn cab-btn-red"></span>
+            <span class="cab-stick"></span>
+          </div>
+        </a>
+      </div>
+
+      <div class="cta-band reveal" style="margin-top: 3rem;">
+        <h2>No tokens required to play</h2>
+        <p>These are free browser games with Banano vibes. Grab free BAN anytime from the faucets if you want real potassium on the side.</p>
+        <div class="hero-actions">
+          <a href="faucets.html" class="btn btn-primary">Get free BAN</a>
+          <a href="index.html" class="btn btn-ghost">Back home</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="index.html" class="logo">
+            <img src="favicon.svg" alt="" class="logo-mark" width="36" height="36" decoding="async">
+            <span>BANANO X</span>
+          </a>
+          <p>Feeless. Instant. Meme-fueled crypto. A fan site for the midnight jungle.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Play</h4>
+          <ul>
+            <li><a href="arcade.html">Arcade</a></li>
+            <li><a href="playTD.html">Banano TD</a></li>
+            <li><a href="play.html">Potassium Tower</a></li>
+            <li><a href="playQuest.html">Browser Quest</a></li>
+            <li><a href="playNFR.html">Neon Frequency</a></li>
+            <li><a href="playBlaster.html">Banano Blaster</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Explore</h4>
+          <ul>
+            <li><a href="facts.html">Facts</a></li>
+            <li><a href="ecosystem.html">Ecosystem</a></li>
+            <li><a href="faucets.html">Faucets</a></li>
+            <li><a href="https://node.bananox.com/">Live Node</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <ul>
+            <li><a href="community.html">Community</a></li>
+            <li><a href="https://banano.cc" target="_blank" rel="noopener">Official Banano</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>Built for billions · Fan site · Official: <a class="footer-official" href="https://banano.cc" target="_blank" rel="noopener">banano.cc</a></p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="site.js" defer></script>
+</body>
+</html>

@@ -1531,6 +1531,278 @@ a.card:focus-visible {
   color: var(--banana-bright);
 }
 
+/* ─── Arcade cabinets ─── */
+
+.arcade-page {
+  padding-bottom: 4rem;
+}
+
+.arcade-floor {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1.5rem;
+  align-items: stretch;
+}
+
+.arcade-cab {
+  display: flex;
+  flex-direction: column;
+  border-radius: 18px 18px 14px 14px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--bg-elevated) 90%, var(--banana) 10%) 0%, var(--bg-card) 40%, var(--bg-elevated) 100%);
+  border: 1px solid var(--border);
+  box-shadow: var(--surface-edge), var(--shadow-card);
+  overflow: hidden;
+  transition: transform 0.3s var(--ease), border-color 0.25s, box-shadow 0.35s var(--ease);
+  color: inherit;
+  text-decoration: none;
+}
+
+.arcade-cab:hover,
+.arcade-cab:focus-visible {
+  transform: translateY(-8px);
+  border-color: var(--border-strong);
+  box-shadow: var(--glow-banana), var(--shadow-card);
+}
+
+.arcade-cab:focus-visible {
+  outline: none;
+}
+
+.arcade-marquee {
+  background: linear-gradient(90deg, #1a1400, #3d3008 20%, #5c4a10 50%, #3d3008 80%, #1a1400);
+  padding: 0.55rem 0.75rem;
+  text-align: center;
+  border-bottom: 2px solid color-mix(in srgb, var(--banana) 55%, #000);
+  position: relative;
+  overflow: hidden;
+}
+
+html[data-theme="light"] .arcade-marquee {
+  background: linear-gradient(90deg, #c9a227, #f5d041 40%, #ffe566 50%, #f5d041 60%, #c9a227);
+  border-bottom-color: var(--banana-deep);
+}
+
+.arcade-marquee::before,
+.arcade-marquee::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--lime);
+  box-shadow: 0 0 8px var(--lime);
+  transform: translateY(-50%);
+  animation: pulse-dot 1.6s ease-in-out infinite;
+}
+
+.arcade-marquee::before { left: 0.65rem; }
+.arcade-marquee::after { right: 0.65rem; animation-delay: 0.4s; }
+
+.arcade-marquee-text {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  color: #fff8d6;
+  text-shadow: 0 0 12px rgba(245, 208, 65, 0.7);
+}
+
+html[data-theme="light"] .arcade-marquee-text {
+  color: #1a1400;
+  text-shadow: none;
+}
+
+.arcade-bezel {
+  padding: 0.65rem 0.75rem 0.35rem;
+  background: linear-gradient(180deg, #0a0a0a, #151515);
+}
+
+html[data-theme="light"] .arcade-bezel {
+  background: linear-gradient(180deg, #2a2a2a, #1a1a1a);
+}
+
+.arcade-screen {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 2px solid #222;
+  box-shadow:
+    inset 0 0 40px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(245, 208, 65, 0.15);
+  background: #050505;
+}
+
+.arcade-art {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.arcade-scanlines {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 2px,
+    rgba(0, 0, 0, 0.18) 2px,
+    rgba(0, 0, 0, 0.18) 3px
+  );
+  opacity: 0.55;
+  mix-blend-mode: multiply;
+}
+
+.arcade-screen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: radial-gradient(ellipse 80% 70% at 50% 40%, transparent 40%, rgba(0, 0, 0, 0.45) 100%);
+}
+
+.arcade-insert {
+  position: absolute;
+  left: 50%;
+  bottom: 0.45rem;
+  transform: translateX(-50%);
+  z-index: 4;
+  font-family: var(--font-display);
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  color: #f5d041;
+  text-shadow: 0 0 10px rgba(245, 208, 65, 0.8);
+  animation: arcade-blink 1.4s steps(2, end) infinite;
+  pointer-events: none;
+}
+
+@keyframes arcade-blink {
+  50% { opacity: 0.15; }
+}
+
+.arcade-panel {
+  padding: 1rem 1.05rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  flex: 1;
+}
+
+.arcade-tag {
+  align-self: flex-start;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--lime);
+  background: var(--chip-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 0.22rem 0.55rem;
+}
+
+.arcade-panel h2 {
+  font-size: 1.2rem;
+  color: var(--banana);
+  letter-spacing: -0.03em;
+  margin: 0.15rem 0 0;
+}
+
+.arcade-panel p {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  flex: 1;
+  margin: 0;
+}
+
+.arcade-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0.25rem 0 0.5rem;
+}
+
+.arcade-meta span {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  border: 1px solid var(--border-hair);
+  border-radius: var(--radius-pill);
+  padding: 0.2rem 0.5rem;
+}
+
+.arcade-play {
+  align-self: flex-start;
+  pointer-events: none; /* whole card is the link */
+}
+
+.arcade-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.55rem 0.75rem 0.75rem;
+  background: color-mix(in srgb, var(--bg-deep) 40%, #111);
+  border-top: 1px solid var(--border-hair);
+}
+
+.cab-btn {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ffe566, #c9a227 55%, #6a5508);
+  box-shadow: inset 0 -2px 3px rgba(0, 0, 0, 0.35), 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.cab-btn-red {
+  background: radial-gradient(circle at 35% 30%, #ff8a80, #c62828 55%, #6b1010);
+}
+
+.cab-stick {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #eee, #666 60%, #222);
+  box-shadow: inset 0 -2px 3px rgba(0, 0, 0, 0.4);
+  position: relative;
+}
+
+.cab-stick::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  border-radius: 50%;
+  background: #222;
+}
+
+@media (max-width: 560px) {
+  .arcade-floor {
+    grid-template-columns: 1fr;
+    max-width: 340px;
+    margin-inline: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arcade-insert {
+    animation: none;
+    opacity: 0.85;
+  }
+}
+
 /* Skip offscreen marketing paint */
 .page .section,
 .page .list-stack,
