@@ -3204,7 +3204,7 @@
     ctx.fillStyle = "rgba(168,85,247,0.18)"; ctx.fill();
     ctx.beginPath(); ctx.arc(sp.x, sp.y, pulse, 0, TWO_PI);
     ctx.strokeStyle = "rgba(192,132,252,0.85)"; ctx.lineWidth = 3; ctx.stroke();
-    ctx.fillStyle = "#e9d5ff"; ctx.font = "bold 12px Fredoka, sans-serif";
+    ctx.fillStyle = "#e9d5ff"; ctx.font = "bold 12px Syne, system-ui, sans-serif";
     ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("SPAWN", sp.x, sp.y);
 
     var cg = 22 + Math.sin(animT * 3) * 3;
@@ -3215,7 +3215,7 @@
     coreGrad.addColorStop(0, "#ffe566"); coreGrad.addColorStop(0.55, "#f5d041"); coreGrad.addColorStop(1, "#c9a227");
     ctx.fillStyle = coreGrad; ctx.fill();
     ctx.strokeStyle = "rgba(255,255,255,0.45)"; ctx.lineWidth = 2; ctx.stroke();
-    ctx.fillStyle = "#1a1400"; ctx.font = "bold 11px Fredoka, sans-serif"; ctx.fillText("CORE", core.x, core.y);
+    ctx.fillStyle = "#1a1400"; ctx.font = "bold 11px Syne, system-ui, sans-serif"; ctx.fillText("CORE", core.x, core.y);
   }
 
   function drawHover() {
@@ -3340,7 +3340,7 @@
     ctx.restore();
     // Target priority label when selected
     if (sel && !t.def.farm && !(t.def.support && !t.def.freezePulse)) {
-      ctx.font = "bold 10px Fredoka, sans-serif";
+      ctx.font = "bold 10px Syne, system-ui, sans-serif";
       ctx.textAlign = "center";
       ctx.textBaseline = "top";
       var tl = TARGET_LABEL[t.target || "first"] || "First";
@@ -3371,7 +3371,7 @@
       ctx.strokeStyle = th.kind === "ceramic" ? "rgba(120,113,108,0.9)" : "rgba(255,255,255,0.35)";
       ctx.lineWidth = th.kind === "ceramic" ? 4 : 2.5; ctx.stroke();
       if (label) {
-        ctx.font = "bold 10px Fredoka, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.font = "bold 10px Syne, system-ui, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
         ctx.strokeStyle = "rgba(0,0,0,0.5)"; ctx.lineWidth = 3; ctx.strokeText(label, th.x, th.y);
         ctx.fillStyle = "#fff"; ctx.fillText(label, th.x, th.y);
       }
@@ -3436,7 +3436,7 @@
     for (var f = 0; f < floats.length; f++) {
       var fl = floats[f];
       ctx.globalAlpha = 1 - fl.age / fl.life;
-      ctx.font = "700 " + fl.size + "px Fredoka, sans-serif"; ctx.textAlign = "center";
+      ctx.font = "700 " + fl.size + "px Syne, system-ui, sans-serif"; ctx.textAlign = "center";
       ctx.strokeStyle = "rgba(0,0,0,0.55)"; ctx.lineWidth = 3; ctx.strokeText(fl.text, fl.x, fl.y);
       ctx.fillStyle = fl.color; ctx.fillText(fl.text, fl.x, fl.y);
     }
@@ -3482,7 +3482,7 @@
       var popScale = 1 + (1 - Math.min(1, comboAnnouncerT)) * 0.15;
       ctx.translate(W / 2, H * 0.28);
       ctx.scale(popScale, popScale);
-      ctx.font = "800 42px Fredoka, sans-serif";
+      ctx.font = "800 42px Syne, system-ui, sans-serif";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.strokeStyle = "rgba(0,0,0,0.55)";
@@ -3495,7 +3495,7 @@
 
     // Mini status when playing
     if (running && !gameOver && quality > 0.4) {
-      ctx.font = "600 12px Fredoka, sans-serif";
+      ctx.font = "600 12px Syne, system-ui, sans-serif";
       ctx.textAlign = "left";
       ctx.textBaseline = "top";
       ctx.globalAlpha = 0.55;

@@ -15,9 +15,8 @@
   <meta property="og:description" content="Climb higher. Unlock worlds. Spend BAN on upgrades. Local leaderboard.">
   <meta property="og:image" content="https://bananox.com/og-image.jpg">
   <meta name="twitter:card" content="summary_large_image">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="preload" href="fonts/syne-700.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/dm-sans.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="styles.css">
   <style>
     :root {
@@ -50,7 +49,7 @@
       padding: 0 0.15rem;
     }
     .climb-header h1 {
-      font-family: Fredoka, system-ui, sans-serif;
+      font-family: Syne, system-ui, sans-serif;
       font-size: clamp(1.2rem, 2.2vw, 1.5rem);
       font-weight: 600;
       color: #f0f9ff;
@@ -109,7 +108,7 @@
     }
     .climb-hud[hidden] { display: none !important; }
     .climb-hud .pill {
-      font-family: Fredoka, system-ui, sans-serif;
+      font-family: Syne, system-ui, sans-serif;
       font-size: 0.78rem;
       font-weight: 500;
       color: rgba(240, 249, 255, 0.9);
@@ -128,7 +127,7 @@
       left: 50%;
       transform: translateX(-50%);
       z-index: 5;
-      font-family: Fredoka, system-ui, sans-serif;
+      font-family: Syne, system-ui, sans-serif;
       font-size: clamp(1.1rem, 2.4vw, 1.45rem);
       font-weight: 700;
       color: var(--climb-gold);
@@ -188,7 +187,7 @@
       border: 1px solid rgba(255, 255, 255, 0.1);
     }
     .climb-card h2 {
-      font-family: Fredoka, system-ui, sans-serif;
+      font-family: Syne, system-ui, sans-serif;
       font-size: 1.45rem;
       font-weight: 600;
       color: #f8fafc;
@@ -212,7 +211,7 @@
     }
     .climb-meta b {
       color: var(--climb-gold);
-      font-family: Fredoka, system-ui, sans-serif;
+      font-family: Syne, system-ui, sans-serif;
       font-weight: 600;
     }
     .hub-tabs {
@@ -223,7 +222,7 @@
       margin-bottom: 0.75rem;
     }
     .hub-tab, .climb-chip {
-      font-family: Fredoka, system-ui, sans-serif;
+      font-family: Syne, system-ui, sans-serif;
       font-size: 0.75rem;
       font-weight: 500;
       padding: 0.4rem 0.8rem;
@@ -278,7 +277,7 @@
       display: flex;
       align-items: center;
       gap: 0.4rem;
-      font-family: Fredoka, system-ui, sans-serif;
+      font-family: Syne, system-ui, sans-serif;
       font-weight: 600;
       font-size: 0.85rem;
       color: #f8fafc;
@@ -294,7 +293,7 @@
       margin-top: 0.3rem;
       font-size: 0.68rem;
       color: rgba(125, 211, 252, 0.75);
-      font-family: Fredoka, system-ui, sans-serif;
+      font-family: Syne, system-ui, sans-serif;
     }
     .upgrade-list { display: flex; flex-direction: column; gap: 0.4rem; }
     .upgrade-row {
@@ -308,7 +307,7 @@
       border: 1px solid var(--climb-border);
     }
     .upgrade-row .u-name {
-      font-family: Fredoka, system-ui, sans-serif;
+      font-family: Syne, system-ui, sans-serif;
       font-size: 0.82rem;
       font-weight: 600;
       color: #f8fafc;
@@ -321,10 +320,10 @@
     .upgrade-row .u-lvl {
       font-size: 0.68rem;
       color: var(--climb-ice);
-      font-family: Fredoka, system-ui, sans-serif;
+      font-family: Syne, system-ui, sans-serif;
     }
     .upgrade-row button {
-      font-family: Fredoka, system-ui, sans-serif;
+      font-family: Syne, system-ui, sans-serif;
       font-size: 0.72rem;
       font-weight: 600;
       padding: 0.4rem 0.65rem;
@@ -354,12 +353,12 @@
       color: rgba(236, 245, 255, 0.75);
     }
     .lb-row .rank {
-      font-family: Fredoka, system-ui, sans-serif;
+      font-family: Syne, system-ui, sans-serif;
       color: var(--climb-gold);
       font-weight: 600;
     }
     .lb-row .score {
-      font-family: Fredoka, system-ui, sans-serif;
+      font-family: Syne, system-ui, sans-serif;
       color: var(--climb-gold);
       font-weight: 600;
     }
@@ -379,7 +378,7 @@
     }
     .climb-actions .btn {
       min-width: 8rem;
-      font-family: Fredoka, system-ui, sans-serif !important;
+      font-family: Syne, system-ui, sans-serif !important;
       font-weight: 600 !important;
       border-radius: 14px !important;
       border: none !important;
@@ -402,7 +401,7 @@
       margin-top: 0.75rem;
     }
     .prog-btn {
-      font-family: Fredoka, system-ui, sans-serif;
+      font-family: Syne, system-ui, sans-serif;
       font-size: 0.7rem;
       padding: 0.35rem 0.7rem;
       border-radius: 999px;
@@ -423,7 +422,7 @@
     }
     .how-list strong { color: #f8fafc; }
     .stat-line {
-      font-family: Fredoka, system-ui, sans-serif;
+      font-family: Syne, system-ui, sans-serif;
       color: #e0f2fe;
       font-size: 0.95rem;
       margin: 0 0 0.5rem;
@@ -438,7 +437,7 @@
       font-size: 0.82rem;
       color: var(--climb-ice);
       margin: 0 0 0.85rem;
-      font-family: Fredoka, system-ui, sans-serif;
+      font-family: Syne, system-ui, sans-serif;
     }
     .touch-pad {
       display: none;
@@ -483,7 +482,7 @@
       border: 1px solid var(--climb-border);
     }
     .side-card h3 {
-      font-family: Fredoka, system-ui, sans-serif;
+      font-family: Syne, system-ui, sans-serif;
       font-size: 0.8rem;
       font-weight: 600;
       color: rgba(240, 249, 255, 0.55);
@@ -511,7 +510,7 @@
     }
     .side-stat b {
       color: var(--climb-gold);
-      font-family: Fredoka, system-ui, sans-serif;
+      font-family: Syne, system-ui, sans-serif;
     }
     .save-status {
       font-size: 0.72rem;
@@ -530,7 +529,7 @@
   <header class="nav">
     <div class="nav-inner">
       <a href="index.html" class="logo">
-        <img src="favicon.svg" alt="" class="logo-mark" width="36" height="36">
+        <img src="favicon.svg" alt="" class="logo-mark" width="36" height="36" decoding="async">
         <span>BANANO X</span>
       </a>
       <button class="nav-toggle" type="button" aria-label="Menu" aria-expanded="false">
@@ -715,7 +714,7 @@
     </div>
   </main>
 
-  <script src="site.js"></script>
-  <script src="play.js"></script>
+  <script src="site.js" defer></script>
+  <script src="play.js" defer></script>
 </body>
 </html>

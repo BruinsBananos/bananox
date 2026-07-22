@@ -1,18 +1,33 @@
-/* Banano X — shared site behavior */
-
+/* Banano X — shared site behavior (performance-first) */
 (function () {
+  "use strict";
+
   const nav = document.querySelector(".nav");
   const toggle = document.querySelector(".nav-toggle");
   const links = document.querySelector(".nav-links");
+  const dropdownParents = document.querySelectorAll(".has-dropdown");
 
-  // Scroll shadow on nav
+  // ─── Scroll shadow on nav (rAF-throttled) ───
   if (nav) {
-    const onScroll = () => nav.classList.toggle("scrolled", window.scrollY > 12);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
+    let ticking = false;
+    const apply = () => {
+      nav.classList.toggle("scrolled", window.scrollY > 12);
+      ticking = false;
+    };
+    apply();
+    window.addEventListener(
+      "scroll",
+      () => {
+        if (!ticking) {
+          ticking = true;
+          requestAnimationFrame(apply);
+        }
+      },
+      { passive: true }
+    );
   }
 
-  // Mobile menu
+  // ─── Mobile menu ───
   if (toggle && links) {
     toggle.addEventListener("click", () => {
       const open = links.classList.toggle("open");
@@ -22,12 +37,11 @@
     });
   }
 
-  // Dropdowns — hover on desktop, click-to-expand on mobile/touch
-  const dropdownParents = document.querySelectorAll(".has-dropdown");
-
   function isTouchNav() {
-    return window.matchMedia("(max-width: 768px)").matches ||
-      window.matchMedia("(hover: none)").matches;
+    return (
+      window.matchMedia("(max-width: 768px)").matches ||
+      window.matchMedia("(hover: none)").matches
+    );
   }
 
   function closeAllDropdowns(except) {
@@ -43,7 +57,6 @@
     const btn = item.querySelector(".nav-drop-btn");
     if (!btn) return;
 
-    // Desktop: pure CSS hover — don't click-lock the menu open
     btn.addEventListener("click", (e) => {
       if (!isTouchNav()) {
         e.preventDefault();
@@ -57,7 +70,6 @@
       btn.setAttribute("aria-expanded", willOpen ? "true" : "false");
     });
 
-    // Keep aria-expanded in sync with hover for assistive tech on desktop
     item.addEventListener("mouseenter", () => {
       if (!isTouchNav()) btn.setAttribute("aria-expanded", "true");
     });
@@ -71,20 +83,18 @@
   });
 
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-      closeAllDropdowns();
-      if (links && links.classList.contains("open")) {
-        links.classList.remove("open");
-        if (toggle) {
-          toggle.classList.remove("open");
-          toggle.setAttribute("aria-expanded", "false");
-          toggle.focus();
-        }
+    if (e.key !== "Escape") return;
+    closeAllDropdowns();
+    if (links && links.classList.contains("open")) {
+      links.classList.remove("open");
+      if (toggle) {
+        toggle.classList.remove("open");
+        toggle.setAttribute("aria-expanded", "false");
+        toggle.focus();
       }
     }
   });
 
-  // Close mobile menu when following a real link
   if (links) {
     links.querySelectorAll("a").forEach((a) => {
       a.addEventListener("click", () => {
@@ -98,7 +108,7 @@
     });
   }
 
-  // Mark active nav item from current path
+  // ─── Active nav ───
   const path = (location.pathname.split("/").pop() || "index.html").toLowerCase();
   const page = path === "" ? "index.html" : path;
 
@@ -114,51 +124,217 @@
     }
   });
 
-  // Home: mark logo as current when on index
   if (page === "index.html" || page === "") {
     const logo = document.querySelector(".logo");
     if (logo) logo.setAttribute("aria-current", "page");
   }
 
-  // Scroll reveal
+  // ─── Instant navigation: Speculation Rules + hover prefetch ───
+  const EXTRA_ASSETS = {
+    "playtd.html": ["playTD.js"],
+    "play.html": ["play.js"],
+  };
+
+  const prefetched = new Set();
+
+  function sameOriginInternal(href) {
+    if (!href || href.startsWith("#") || href.startsWith("mailto:") || href.startsWith("tel:")) {
+      return null;
+    }
+    try {
+      const u = new URL(href, location.href);
+      if (u.origin !== location.origin) return null;
+      if (u.pathname === location.pathname && u.hash) return null;
+      return u.href;
+    } catch {
+      return null;
+    }
+  }
+
+  function prefetchUrl(url, asType) {
+    if (!url || prefetched.has(url)) return;
+    prefetched.add(url);
+    const link = document.createElement("link");
+    link.rel = "prefetch";
+    link.href = url;
+    if (asType) link.as = asType;
+    link.setAttribute("fetchpriority", "low");
+    document.head.appendChild(link);
+  }
+
+  function prefetchPage(href) {
+    const abs = sameOriginInternal(href);
+    if (!abs) return;
+    prefetchUrl(abs, "document");
+    const file = abs.split("/").pop().split("?")[0].toLowerCase();
+    const extras = EXTRA_ASSETS[file];
+    if (extras) {
+      extras.forEach((asset) => {
+        prefetchUrl(new URL(asset, location.href).href, "script");
+      });
+    }
+  }
+
+  function injectSpeculationRules() {
+    if (!HTMLScriptElement.supports || !HTMLScriptElement.supports("speculationrules")) {
+      return;
+    }
+    const el = document.createElement("script");
+    el.type = "speculationrules";
+    el.textContent = JSON.stringify({
+      prefetch: [
+        {
+          where: {
+            and: [
+              { href_matches: "/*" },
+              { not: { href_matches: "https://*" } },
+            ],
+          },
+          eagerness: "moderate",
+        },
+      ],
+      prerender: [
+        {
+          where: {
+            and: [
+              { href_matches: "/*" },
+              { not: { href_matches: "https://*" } },
+              { not: { selector_matches: "[target=_blank]" } },
+              { not: { selector_matches: "[rel~=external]" } },
+            ],
+          },
+          eagerness: "conservative",
+        },
+      ],
+    });
+    document.head.appendChild(el);
+  }
+
+  injectSpeculationRules();
+
+  // Hover / focus / touchstart prefetch for browsers without Speculation Rules
+  let hoverTimer = 0;
+  document.addEventListener(
+    "pointerover",
+    (e) => {
+      const a = e.target.closest && e.target.closest("a[href]");
+      if (!a) return;
+      clearTimeout(hoverTimer);
+      hoverTimer = setTimeout(() => prefetchPage(a.getAttribute("href")), 65);
+    },
+    { passive: true }
+  );
+
+  document.addEventListener(
+    "touchstart",
+    (e) => {
+      const a = e.target.closest && e.target.closest("a[href]");
+      if (a) prefetchPage(a.getAttribute("href"));
+    },
+    { passive: true }
+  );
+
+  // Idle-prefetch top content destinations
+  const IDLE_PREFETCH = [
+    "facts.html",
+    "ecosystem.html",
+    "faucets.html",
+    "community.html",
+    "playTD.html",
+    "play.html",
+    "playQuest.html",
+    "playNFR.html",
+    "playBlaster.html",
+  ];
+
+  function idlePrefetch() {
+    const run = (deadline) => {
+      while (IDLE_PREFETCH.length && (!deadline || deadline.timeRemaining() > 8)) {
+        prefetchPage(IDLE_PREFETCH.shift());
+      }
+      if (IDLE_PREFETCH.length) {
+        if ("requestIdleCallback" in window) {
+          requestIdleCallback(run, { timeout: 3000 });
+        }
+      }
+    };
+    if ("requestIdleCallback" in window) {
+      requestIdleCallback(run, { timeout: 2500 });
+    } else {
+      setTimeout(() => run(null), 1200);
+    }
+  }
+  idlePrefetch();
+
+  // ─── Scroll reveal — only below the fold ───
   const reveals = document.querySelectorAll(".reveal");
-  if (reveals.length && "IntersectionObserver" in window) {
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (reveals.length && !reduceMotion && "IntersectionObserver" in window) {
+    const fold = window.innerHeight * 0.92;
     const io = new IntersectionObserver(
       (entries) => {
         entries.forEach((e) => {
           if (e.isIntersecting) {
             e.target.classList.add("visible");
+            e.target.classList.remove("is-pending");
             io.unobserve(e.target);
           }
         });
       },
-      { threshold: 0.12, rootMargin: "0px 0px -40px 0px" }
+      { threshold: 0.08, rootMargin: "0px 0px -32px 0px" }
     );
-    reveals.forEach((el) => io.observe(el));
+
+    reveals.forEach((el) => {
+      const top = el.getBoundingClientRect().top;
+      if (top > fold) {
+        el.classList.add("is-pending");
+        io.observe(el);
+      } else {
+        el.classList.add("visible");
+      }
+    });
   } else {
     reveals.forEach((el) => el.classList.add("visible"));
   }
 
-  // Hero particles (home only)
-  const layer = document.getElementById("particles");
-  if (!layer) return;
+  // ─── Service worker (shell cache for instant revisits) ───
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("sw.js", { scope: "./" }).catch(() => {
+        /* ignore offline / file:// failures */
+      });
+    });
+  }
 
-  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (reduced) return;
+  // ─── Hero particles (home only, capped, paused when hidden) ───
+  const layer = document.getElementById("particles");
+  if (!layer || reduceMotion) return;
+
+  const MAX_PARTICLES = 10;
+  let bananaTimer = 0;
+  let fireflyTimer = 0;
+  let running = false;
+
+  function particleCount() {
+    return layer.childElementCount;
+  }
 
   function spawnBanana() {
+    if (particleCount() >= MAX_PARTICLES) return;
     const el = document.createElement("div");
     el.className = "particle";
     el.textContent = "🍌";
     el.style.left = Math.random() * 100 + "vw";
     el.style.fontSize = 0.9 + Math.random() * 1.1 + "rem";
-    el.style.animationDuration = 10 + Math.random() * 10 + "s";
-    el.style.opacity = String(0.25 + Math.random() * 0.4);
+    el.style.animationDuration = 12 + Math.random() * 8 + "s";
+    el.style.opacity = String(0.25 + Math.random() * 0.35);
     layer.appendChild(el);
-    setTimeout(() => el.remove(), 22000);
+    setTimeout(() => el.remove(), 21000);
   }
 
   function spawnFirefly() {
+    if (particleCount() >= MAX_PARTICLES) return;
     const el = document.createElement("div");
     el.className = "firefly";
     el.style.left = Math.random() * 100 + "%";
@@ -168,7 +344,24 @@
     setTimeout(() => el.remove(), 8000);
   }
 
-  setInterval(spawnBanana, 700);
-  setInterval(spawnFirefly, 400);
-  for (let i = 0; i < 6; i++) spawnFirefly();
+  function startParticles() {
+    if (running || document.hidden) return;
+    running = true;
+    for (let i = 0; i < 4; i++) spawnFirefly();
+    bananaTimer = setInterval(spawnBanana, 1400);
+    fireflyTimer = setInterval(spawnFirefly, 900);
+  }
+
+  function stopParticles() {
+    running = false;
+    clearInterval(bananaTimer);
+    clearInterval(fireflyTimer);
+  }
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) stopParticles();
+    else startParticles();
+  });
+
+  startParticles();
 })();

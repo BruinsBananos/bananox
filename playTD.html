@@ -18,9 +18,8 @@
   <meta name="twitter:title" content="Banano TD · Banano X">
   <meta name="twitter:description" content="Dual paths. 6 maps. 150 waves. Live BAN bounties. Starship-scale chaos.">
   <meta name="twitter:image" content="https://bananox.com/og-image.jpg">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="preload" href="fonts/syne-700.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/dm-sans.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="styles.css">
   <style>
     :root {
@@ -48,7 +47,7 @@
       margin-bottom: 0.4rem;
     }
     .td-title h1 {
-      font-family: Fredoka, system-ui, sans-serif;
+      font-family: Syne, system-ui, sans-serif;
       font-size: clamp(1.15rem, 2vw, 1.45rem);
       color: #fff8d6;
       letter-spacing: -0.02em;
@@ -95,7 +94,7 @@
       padding: 0.5rem 0.7rem;
       background: rgba(8, 16, 12, 0.92);
       border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-      font-family: Fredoka, system-ui, sans-serif;
+      font-family: Syne, system-ui, sans-serif;
       font-size: 0.78rem;
       color: rgba(232, 245, 216, 0.75);
       opacity: 0;
@@ -138,7 +137,7 @@
     }
     .td-hud button.spd,
     .ability-btn {
-      font-family: Fredoka, system-ui, sans-serif;
+      font-family: Syne, system-ui, sans-serif;
       border: none;
       background: transparent;
       color: rgba(232, 245, 216, 0.65);
@@ -215,7 +214,7 @@
       box-shadow: 0 8px 28px rgba(0, 0, 0, 0.2);
     }
     .td-card h3 {
-      font-family: Fredoka, system-ui, sans-serif;
+      font-family: Syne, system-ui, sans-serif;
       font-size: 0.72rem;
       font-weight: 600;
       color: rgba(232, 245, 216, 0.4);
@@ -272,7 +271,7 @@
       flex: 1;
     }
     .shop-btn .nm {
-      font-family: Fredoka, system-ui, sans-serif;
+      font-family: Syne, system-ui, sans-serif;
       font-size: 0.8rem;
       color: #fff8d6;
       line-height: 1.15;
@@ -286,7 +285,7 @@
       font-size: 0.75rem;
       color: #86efac;
       font-weight: 600;
-      font-family: Fredoka, system-ui, sans-serif;
+      font-family: Syne, system-ui, sans-serif;
       margin-left: auto;
       flex-shrink: 0;
     }
@@ -356,7 +355,7 @@
     }
     .path-col.capped { opacity: 0.45; }
     .path-title {
-      font-family: Fredoka, system-ui, sans-serif;
+      font-family: Syne, system-ui, sans-serif;
       font-size: 0.68rem;
       color: rgba(232, 245, 216, 0.5);
       display: flex;
@@ -377,7 +376,7 @@
     }
     .path-next strong {
       display: block;
-      font-family: Fredoka, system-ui, sans-serif;
+      font-family: Syne, system-ui, sans-serif;
       font-size: 0.8rem;
       color: #fff8d6;
       font-weight: 600;
@@ -397,7 +396,7 @@
     .path-buy {
       width: 100%;
       margin-top: 0.1rem;
-      font-family: Fredoka, system-ui, sans-serif !important;
+      font-family: Syne, system-ui, sans-serif !important;
       font-size: 0.78rem !important;
       font-weight: 600 !important;
       padding: 0.45rem 0.4rem !important;
@@ -427,7 +426,7 @@
       background: rgba(0, 0, 0, 0.25);
     }
     .tgt-btn {
-      font-family: Fredoka, system-ui, sans-serif;
+      font-family: Syne, system-ui, sans-serif;
       font-size: 0.65rem;
       padding: 0.35rem 0.1rem;
       border-radius: 9px;
@@ -462,7 +461,7 @@
     }
     .act .btn {
       width: 100%;
-      font-family: Fredoka, system-ui, sans-serif;
+      font-family: Syne, system-ui, sans-serif;
       font-size: 0.8rem !important;
       border-radius: 12px !important;
       padding: 0.55rem 0.5rem !important;
@@ -560,7 +559,7 @@
       line-height: 1;
     }
     .menu-title {
-      font-family: Fredoka, system-ui, sans-serif;
+      font-family: Syne, system-ui, sans-serif;
       font-size: clamp(1.85rem, 4vw, 2.25rem);
       font-weight: 700;
       line-height: 1.1;
@@ -577,7 +576,7 @@
       line-height: 1.4;
     }
     .overlay h2 {
-      font-family: Fredoka, system-ui, sans-serif;
+      font-family: Syne, system-ui, sans-serif;
       font-size: clamp(1.45rem, 3vw, 1.85rem);
       color: #fff8d6;
       margin-bottom: 0.4rem;
@@ -628,7 +627,7 @@
     }
     .chip-btn,
     .map-card {
-      font-family: Fredoka, system-ui, sans-serif;
+      font-family: Syne, system-ui, sans-serif;
       font-size: 0.82rem;
       font-weight: 500;
       padding: 0.55rem 0.85rem;
@@ -732,7 +731,7 @@
       margin-top: 0.85rem;
     }
     .prog-btn {
-      font-family: Fredoka, system-ui, sans-serif;
+      font-family: Syne, system-ui, sans-serif;
       font-size: 0.72rem;
       font-weight: 500;
       padding: 0.4rem 0.75rem;
@@ -771,7 +770,7 @@
     }
     .hub-stats b {
       color: #f5d041;
-      font-family: Fredoka, system-ui, sans-serif;
+      font-family: Syne, system-ui, sans-serif;
       font-weight: 600;
     }
     .hub-next {
@@ -790,7 +789,7 @@
       gap: 0.35rem;
     }
     .hub-tab {
-      font-family: Fredoka, system-ui, sans-serif;
+      font-family: Syne, system-ui, sans-serif;
       font-size: 0.72rem;
       font-weight: 500;
       padding: 0.38rem 0.7rem;
@@ -845,7 +844,7 @@
       opacity: 1;
     }
     .badge-card .b-name {
-      font-family: Fredoka, system-ui, sans-serif;
+      font-family: Syne, system-ui, sans-serif;
       font-size: 0.68rem;
       font-weight: 600;
       color: rgba(232, 245, 216, 0.45);
@@ -872,12 +871,12 @@
       color: rgba(232, 245, 216, 0.7);
     }
     .lb-row .rank {
-      font-family: Fredoka, system-ui, sans-serif;
+      font-family: Syne, system-ui, sans-serif;
       color: rgba(245, 208, 65, 0.75);
       font-weight: 600;
     }
     .lb-row .score {
-      font-family: Fredoka, system-ui, sans-serif;
+      font-family: Syne, system-ui, sans-serif;
       color: #f5d041;
       font-weight: 600;
       white-space: nowrap;
@@ -911,7 +910,7 @@
       width: 1rem;
       height: 1rem;
       border-radius: 4px;
-      font-family: Fredoka, system-ui, sans-serif;
+      font-family: Syne, system-ui, sans-serif;
       font-size: 0.58rem;
       font-weight: 700;
       color: rgba(232, 245, 216, 0.28);
@@ -935,7 +934,7 @@
       justify-content: center;
     }
     .mut-btn {
-      font-family: Fredoka, system-ui, sans-serif;
+      font-family: Syne, system-ui, sans-serif;
       font-size: 0.78rem;
       font-weight: 500;
       padding: 0.45rem 0.85rem;
@@ -986,7 +985,7 @@
       border: 1px solid rgba(134, 239, 172, 0.45);
       box-shadow: 0 10px 32px rgba(0, 0, 0, 0.4);
       color: #fff8d6;
-      font-family: Fredoka, system-ui, sans-serif;
+      font-family: Syne, system-ui, sans-serif;
       font-size: 0.9rem;
       font-weight: 600;
       white-space: nowrap;
@@ -1000,7 +999,7 @@
     }
     .run-score-line {
       margin: 0.35rem 0 0.15rem;
-      font-family: Fredoka, system-ui, sans-serif;
+      font-family: Syne, system-ui, sans-serif;
       font-size: 0.95rem;
       color: #f5d041;
     }
@@ -1016,7 +1015,7 @@
       left: 50%;
       top: 16%;
       transform: translateX(-50%);
-      font-family: Fredoka, system-ui, sans-serif;
+      font-family: Syne, system-ui, sans-serif;
       font-size: clamp(1.1rem, 2.5vw, 1.55rem);
       color: #fff8d6;
       text-shadow: 0 3px 0 #1a2e1a, 0 0 18px rgba(245,208,65,0.5);
@@ -1044,7 +1043,7 @@
       padding: 0.35rem 0.45rem;
       border-bottom: 1px solid rgba(245,208,65,0.12);
     }
-    .round-summary .rs-row b { color: #f5d041; font-family: Fredoka, system-ui, sans-serif; }
+    .round-summary .rs-row b { color: #f5d041; font-family: Syne, system-ui, sans-serif; }
     .round-summary .rs-row.perfect b { color: #86efac; }
     .round-summary .rs-total {
       display: flex;
@@ -1053,7 +1052,7 @@
       padding: 0.55rem 0.45rem;
       border-radius: 10px;
       background: rgba(245,208,65,0.12);
-      font-family: Fredoka, system-ui, sans-serif;
+      font-family: Syne, system-ui, sans-serif;
       font-size: 1.05rem;
       color: #fff8d6;
     }
@@ -1084,7 +1083,7 @@
   <header class="nav">
     <div class="nav-inner">
       <a href="index.html" class="logo">
-        <img src="favicon.svg" alt="" class="logo-mark" width="36" height="36">
+        <img src="favicon.svg" alt="" class="logo-mark" width="36" height="36" decoding="async">
         <span>BANANO X</span>
       </a>
       <button class="nav-toggle" type="button" aria-label="Menu" aria-expanded="false">
@@ -1305,7 +1304,7 @@
     </div>
   </main>
 
-  <script src="site.js"></script>
-  <script src="playTD.js"></script>
+  <script src="site.js" defer></script>
+  <script src="playTD.js" defer></script>
 </body>
 </html>

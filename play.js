@@ -1139,7 +1139,7 @@
       ctx.fill();
       ctx.shadowBlur = 0;
       ctx.fillStyle = "#1a1400";
-      ctx.font = "bold " + (c.gold ? 11 : 9) + "px Fredoka,sans-serif";
+      ctx.font = "bold " + (c.gold ? 11 : 9) + "px Syne,system-ui,sans-serif";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillText(c.gold ? "★" : "B", 0, 1);
@@ -1208,7 +1208,7 @@
       var fl = 1 - ft.age / ft.life;
       ctx.globalAlpha = fl;
       ctx.fillStyle = ft.color;
-      ctx.font = "600 " + ft.size + "px Fredoka,sans-serif";
+      ctx.font = "600 " + ft.size + "px Syne,system-ui,sans-serif";
       ctx.textAlign = "center";
       ctx.fillText(ft.text, ft.x, ft.y);
       ctx.globalAlpha = 1;
@@ -1229,7 +1229,7 @@
         ctx.stroke();
         ctx.setLineDash([]);
         ctx.fillStyle = "rgba(245,208,65,0.85)";
-        ctx.font = "600 12px Fredoka,sans-serif";
+        ctx.font = "600 12px Syne,system-ui,sans-serif";
         ctx.textAlign = "right";
         ctx.fillText("SUMMIT " + getWorld().goal + "m", W - 28, gy - 6);
       }
