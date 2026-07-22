@@ -1,5 +1,5 @@
 /* Banano X — lightweight shell cache for instant revisits */
-const CACHE = "bananox-shell-v4";
+const CACHE = "bananox-shell-v5";
 
 /* Keep install fast — heavy game HTML/JS cache on first visit, not at SW install */
 const PRECACHE = [

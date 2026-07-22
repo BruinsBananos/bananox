@@ -1639,6 +1639,8 @@ html[data-theme="light"] .arcade-bezel {
   display: block;
   width: 100%;
   height: 100%;
+  object-fit: cover;
+  object-position: center;
 }
 
 .arcade-scanlines {
