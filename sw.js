@@ -1,5 +1,5 @@
 /* Banano X — lightweight shell cache for instant revisits */
-const CACHE = "bananox-shell-v1";
+const CACHE = "bananox-shell-v2";
 
 const PRECACHE = [
   "./",

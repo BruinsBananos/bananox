@@ -2,6 +2,72 @@
 (function () {
   "use strict";
 
+  const THEME_KEY = "bx-theme";
+  const root = document.documentElement;
+
+  function systemTheme() {
+    return window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+  }
+
+  function currentTheme() {
+    const t = root.getAttribute("data-theme");
+    return t === "light" || t === "dark" ? t : systemTheme();
+  }
+
+  function applyTheme(theme, persist) {
+    const next = theme === "light" ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    root.style.colorScheme = next;
+    try {
+      if (persist) localStorage.setItem(THEME_KEY, next);
+    } catch (_) {
+      /* private mode */
+    }
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute("content", next === "light" ? "#f4f0e0" : "#000000");
+    document.querySelectorAll(".theme-toggle").forEach((btn) => {
+      btn.setAttribute("aria-label", next === "light" ? "Switch to dark mode" : "Switch to light mode");
+      btn.setAttribute("title", next === "light" ? "Dark mode" : "Light mode");
+    });
+  }
+
+  // Sync if head script missed (file:// / partial pages)
+  if (!root.getAttribute("data-theme")) {
+    let stored = null;
+    try {
+      stored = localStorage.getItem(THEME_KEY);
+    } catch (_) {
+      /* ignore */
+    }
+    applyTheme(stored === "light" || stored === "dark" ? stored : systemTheme(), false);
+  } else {
+    applyTheme(currentTheme(), false);
+  }
+
+  document.querySelectorAll(".theme-toggle").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      applyTheme(currentTheme() === "light" ? "dark" : "light", true);
+    });
+  });
+
+  // Follow OS only when user hasn't chosen
+  try {
+    const mq = window.matchMedia("(prefers-color-scheme: light)");
+    const onScheme = () => {
+      let stored = null;
+      try {
+        stored = localStorage.getItem(THEME_KEY);
+      } catch (_) {
+        /* ignore */
+      }
+      if (stored !== "light" && stored !== "dark") applyTheme(systemTheme(), false);
+    };
+    if (mq.addEventListener) mq.addEventListener("change", onScheme);
+    else if (mq.addListener) mq.addListener(onScheme);
+  } catch (_) {
+    /* ignore */
+  }
+
   const nav = document.querySelector(".nav");
   const toggle = document.querySelector(".nav-toggle");
   const links = document.querySelector(".nav-links");
