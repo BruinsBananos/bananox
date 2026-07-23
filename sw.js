@@ -1,7 +1,7 @@
-/* Banano X ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â lightweight shell cache for instant revisits */
-const CACHE = "bananox-shell-v9-jumpfix";
+/* Banano X ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â lightweight shell cache for instant revisits */
+const CACHE = "bananox-shell-v10-camjump";
 
-/* Keep install fast ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â heavy game HTML/JS cache on first visit, not at SW install */
+/* Keep install fast ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â heavy game HTML/JS cache on first visit, not at SW install */
 const PRECACHE = [
   "./",
   "./index.html",
