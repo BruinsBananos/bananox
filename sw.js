@@ -1,7 +1,7 @@
-/* Banano X — lightweight shell cache for instant revisits */
-const CACHE = "bananox-shell-v5";
+﻿/* Banano X â€” lightweight shell cache for instant revisits */
+const CACHE = "bananox-shell-v6-climb";
 
-/* Keep install fast — heavy game HTML/JS cache on first visit, not at SW install */
+/* Keep install fast â€” heavy game HTML/JS cache on first visit, not at SW install */
 const PRECACHE = [
   "./",
   "./index.html",
@@ -109,3 +109,4 @@ self.addEventListener("fetch", (event) => {
     })
   );
 });
+

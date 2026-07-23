@@ -1,742 +1,255 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Potassium Climb · Banano X</title>
-  <meta name="description" content="Elegant icy tower climber — levels, upgrades, combos, BAN coins. Don’t let your memes be dreams.">
-  <meta name="theme-color" content="#000000">
-  <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="favicon.svg">
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="Banano X">
-  <meta property="og:url" content="https://bananox.com/play.html">
-  <meta property="og:title" content="Potassium Climb · Banano X">
-  <meta property="og:description" content="Climb higher. Unlock worlds. Spend BAN on upgrades. Local leaderboard.">
-  <meta property="og:image" content="https://bananox.com/og-image.jpg">
-  <meta name="twitter:card" content="summary_large_image">
-  <script>
-    (function () {
-      try {
-        var k = "bx-theme";
-        var t = localStorage.getItem(k);
-        if (t !== "light" && t !== "dark") {
-          t = matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
-        }
-        document.documentElement.setAttribute("data-theme", t);
-        document.documentElement.style.colorScheme = t;
-      } catch (e) {
-        document.documentElement.setAttribute("data-theme", "dark");
-      }
-    })();
-  </script>
-  <link rel="preload" href="fonts/syne-700.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="fonts/dm-sans.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="styles.css">
-  <style>
-    :root {
-      --climb-bg: #060a10;
-      --climb-card: rgba(255, 255, 255, 0.04);
-      --climb-border: rgba(255, 255, 255, 0.08);
-      --climb-text: rgba(236, 245, 255, 0.92);
-      --climb-muted: rgba(200, 220, 240, 0.48);
-      --climb-ice: #7dd3fc;
-      --climb-gold: #f5d041;
-      --climb-pink: #f472b6;
-      --nav-h: 64px;
-    }
-    body.climb-page {
-      background: var(--climb-bg);
-      overflow-x: hidden;
-    }
-    .climb-app {
-      width: min(100% - 0.75rem, 1200px);
-      margin: 0 auto;
-      padding: calc(var(--nav-h) + 0.35rem) 0.4rem 1rem;
-    }
-    .climb-header {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: 0.25rem 1rem;
-      margin-bottom: 0.45rem;
-      padding: 0 0.15rem;
-    }
-    .climb-header h1 {
-      font-family: Syne, system-ui, sans-serif;
-      font-size: clamp(1.2rem, 2.2vw, 1.5rem);
-      font-weight: 600;
-      color: #f0f9ff;
-      letter-spacing: -0.02em;
-      margin: 0;
-    }
-    .climb-header p {
-      margin: 0;
-      font-size: 0.82rem;
-      color: var(--climb-muted);
-    }
-    .climb-layout {
-      display: grid;
-      gap: 0.65rem;
-      grid-template-columns: 1fr;
-      min-height: calc(100vh - var(--nav-h) - 3rem);
-    }
-    @media (min-width: 980px) {
-      .climb-layout {
-        grid-template-columns: minmax(0, 1fr) 300px;
-        align-items: stretch;
-      }
-      body.climb-playing .climb-side { opacity: 1; }
-    }
-    .climb-frame {
-      position: relative;
-      width: 100%;
-      min-height: min(82vh, 920px);
-      border-radius: 22px;
-      overflow: hidden;
-      border: 1px solid var(--climb-border);
-      box-shadow:
-        0 1px 0 rgba(255, 255, 255, 0.04) inset,
-        0 28px 60px rgba(0, 0, 0, 0.45);
-      background: #0a1018;
-      touch-action: none;
-      user-select: none;
-    }
-    .climb-frame canvas {
-      display: block;
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      background: #0a1018;
-    }
-    .climb-hud {
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      z-index: 4;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      gap: 0.35rem;
-      padding: 0.55rem 0.65rem;
-      pointer-events: none;
-    }
-    .climb-hud[hidden] { display: none !important; }
-    .climb-hud .pill {
-      font-family: Syne, system-ui, sans-serif;
-      font-size: 0.78rem;
-      font-weight: 500;
-      color: rgba(240, 249, 255, 0.9);
-      background: rgba(8, 14, 22, 0.55);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 999px;
-      padding: 0.35rem 0.7rem;
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-    }
-    .climb-hud .pill b { color: var(--climb-gold); font-weight: 600; }
-    .climb-hud .pill.ice b { color: var(--climb-ice); }
-    .climb-combo {
-      position: absolute;
-      top: 16%;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 5;
-      font-family: Syne, system-ui, sans-serif;
-      font-size: clamp(1.1rem, 2.4vw, 1.45rem);
-      font-weight: 700;
-      color: var(--climb-gold);
-      text-shadow: 0 2px 0 rgba(0,0,0,0.35), 0 0 28px rgba(245,208,65,0.35);
-      opacity: 0;
-      transition: opacity 0.18s ease, transform 0.18s ease;
-      pointer-events: none;
-      text-align: center;
-      white-space: nowrap;
-    }
-    .climb-combo.show { opacity: 1; transform: translateX(-50%) scale(1.04); }
-    .climb-combo .sub {
-      display: block;
-      font-size: 0.72em;
-      font-weight: 500;
-      color: var(--climb-ice);
-      margin-top: 0.15rem;
-    }
-    .climb-overlay {
-      position: absolute;
-      inset: 0;
-      z-index: 10;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 1rem;
-      background: rgba(6, 10, 16, 0.72);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      overflow-y: auto;
-    }
-    .climb-overlay.hidden { display: none; }
-    .climb-card {
-      width: min(100%, 420px);
-      max-height: min(90vh, 760px);
-      overflow-y: auto;
-      padding: 1.75rem 1.5rem 1.4rem;
-      border-radius: 24px;
-      background: rgba(16, 22, 32, 0.92);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
-      text-align: center;
-      animation: climb-card-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
-    }
-    .climb-card.wide { width: min(100%, 520px); }
-    @keyframes climb-card-in {
-      from { opacity: 0; transform: translateY(10px) scale(0.98); }
-      to { opacity: 1; transform: translateY(0) scale(1); }
-    }
-    .climb-hero-art {
-      width: 64px; height: 64px;
-      margin: 0 auto 0.75rem;
-      border-radius: 20px;
-      display: grid; place-items: center;
-      font-size: 2rem;
-      background: linear-gradient(145deg, rgba(125,211,252,0.2), rgba(245,208,65,0.12));
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    .climb-card h2 {
-      font-family: Syne, system-ui, sans-serif;
-      font-size: 1.45rem;
-      font-weight: 600;
-      color: #f8fafc;
-      letter-spacing: -0.02em;
-      margin: 0 0 0.35rem;
-    }
-    .climb-card .tagline {
-      color: var(--climb-muted);
-      font-size: 0.88rem;
-      line-height: 1.45;
-      margin: 0 0 1rem;
-    }
-    .climb-meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.35rem 0.75rem;
-      justify-content: center;
-      font-size: 0.75rem;
-      color: var(--climb-muted);
-      margin-bottom: 0.85rem;
-    }
-    .climb-meta b {
-      color: var(--climb-gold);
-      font-family: Syne, system-ui, sans-serif;
-      font-weight: 600;
-    }
-    .hub-tabs {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.35rem;
-      justify-content: center;
-      margin-bottom: 0.75rem;
-    }
-    .hub-tab, .climb-chip {
-      font-family: Syne, system-ui, sans-serif;
-      font-size: 0.75rem;
-      font-weight: 500;
-      padding: 0.4rem 0.8rem;
-      border-radius: 999px;
-      border: 1px solid var(--climb-border);
-      background: rgba(255, 255, 255, 0.04);
-      color: rgba(236, 245, 255, 0.7);
-      cursor: pointer;
-      transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
-    }
-    .hub-tab:hover, .climb-chip:hover {
-      background: rgba(255, 255, 255, 0.08);
-      color: #fff;
-    }
-    .hub-tab.on, .climb-chip.on {
-      background: rgba(125, 211, 252, 0.16);
-      border-color: rgba(125, 211, 252, 0.4);
-      color: #e0f2fe;
-    }
-    .hub-panel { text-align: left; max-height: 14rem; overflow-y: auto; margin-bottom: 0.85rem; }
-    .hub-panel.hidden { display: none; }
-    .level-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.45rem;
-    }
-    .level-card {
-      text-align: left;
-      padding: 0.65rem 0.7rem;
-      border-radius: 14px;
-      border: 1px solid var(--climb-border);
-      background: rgba(255, 255, 255, 0.03);
-      cursor: pointer;
-      transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
-      color: inherit;
-      font: inherit;
-      width: 100%;
-    }
-    .level-card:hover:not(:disabled) {
-      background: rgba(255, 255, 255, 0.06);
-      border-color: rgba(125, 211, 252, 0.35);
-    }
-    .level-card.on {
-      border-color: rgba(245, 208, 65, 0.5);
-      background: rgba(245, 208, 65, 0.08);
-    }
-    .level-card:disabled {
-      opacity: 0.42;
-      cursor: not-allowed;
-    }
-    .level-card .lc-top {
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-      font-family: Syne, system-ui, sans-serif;
-      font-weight: 600;
-      font-size: 0.85rem;
-      color: #f8fafc;
-    }
-    .level-card .lc-ico { font-size: 1.1rem; }
-    .level-card .lc-desc {
-      margin-top: 0.25rem;
-      font-size: 0.68rem;
-      color: var(--climb-muted);
-      line-height: 1.3;
-    }
-    .level-card .lc-best {
-      margin-top: 0.3rem;
-      font-size: 0.68rem;
-      color: rgba(125, 211, 252, 0.75);
-      font-family: Syne, system-ui, sans-serif;
-    }
-    .upgrade-list { display: flex; flex-direction: column; gap: 0.4rem; }
-    .upgrade-row {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 0.4rem 0.65rem;
-      align-items: center;
-      padding: 0.55rem 0.65rem;
-      border-radius: 14px;
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid var(--climb-border);
-    }
-    .upgrade-row .u-name {
-      font-family: Syne, system-ui, sans-serif;
-      font-size: 0.82rem;
-      font-weight: 600;
-      color: #f8fafc;
-    }
-    .upgrade-row .u-desc {
-      font-size: 0.68rem;
-      color: var(--climb-muted);
-      margin-top: 0.1rem;
-    }
-    .upgrade-row .u-lvl {
-      font-size: 0.68rem;
-      color: var(--climb-ice);
-      font-family: Syne, system-ui, sans-serif;
-    }
-    .upgrade-row button {
-      font-family: Syne, system-ui, sans-serif;
-      font-size: 0.72rem;
-      font-weight: 600;
-      padding: 0.4rem 0.65rem;
-      border-radius: 999px;
-      border: none;
-      background: var(--climb-gold);
-      color: #1a1400;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-    .upgrade-row button:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-      background: rgba(255, 255, 255, 0.1);
-      color: rgba(255, 255, 255, 0.5);
-    }
-    .lb-list { display: flex; flex-direction: column; gap: 0.3rem; }
-    .lb-row {
-      display: grid;
-      grid-template-columns: 1.5rem 1fr auto;
-      gap: 0.4rem;
-      align-items: center;
-      padding: 0.45rem 0.55rem;
-      border-radius: 12px;
-      background: rgba(255, 255, 255, 0.03);
-      font-size: 0.75rem;
-      color: rgba(236, 245, 255, 0.75);
-    }
-    .lb-row .rank {
-      font-family: Syne, system-ui, sans-serif;
-      color: var(--climb-gold);
-      font-weight: 600;
-    }
-    .lb-row .score {
-      font-family: Syne, system-ui, sans-serif;
-      color: var(--climb-gold);
-      font-weight: 600;
-    }
-    .lb-row .meta { font-size: 0.65rem; color: var(--climb-muted); }
-    .empty-hint {
-      text-align: center;
-      color: var(--climb-muted);
-      font-size: 0.8rem;
-      padding: 1rem 0.5rem;
-    }
-    .climb-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.45rem;
-      justify-content: center;
-      margin-top: 0.25rem;
-    }
-    .climb-actions .btn {
-      min-width: 8rem;
-      font-family: Syne, system-ui, sans-serif !important;
-      font-weight: 600 !important;
-      border-radius: 14px !important;
-      border: none !important;
-      padding: 0.7rem 1.15rem !important;
-    }
-    .climb-actions .btn-primary {
-      background: #f5d041 !important;
-      color: #1a1400 !important;
-      box-shadow: 0 8px 24px rgba(245, 208, 65, 0.22) !important;
-    }
-    .climb-actions .btn-ghost {
-      background: rgba(255, 255, 255, 0.06) !important;
-      color: rgba(236, 245, 255, 0.85) !important;
-    }
-    .prog-tools {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.35rem;
-      justify-content: center;
-      margin-top: 0.75rem;
-    }
-    .prog-btn {
-      font-family: Syne, system-ui, sans-serif;
-      font-size: 0.7rem;
-      padding: 0.35rem 0.7rem;
-      border-radius: 999px;
-      border: 1px solid var(--climb-border);
-      background: transparent;
-      color: var(--climb-muted);
-      cursor: pointer;
-    }
-    .prog-btn:hover { color: #fff; background: rgba(255,255,255,0.06); }
-    .prog-btn.danger:hover { color: #fca5a5; border-color: rgba(248,113,113,0.35); }
-    .how-list {
-      text-align: left;
-      font-size: 0.84rem;
-      color: rgba(220, 235, 250, 0.78);
-      line-height: 1.55;
-      margin: 0 0 1rem;
-      padding-left: 1.1rem;
-    }
-    .how-list strong { color: #f8fafc; }
-    .stat-line {
-      font-family: Syne, system-ui, sans-serif;
-      color: #e0f2fe;
-      font-size: 0.95rem;
-      margin: 0 0 0.5rem;
-      line-height: 1.5;
-    }
-    .stat-line em {
-      color: var(--climb-gold);
-      font-style: normal;
-      font-weight: 600;
-    }
-    .over-bank {
-      font-size: 0.82rem;
-      color: var(--climb-ice);
-      margin: 0 0 0.85rem;
-      font-family: Syne, system-ui, sans-serif;
-    }
-    .touch-pad {
-      display: none;
-      position: absolute;
-      bottom: 0.65rem;
-      left: 0.55rem;
-      right: 0.55rem;
-      z-index: 6;
-      gap: 0.45rem;
-      justify-content: space-between;
-      pointer-events: none;
-    }
-    .touch-pad button {
-      pointer-events: auto;
-      width: 3.6rem;
-      height: 3.6rem;
-      border-radius: 18px;
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      background: rgba(8, 14, 22, 0.65);
-      color: var(--climb-ice);
-      font-size: 1.2rem;
-      backdrop-filter: blur(10px);
-      touch-action: none;
-    }
-    .touch-pad .jump-btn {
-      width: 4.4rem;
-      color: var(--climb-gold);
-    }
-    @media (hover: none), (max-width: 700px) {
-      .touch-pad { display: flex; }
-      .climb-frame { min-height: min(70vh, 720px); }
-    }
-    .climb-side {
-      display: flex;
-      flex-direction: column;
-      gap: 0.55rem;
-    }
-    .side-card {
-      border-radius: 18px;
-      padding: 0.9rem 1rem;
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid var(--climb-border);
-    }
-    .side-card h3 {
-      font-family: Syne, system-ui, sans-serif;
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: rgba(240, 249, 255, 0.55);
-      margin: 0 0 0.45rem;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-    }
-    .side-card p, .side-card li {
-      font-size: 0.8rem;
-      color: var(--climb-muted);
-      line-height: 1.45;
-      margin: 0;
-    }
-    .side-card ul {
-      margin: 0;
-      padding-left: 1rem;
-    }
-    .side-stat {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.82rem;
-      color: rgba(236, 245, 255, 0.7);
-      padding: 0.25rem 0;
-      border-bottom: 1px solid rgba(255,255,255,0.04);
-    }
-    .side-stat b {
-      color: var(--climb-gold);
-      font-family: Syne, system-ui, sans-serif;
-    }
-    .save-status {
-      font-size: 0.72rem;
-      color: rgba(134, 239, 172, 0.7);
-      text-align: center;
-      min-height: 1.1em;
-      margin-top: 0.35rem;
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .climb-card { animation: none !important; }
-    }
-  </style>
-</head>
-<body class="climb-page">
-  <a href="#main" class="skip-link">Skip to content</a>
-  <header class="nav">
-    <div class="nav-inner">
-      <a href="index.html" class="logo">
-        <img src="favicon.svg" alt="" class="logo-mark" width="36" height="36" decoding="async">
-        <span>BANANO X</span>
-      </a>
-      <ul class="nav-links">
-        <li class="has-dropdown">
-          <button type="button" class="nav-drop-btn" aria-expanded="false" aria-haspopup="true">
-            Play <span class="chev" aria-hidden="true"></span>
-          </button>
-          <ul class="nav-dropdown" role="menu">
-            <li role="none"><a role="menuitem" href="arcade.html">Arcade · Browse games</a></li>
-            <li role="none"><a role="menuitem" href="playTD.html">Defend · Banano TD</a></li>
-            <li role="none"><a role="menuitem" href="play.html">Climb · Potassium Tower</a></li>
-            <li role="none"><a role="menuitem" href="playQuest.html">Quest · Banano Browser Quest</a></li>
-            <li role="none"><a role="menuitem" href="playNFR.html">Fly · Neon Frequency Runner</a></li>
-            <li role="none"><a role="menuitem" href="playBlaster.html">Blast · Banano Blaster</a></li>
-          </ul>
-        </li>
-        <li class="has-dropdown">
-          <button type="button" class="nav-drop-btn" aria-expanded="false" aria-haspopup="true">
-            Explore <span class="chev" aria-hidden="true"></span>
-          </button>
-          <ul class="nav-dropdown" role="menu">
-            <li role="none"><a role="menuitem" href="facts.html">Facts</a></li>
-            <li role="none"><a role="menuitem" href="ecosystem.html">Ecosystem</a></li>
-            <li role="none"><a role="menuitem" href="https://node.bananox.com/">Live Node</a></li>
-          </ul>
-        </li>
-        <li><a href="faucets.html">Get BAN</a></li>
-        <li><a href="community.html">Community</a></li>
-      </ul>
-      <div class="nav-tools">
-        <button type="button" class="theme-toggle" aria-label="Toggle color theme" title="Toggle theme">
-          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
-          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M21 14.5A8.5 8.5 0 1 1 9.5 3 7 7 0 0 0 21 14.5z"/></svg>
-        </button>
-        <button class="nav-toggle" type="button" aria-label="Menu" aria-expanded="false">
-          <span></span><span></span><span></span>
-        </button>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+    />
+        <title>Potassium Climb · Banano X</title>
+    <meta name="description" content="Elegant ice. Maximum height. Banano icy tower climber — grades, wall jumps, soft upgrades. Free browser play, no wallet." />
+    <meta name="theme-color" content="#0b1020" />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="favicon.svg" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Banano X" />
+    <meta property="og:url" content="https://bananox.com/play.html" />
+    <meta property="og:title" content="Potassium Climb · Banano X" />
+    <meta property="og:description" content="Elegant ice. Maximum height. Pure fun. No NFT, no pay-to-win." />
+    <meta property="og:image" content="https://bananox.com/og-climb.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Potassium Climb · Banano X" />
+    <meta name="twitter:description" content="Elegant ice. Maximum height. Pure fun." />
+    <meta name="twitter:image" content="https://bananox.com/og-climb.jpg" />
+    <script type="module" crossorigin src="./assets/index-DdpmIvBh.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-DJaiJIgZ.css">
+  </head>
+  <body>
+    <a href="index.html" class="btn ghost" style="position:fixed;top:10px;left:10px;z-index:50;width:auto;padding:8px 12px;font-size:13px;pointer-events:auto">← Banano X</a>
+    <div id="app" aria-hidden="true"></div>
+
+    <!-- Boot -->
+    <div id="screen-boot" class="screen">
+      <div class="boot-inner">
+        <div class="logo-mark">ðŸŒâ„</div>
+        <h1>Potassium Climb</h1>
+        <p class="sub">Elegant ice. Maximum height.</p>
+        <div class="bar"><div id="boot-bar"></div></div>
+        <p id="boot-tip" class="muted">Slide first. Jump second. Potassium forever.</p>
       </div>
     </div>
-  </header>
 
-  <main id="main" class="climb-app">
-    <div class="climb-header">
-      <h1>Potassium Climb</h1>
-      <p>Elegant ice. Maximum height. Pure fun.</p>
-    </div>
-
-    <div class="climb-layout">
-      <div class="climb-frame" id="frame">
-        <div class="climb-hud" id="hud" hidden>
-          <div style="display:flex;flex-wrap:wrap;gap:0.35rem;">
-            <span class="pill ice">⬆ <b id="hudH">0</b>m</span>
-            <span class="pill">★ <b id="hudScore">0</b></span>
-            <span class="pill">🍌 <b id="hudCoins">0</b></span>
-          </div>
-          <div style="display:flex;flex-wrap:wrap;gap:0.35rem;">
-            <span class="pill" id="hudLevel">Frost Grove</span>
-            <span class="pill" id="hudPow" style="opacity:0.5">—</span>
-          </div>
+    <!-- Hub -->
+    <div id="screen-hub" class="screen hidden" role="main">
+      <header class="hub-top">
+        <h1 class="wordmark">Potassium Climb</h1>
+        <div class="hub-actions">
+          <button type="button" class="icon-btn" id="btn-howto" aria-label="How to play">?</button>
+          <button type="button" class="icon-btn" id="btn-settings" aria-label="Settings">âš™</button>
         </div>
-        <div class="climb-combo" id="comboEl"></div>
-
-        <canvas id="c" width="720" height="1000" aria-label="Potassium Climb game"></canvas>
-
-        <!-- MENU -->
-        <div class="climb-overlay" id="menuOv">
-          <div class="climb-card wide">
-            <div class="climb-hero-art" aria-hidden="true">🐵</div>
-            <h2>Potassium Climb</h2>
-            <p class="tagline">Slide. Jump. Combo. Unlock worlds and spend BAN on permanent upgrades.</p>
-            <div class="climb-meta" id="menuMeta"></div>
-
-            <div class="hub-tabs" role="tablist">
-              <button type="button" class="hub-tab on" data-hub="levels">Worlds</button>
-              <button type="button" class="hub-tab" data-hub="upgrades">Upgrades</button>
-              <button type="button" class="hub-tab" data-hub="board">Leaderboard</button>
-            </div>
-            <div class="hub-panel" id="hubLevels" role="tabpanel"></div>
-            <div class="hub-panel hidden" id="hubUpgrades" role="tabpanel"></div>
-            <div class="hub-panel hidden" id="hubBoard" role="tabpanel"></div>
-
-            <div class="climb-actions">
-              <button type="button" class="btn btn-primary" id="btnPlay">Climb</button>
-              <button type="button" class="btn btn-ghost" id="btnHow">How to play</button>
-            </div>
-            <div class="prog-tools">
-              <button type="button" class="prog-btn" id="btnExport">Export</button>
-              <button type="button" class="prog-btn" id="btnImport">Import</button>
-              <button type="button" class="prog-btn danger" id="btnReset">Reset</button>
-              <input type="file" id="importFile" accept="application/json,.json" hidden>
-            </div>
-            <p class="save-status" id="saveStatus" aria-live="polite"></p>
-          </div>
-        </div>
-
-        <!-- HOW -->
-        <div class="climb-overlay hidden" id="howOv">
-          <div class="climb-card">
-            <h2>How to climb</h2>
-            <ul class="how-list">
-              <li><strong>A / D</strong> or arrows — slide on ice</li>
-              <li><strong>Space / W / ↑</strong> — jump (hold for higher)</li>
-              <li><strong>Wall jump</strong> — kick off the sides</li>
-              <li><strong>Combo</strong> — chain landings for style points</li>
-              <li><strong>BAN</strong> — coins bank to permanent upgrades</li>
-              <li><strong>Goal</strong> — hit the world height target, or go endless</li>
-            </ul>
-            <div class="climb-actions">
-              <button type="button" class="btn btn-primary" id="btnHowBack">Got it</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- PAUSE -->
-        <div class="climb-overlay hidden" id="pauseOv">
-          <div class="climb-card">
-            <h2>Paused</h2>
-            <p class="tagline">Even MonKeys need a banana break.</p>
-            <div class="climb-actions">
-              <button type="button" class="btn btn-primary" id="btnResume">Resume</button>
-              <button type="button" class="btn btn-ghost" id="btnPauseMenu">Menu</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- OVER -->
-        <div class="climb-overlay hidden" id="overOv">
-          <div class="climb-card">
-            <h2 id="overTitle">Fall</h2>
-            <p class="stat-line">
-              Height <em id="endH">0</em>m · Score <em id="endScore">0</em><br>
-              Coins <em id="endCoins">0</em> · Combo <em id="endCombo">0</em>
-            </p>
-            <p class="over-bank" id="endBank"></p>
-            <p class="tagline" id="overPun"></p>
-            <div class="climb-actions">
-              <button type="button" class="btn btn-primary" id="btnRetry">Again</button>
-              <button type="button" class="btn btn-ghost" id="btnOverMenu">Menu</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- WIN -->
-        <div class="climb-overlay hidden" id="winOv">
-          <div class="climb-card">
-            <h2 id="winTitle">Summit</h2>
-            <p class="stat-line">
-              Height <em id="winH">0</em>m · Score <em id="winScore">0</em><br>
-              Coins <em id="winCoins">0</em> · Combo <em id="winCombo">0</em>
-            </p>
-            <p class="over-bank" id="winBank"></p>
-            <p class="tagline" id="winMsg">World cleared. A new path unlocks.</p>
-            <div class="climb-actions">
-              <button type="button" class="btn btn-primary" id="btnWinEndless">Endless</button>
-              <button type="button" class="btn btn-ghost" id="btnWinMenu">Menu</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="touch-pad" id="touchPad" aria-hidden="true">
-          <button type="button" id="touchL" aria-label="Left">◀</button>
-          <button type="button" class="jump-btn" id="touchJ" aria-label="Jump">⬆</button>
-          <button type="button" id="touchR" aria-label="Right">▶</button>
-        </div>
+      </header>
+      <div class="pride panel">
+        <div>Bank <strong id="hub-ban">ðŸŒ 0</strong></div>
+        <div>Best <strong id="hub-best">â¬† 0m Â· â˜… 0</strong></div>
       </div>
-
-      <aside class="climb-side" id="climbSide">
-        <div class="side-card">
-          <h3>Bank</h3>
-          <div class="side-stat"><span>BAN banked</span><b id="sideBank">0</b></div>
-          <div class="side-stat"><span>Best height</span><b id="sideBestH">0m</b></div>
-          <div class="side-stat"><span>Best score</span><b id="sideBestS">0</b></div>
-          <div class="side-stat"><span>Worlds open</span><b id="sideWorlds">1/6</b></div>
-        </div>
-        <div class="side-card">
-          <h3>Selected world</h3>
-          <p id="sideWorldDesc">Frost Grove — gentle ice, wide ledges. Learn the slide.</p>
-        </div>
-        <div class="side-card">
-          <h3>Tips</h3>
-          <ul>
-            <li>Carry speed into jumps for height</li>
-            <li>Wall jumps save doomed falls</li>
-            <li>Upgrade jump first — it feels great</li>
-            <li>Clear worlds to unlock harder ones</li>
-          </ul>
-        </div>
-      </aside>
+      <div class="hero-card panel">
+        <div class="hero-art" id="hub-art"></div>
+        <p class="tagline" id="hub-tagline">Frost Grove â€” gentle ice, wide ledges. Learn the slide.</p>
+      </div>
+      <button type="button" class="btn primary" id="btn-play">Worlds</button>
+      <div class="row">
+        <button type="button" class="btn secondary" id="btn-daily">Daily</button>
+        <button type="button" class="btn secondary" id="btn-weekly">Weekly</button>
+      </div>
+      <div class="row">
+        <button type="button" class="btn secondary" id="btn-upgrades">Upgrades</button>
+        <button type="button" class="btn secondary" id="btn-cosmetics">Looks</button>
+      </div>
+      <div class="row">
+        <button type="button" class="btn secondary" id="btn-lb">Leaderboard</button>
+        <button type="button" class="btn secondary" id="btn-lab">Practice Lab</button>
+      </div>
+      <p class="muted center tiny">No wallet. No pay-to-win. Pure height.</p>
     </div>
-  </main>
 
-  <script src="site.js" defer></script>
-  <script src="play.js" defer></script>
-</body>
+    <!-- Worlds -->
+    <div id="screen-worlds" class="screen hidden">
+      <header class="hub-top">
+        <button type="button" class="btn ghost" id="btn-worlds-back">â† Back</button>
+        <span>Worlds</span>
+      </header>
+      <div id="world-list"></div>
+    </div>
+
+    <!-- Challenges detail -->
+    <div id="screen-challenges" class="screen hidden">
+      <header class="hub-top">
+        <button type="button" class="btn ghost" id="btn-ch-back">â† Back</button>
+        <span id="ch-title">Challenge</span>
+      </header>
+      <div class="panel" id="ch-body"></div>
+      <button type="button" class="btn primary" id="btn-ch-play">Play</button>
+    </div>
+
+    <!-- Leaderboard -->
+    <div id="screen-lb" class="screen hidden">
+      <header class="hub-top">
+        <button type="button" class="btn ghost" id="btn-lb-back">â† Back</button>
+        <span>Leaderboard</span>
+      </header>
+      <div class="row tabs" id="lb-tabs">
+        <button type="button" class="btn secondary" data-lb="height">Height</button>
+        <button type="button" class="btn secondary" data-lb="daily">Daily</button>
+        <button type="button" class="btn secondary" data-lb="weekly">Weekly</button>
+      </div>
+      <div id="lb-list" class="panel"></div>
+      <h3 class="tiny muted" style="margin-top:12px">Per-biome bests</h3>
+      <div id="lb-biome" class="panel"></div>
+    </div>
+
+    <!-- Cosmetics -->
+    <div id="screen-cosmetics" class="screen hidden">
+      <header class="hub-top">
+        <button type="button" class="btn ghost" id="btn-cos-back">â† Back</button>
+        <span>Looks</span>
+      </header>
+      <p class="muted tiny">Tint stubs â€” equip for pride. No power.</p>
+      <div id="cos-list"></div>
+    </div>
+
+    <!-- Lab -->
+    <div id="screen-lab" class="screen hidden">
+      <header class="hub-top">
+        <button type="button" class="btn ghost" id="btn-lab-back">â† Back</button>
+        <span>Practice Lab</span>
+      </header>
+      <p class="muted tiny">No BAN bank. No leaderboard. Train freely on unlocked biomes.</p>
+      <div id="lab-list"></div>
+    </div>
+
+    <!-- Upgrades -->
+    <div id="screen-upgrades" class="screen hidden">
+      <header class="hub-top">
+        <button type="button" class="btn ghost" id="btn-up-back">â† Back</button>
+        <span id="up-ban">ðŸŒ 0</span>
+      </header>
+      <h2>Upgrades</h2>
+      <p class="muted tiny">Soft power only. Skill still wins late ice.</p>
+      <div id="upgrade-list"></div>
+    </div>
+
+    <!-- Settings -->
+    <div id="screen-settings" class="screen hidden">
+      <header class="hub-top">
+        <button type="button" class="btn ghost" id="btn-set-back">â† Back</button>
+        <span>Settings</span>
+      </header>
+      <label class="field">Display name
+        <input id="set-name" maxlength="16" />
+      </label>
+      <label class="field">Music <input type="range" id="set-music" min="0" max="1" step="0.05" aria-label="Music volume" /></label>
+      <label class="field">SFX <input type="range" id="set-sfx" min="0" max="1" step="0.05" aria-label="SFX volume" /></label>
+      <label class="field">Text size
+        <select id="set-textscale" aria-label="Text size">
+          <option value="1">A (default)</option>
+          <option value="1.15">A+</option>
+          <option value="1.3">A++</option>
+        </select>
+      </label>
+      <label class="check"><input type="checkbox" id="set-motion" /> Reduce motion</label>
+      <label class="check"><input type="checkbox" id="set-shake" /> Reduce shake</label>
+      <label class="check"><input type="checkbox" id="set-contrast" /> High contrast UI</label>
+      <label class="check"><input type="checkbox" id="set-sr" /> Screen reader hints</label>
+      <p class="muted tiny" id="a11y-live" aria-live="polite"></p>
+      <div class="row">
+        <button type="button" class="btn secondary" id="btn-export">Export save</button>
+        <button type="button" class="btn secondary" id="btn-import">Import save</button>
+      </div>
+      <input type="file" id="import-file" accept="application/json,.json" hidden />
+      <button type="button" class="btn danger" id="btn-reset">Reset progressâ€¦</button>
+      <p id="set-msg" class="muted tiny"></p>
+    </div>
+
+    <!-- How to -->
+    <div id="modal-howto" class="modal hidden" role="dialog" aria-modal="true">
+      <div class="modal-card panel">
+        <h2>How to climb</h2>
+        <ul>
+          <li><strong>A / D</strong> or L / R â€” slide on ice</li>
+          <li><strong>Space / Jump</strong> â€” hold for higher</li>
+          <li><strong>Wall jump</strong> â€” jump while on a wall</li>
+          <li><strong>Combo</strong> â€” chain graded landings</li>
+          <li><strong>BAN</strong> â€” coins bank to soft upgrades</li>
+          <li><strong>Goal</strong> â€” reach the summit line</li>
+        </ul>
+        <button type="button" class="btn primary" id="btn-howto-ok">Got it</button>
+      </div>
+    </div>
+
+    <!-- Climb HUD -->
+    <div id="hud" class="hidden">
+      <div class="top">
+        <div class="panel" id="stats">â¬† 0m Â· â˜… 0 Â· ðŸŒ 0</div>
+        <button type="button" class="icon-btn" id="btn-pause" aria-label="Pause">â¸</button>
+      </div>
+      <div id="powers" class="powers"></div>
+      <div id="combo-pop"></div>
+      <div id="grade-toast"></div>
+      <div id="tip-toast" class="tip"></div>
+      <div id="debug" class="panel debug hidden"></div>
+      <div id="touch" class="touch">
+        <button type="button" id="btn-left" aria-label="Left">â—€</button>
+        <button type="button" id="btn-jump" aria-label="Jump">JUMP</button>
+        <button type="button" id="btn-right" aria-label="Right">â–¶</button>
+      </div>
+    </div>
+
+    <!-- Pause -->
+    <div id="modal-pause" class="modal hidden">
+      <div class="modal-card panel">
+        <h2>Paused</h2>
+        <p class="muted">Even MonKeys need a banana break.</p>
+        <button type="button" class="btn primary" id="btn-resume">Resume</button>
+        <button type="button" class="btn secondary" id="btn-pause-howto">How to play</button>
+        <button type="button" class="btn ghost" id="btn-pause-hub">Hub</button>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div id="modal-results" class="modal hidden">
+      <div class="modal-card panel results">
+        <h2 id="res-title">Fall</h2>
+        <p id="res-pun" class="pun"></p>
+        <p id="res-newbest" class="pun hidden" role="status">NEW BEST</p>
+        <div class="stat-grid">
+          <div>Height <strong id="res-height">0m</strong></div>
+          <div>Style <strong id="res-style">0</strong></div>
+          <div>Combo max <strong id="res-combo">0</strong></div>
+          <div>BAN this run <strong id="res-ban">+0</strong></div>
+          <div class="wide">Grades <strong id="res-grades">â€”</strong></div>
+          <div class="wide muted" id="res-bank-line"></div>
+          <div class="wide muted" id="res-global" aria-live="polite"></div>
+        </div>
+        <button type="button" class="btn primary" id="btn-again">Again</button>
+        <div class="row">
+          <button type="button" class="btn secondary" id="btn-share">Share</button>
+          <button type="button" class="btn ghost" id="btn-res-hub">Hub</button>
+        </div>
+        <button type="button" class="btn secondary hidden" id="btn-res-endless">Endless</button>
+      </div>
+    </div>
+
+    <!-- Share -->
+    <div id="modal-share" class="modal hidden">
+      <div class="modal-card panel">
+        <h2>Share card</h2>
+        <canvas id="share-canvas" width="360" height="450"></canvas>
+        <button type="button" class="btn primary" id="btn-share-save">Save image</button>
+        <button type="button" class="btn secondary" id="btn-share-copy">Copy text</button>
+        <button type="button" class="btn ghost" id="btn-share-close">Close</button>
+      </div>
+    </div>
+
+  </body>
 </html>
+
