@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Banano Runner — Banano X</title>
+<meta name="description" content="Banano Runner — escape the Potassium Maze before the FUD Fog closes in. Free browser maze runner on Banano X. Theme only — no wallet required.">
+<meta name="theme-color" content="#0a0c0e">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Banano X">
+<meta property="og:url" content="https://bananox.com/playRunner.html">
+<meta property="og:title" content="Banano Runner — Banano X">
+<meta property="og:description" content="Escape the Potassium Maze. Collect peels, dodge Wrinklers, beat the FUD Fog.">
+<meta property="og:image" content="https://bananox.com/arcade/preview-runner.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Banano Runner — Banano X">
+<meta name="twitter:description" content="Escape the Potassium Maze. Collect peels, dodge Wrinklers, beat the FUD Fog.">
+<meta name="twitter:image" content="https://bananox.com/arcade/preview-runner.jpg">
+<style>
+:root {
+  --bg: #0a0c0e;
+  --yellow: #FFE135;
+  --green: #3DBE5A;
+  --magenta: #D9268C;
+  --muted: #9aa0b4;
+  --white: #f5f5f5;
+  --hud: rgba(10, 12, 14, 0.75);
+  --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  width: 100%; height: 100%; overflow: hidden;
+  background: var(--bg); color: var(--white);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+  touch-action: none; user-select: none; -webkit-user-select: none;
+}
+.site-back {
+  position: fixed; top: 12px; left: 50%; transform: translateX(-50%);
+  z-index: 30; font: 600 12px var(--font); letter-spacing: 0.04em;
+  color: rgba(255, 225, 53, 0.55); text-decoration: none;
+  padding: 6px 12px; border-radius: 999px;
+  border: 1px solid rgba(255, 225, 53, 0.22);
+  background: rgba(10, 12, 14, 0.55);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.site-back:hover, .site-back:focus-visible {
+  color: var(--yellow); border-color: rgba(61, 190, 90, 0.45);
+  background: rgba(20, 24, 28, 0.75); outline: none;
+}
+@media (max-width: 820px) {
+  .site-back { top: auto; bottom: 12px; font-size: 11px; }
+}
+#game-wrap { position: relative; width: 100%; height: 100%; background: var(--bg); }
+canvas#game { display: block; width: 100%; height: 100%; cursor: crosshair; }
+
+#hud {
+  position: absolute; inset: 0; pointer-events: none; z-index: 5; display: none;
+}
+#hud.visible { display: block; }
+.hud-bar {
+  position: absolute; top: 0; left: 0; right: 0;
+  display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center;
+  padding: 12px 16px;
+  background: linear-gradient(to bottom, var(--hud), transparent);
+  font-size: 13px; letter-spacing: 0.04em;
+}
+.hud-item { display: flex; align-items: baseline; gap: 6px; }
+.hud-label {
+  color: var(--muted); font-size: 11px; text-transform: uppercase;
+  letter-spacing: 0.12em; font-weight: 600;
+}
+.hud-value {
+  color: var(--yellow); font-weight: 700;
+  font-variant-numeric: tabular-nums; font-size: 16px;
+}
+
+.overlay {
+  position: absolute; inset: 0; z-index: 10;
+  display: none; align-items: center; justify-content: center;
+  padding: 20px;
+  background: rgba(7, 7, 12, 0.62);
+  backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+}
+.overlay.show { display: flex; }
+.panel {
+  max-width: 440px; width: 100%;
+  background: linear-gradient(160deg, #141820, #0c0e12);
+  border: 1px solid rgba(255, 225, 53, 0.28);
+  border-radius: 16px;
+  padding: 28px 24px 22px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.45), 0 0 40px rgba(255, 225, 53, 0.06);
+}
+.panel h1 {
+  font-size: clamp(1.4rem, 4vw, 1.85rem);
+  color: var(--yellow);
+  letter-spacing: 0.02em;
+  margin-bottom: 0.4rem;
+  text-shadow: 0 0 24px rgba(255, 225, 53, 0.35);
+}
+.panel .sub {
+  color: var(--green); font-weight: 600; font-size: 0.95rem;
+  margin-bottom: 0.85rem;
+}
+.panel p, .panel .body {
+  color: var(--muted); font-size: 0.92rem; line-height: 1.55;
+  margin-bottom: 1rem;
+}
+.panel .body b { color: var(--yellow); font-weight: 700; }
+.panel .controls {
+  font-size: 0.8rem; color: #7a8094; margin-bottom: 1.1rem; line-height: 1.5;
+}
+.panel .best {
+  font-size: 0.82rem; color: var(--cyan, #3ECFCF); margin-bottom: 1rem;
+}
+.btn-row { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+.btn {
+  appearance: none; border: none; cursor: pointer;
+  font: 700 13px var(--font); letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 12px 20px; border-radius: 999px;
+  transition: transform 0.12s, box-shadow 0.12s, background 0.12s;
+}
+.btn:active { transform: scale(0.97); }
+.btn-primary {
+  background: var(--yellow); color: #1a1200;
+  box-shadow: 0 0 20px rgba(255, 225, 53, 0.25);
+}
+.btn-primary:hover { box-shadow: 0 0 28px rgba(255, 225, 53, 0.4); }
+.btn-ghost {
+  background: transparent; color: var(--yellow);
+  border: 1px solid rgba(255, 225, 53, 0.35);
+}
+.btn-ghost:hover { border-color: var(--green); color: var(--green); }
+.note {
+  margin-top: 1rem; font-size: 0.72rem; color: #5c6278; line-height: 1.4;
+}
+</style>
+</head>
+<body>
+<a class="site-back" href="arcade.html">← Arcade · Banano X</a>
+<div id="game-wrap">
+  <canvas id="game" aria-label="Banano Runner game"></canvas>
+
+  <div id="hud">
+    <div class="hud-bar">
+      <div class="hud-item"><span class="hud-label">Score</span><span class="hud-value" id="hud-score">0</span></div>
+      <div class="hud-item"><span class="hud-label">Peels</span><span class="hud-value" id="hud-peels">0</span></div>
+      <div class="hud-item"><span class="hud-label">FUD</span><span class="hud-value" id="hud-fud">02:00</span></div>
+      <div class="hud-item"><span class="hud-label">Dash</span><span class="hud-value" id="hud-dash">READY</span></div>
+    </div>
+  </div>
+
+  <div id="title" class="overlay">
+    <div class="panel">
+      <h1>BANANO RUNNER</h1>
+      <div class="sub">Escape the Potassium Maze</div>
+      <p>You are a lab monkey trapped in a shifting banana labyrinth. Grab peels, dodge Wrinklers, and reach the portal before the FUD Fog closes in.</p>
+      <div class="controls">
+        <strong style="color:#c8cdd8">WASD / Arrows</strong> move ·
+        <strong style="color:#c8cdd8">Shift / Space</strong> dash ·
+        <strong style="color:#c8cdd8">Esc</strong> pause
+      </div>
+      <div class="best" id="best-line">Best score: 0 · Best time: --:--</div>
+      <div class="btn-row">
+        <button type="button" class="btn btn-primary" id="btn-play">Run</button>
+        <a class="btn btn-ghost" href="arcade.html" style="text-decoration:none;display:inline-flex;align-items:center;">Arcade</a>
+      </div>
+      <p class="note">Free browser game · Banano theme only · not on-chain · no wallet required</p>
+    </div>
+  </div>
+
+  <div id="pause" class="overlay">
+    <div class="panel">
+      <h1>Paused</h1>
+      <p>FUD waits for no monkey. Esc to resume.</p>
+      <div class="btn-row">
+        <button type="button" class="btn btn-primary" id="btn-resume">Resume</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="end" class="overlay">
+    <div class="panel">
+      <h1 id="end-title">Run over</h1>
+      <div class="body" id="end-body"></div>
+      <div class="btn-row">
+        <button type="button" class="btn btn-primary" id="btn-again">Run again</button>
+        <button type="button" class="btn btn-ghost" id="btn-menu">Title</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="playRunner.js" defer></script>
+</body>
+</html>
