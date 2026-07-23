@@ -1,1331 +1,199 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Banano TD · Epic Banana Defense</title>
-  <meta name="description" content="Epic Banano tower defense — dual upgrade paths, 6 maps, 150 waves, targeting priorities, fever mode & abilities.">
-  <meta name="theme-color" content="#000000">
-  <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="favicon.svg">
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="Banano X">
-  <meta property="og:url" content="https://bananox.com/playTD.html">
-  <meta property="og:title" content="Banano TD · Epic Banana Defense">
-  <meta property="og:description" content="Dual paths. 6 maps. 150 waves. Live BAN bounties. Starship-scale chaos.">
-  <meta property="og:image" content="https://bananox.com/og-image.jpg">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Banano TD · Banano X">
-  <meta name="twitter:description" content="Dual paths. 6 maps. 150 waves. Live BAN bounties. Starship-scale chaos.">
-  <meta name="twitter:image" content="https://bananox.com/og-image.jpg">
-  <script>
-    (function () {
-      try {
-        var k = "bx-theme";
-        var t = localStorage.getItem(k);
-        if (t !== "light" && t !== "dark") {
-          t = matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
-        }
-        document.documentElement.setAttribute("data-theme", t);
-        document.documentElement.style.colorScheme = t;
-      } catch (e) {
-        document.documentElement.setAttribute("data-theme", "dark");
-      }
-    })();
-  </script>
-  <link rel="preload" href="fonts/syne-700.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="fonts/dm-sans.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="styles.css">
-  <style>
-    :root {
-      --td-yellow: #ffe566;
-      --td-ban: #f5d041;
-      --td-green: #3d8b4f;
-      --nav-h: 64px;
-    }
-    body.td-page {
-      background: #07140e;
-      overflow-x: hidden;
-    }
-    /* Full-bleed epic layout — almost the whole browser */
-    .td-app {
-      width: min(100% - 0.75rem, 1920px);
-      margin: 0 auto;
-      padding: calc(var(--nav-h) + 0.25rem) 0.4rem 0.6rem;
-    }
-    .td-title {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: 0.2rem 1rem;
-      margin-bottom: 0.4rem;
-    }
-    .td-title h1 {
-      font-family: Syne, system-ui, sans-serif;
-      font-size: clamp(1.15rem, 2vw, 1.45rem);
-      color: #fff8d6;
-      letter-spacing: -0.02em;
-      margin: 0;
-      font-weight: 600;
-    }
-    .td-title p {
-      color: rgba(232, 245, 216, 0.4);
-      font-size: 0.8rem;
-      margin: 0;
-    }
-    .td-layout {
-      display: grid;
-      gap: 0.55rem;
-      grid-template-columns: 1fr;
-      /* Stage gets nearly full remaining viewport height */
-      min-height: calc(100vh - var(--nav-h) - 3.2rem);
-    }
-    @media (min-width: 1100px) {
-      body.td-playing .td-layout {
-        grid-template-columns: minmax(0, 1fr) 300px;
-        align-items: stretch;
-      }
-    }
-    .td-stage-wrap {
-      border-radius: 18px;
-      overflow: hidden;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
-      background: #0c1810;
-      position: relative;
-      touch-action: none;
-      user-select: none;
-      display: flex;
-      flex-direction: column;
-      min-height: calc(100vh - var(--nav-h) - 3.5rem);
-    }
-    .td-hud {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.4rem;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0.5rem 0.7rem;
-      background: rgba(8, 16, 12, 0.92);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-      font-family: Syne, system-ui, sans-serif;
-      font-size: 0.78rem;
-      color: rgba(232, 245, 216, 0.75);
-      opacity: 0;
-      pointer-events: none;
-      max-height: 0;
-      padding-top: 0;
-      padding-bottom: 0;
-      overflow: hidden;
-      transition: opacity 0.35s ease, max-height 0.4s ease, padding 0.35s ease;
-    }
-    body.td-playing .td-hud {
-      opacity: 1;
-      pointer-events: auto;
-      max-height: 8rem;
-      padding: 0.5rem 0.7rem;
-    }
-    .td-hud .hud-left,
-    .td-hud .hud-right {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.3rem;
-      align-items: center;
-    }
-    .td-hud .pill {
-      background: rgba(255, 255, 255, 0.05);
-      border: none;
-      border-radius: 999px;
-      padding: 0.28rem 0.6rem;
-      display: inline-flex;
-      gap: 0.3rem;
-      align-items: center;
-    }
-    .td-hud .pill b { color: #ffe566; font-weight: 600; }
-    .td-hud .speed-btns {
-      display: inline-flex;
-      gap: 0.15rem;
-      padding: 0.15rem;
-      border-radius: 10px;
-      background: rgba(0, 0, 0, 0.28);
-    }
-    .td-hud button.spd,
-    .ability-btn {
-      font-family: Syne, system-ui, sans-serif;
-      border: none;
-      background: transparent;
-      color: rgba(232, 245, 216, 0.65);
-      border-radius: 8px;
-      padding: 0.28rem 0.5rem;
-      cursor: pointer;
-      font-size: 0.72rem;
-      transition: background 0.15s ease, color 0.15s ease;
-    }
-    .td-hud button.spd.on {
-      background: #f5d041;
-      color: #1a1400;
-    }
-    .ability-btn:hover:not(:disabled) {
-      background: rgba(255, 255, 255, 0.08);
-      color: #fff8d6;
-    }
-    .ability-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-    .ability-btn.ready {
-      color: #86efac;
-      background: rgba(134, 239, 172, 0.1);
-    }
-    .ability-btn.on {
-      background: #f5d041;
-      color: #1a1400;
-    }
-    .fever-pill { opacity: 0.4; }
-    .fever-pill.on {
-      opacity: 1;
-      background: rgba(245, 208, 65, 0.2);
-      color: #ffe566;
-    }
-    .event-pill.on {
-      opacity: 1;
-      background: rgba(192, 132, 252, 0.15);
-      color: #e9d5ff;
-    }
-    canvas#game {
-      display: block;
-      width: 100%;
-      height: auto;
-      /* Lock aspect to internal 1600×1000 so mouse ↔ tiles stay aligned */
-      aspect-ratio: 16 / 10;
-      max-height: calc(100vh - var(--nav-h) - 6.5rem);
-      flex: 0 1 auto;
-      background: #0a1a10;
-      cursor: crosshair;
-      /* contain + JS letterbox math keeps placement precise */
-      object-fit: contain;
-    }
-    /* Right rail — hidden until game starts */
-    .td-side {
-      display: none;
-      flex-direction: column;
-      gap: 0.55rem;
-      max-height: calc(100vh - var(--nav-h) - 2rem);
-      overflow-y: auto;
-      position: sticky;
-      top: calc(var(--nav-h) + 0.35rem);
-      opacity: 0;
-      transform: translateX(8px);
-      transition: opacity 0.4s ease, transform 0.4s ease;
-    }
-    body.td-playing .td-side {
-      display: flex;
-      opacity: 1;
-      transform: translateX(0);
-    }
-    .td-card {
-      background: rgba(14, 22, 17, 0.92);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      border-radius: 18px;
-      padding: 0.85rem 0.9rem;
-      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.2);
-    }
-    .td-card h3 {
-      font-family: Syne, system-ui, sans-serif;
-      font-size: 0.72rem;
-      font-weight: 600;
-      color: rgba(232, 245, 216, 0.4);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      margin-bottom: 0.55rem;
-    }
-    .shop {
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
-    }
-    .shop-btn {
-      display: flex;
-      align-items: center;
-      gap: 0.55rem;
-      border: none;
-      background: transparent;
-      border-radius: 12px;
-      padding: 0.45rem 0.5rem;
-      cursor: pointer;
-      text-align: left;
-      color: #e8f5d8;
-      font-family: DM Sans, system-ui, sans-serif;
-      transition: background 0.15s ease;
-      width: 100%;
-    }
-    .shop-btn:hover:not(:disabled) {
-      background: rgba(255, 255, 255, 0.05);
-    }
-    .shop-btn.on {
-      background: rgba(245, 208, 65, 0.12);
-    }
-    .shop-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-    .shop-btn .shop-ico {
-      width: 2.1rem;
-      height: 2.1rem;
-      border-radius: 10px;
-      background: rgba(255, 255, 255, 0.05);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.05rem;
-      flex-shrink: 0;
-    }
-    .shop-btn.on .shop-ico {
-      background: rgba(245, 208, 65, 0.18);
-    }
-    .shop-btn .shop-meta {
-      display: flex;
-      flex-direction: column;
-      gap: 0.05rem;
-      min-width: 0;
-      flex: 1;
-    }
-    .shop-btn .nm {
-      font-family: Syne, system-ui, sans-serif;
-      font-size: 0.8rem;
-      color: #fff8d6;
-      line-height: 1.15;
-      font-weight: 500;
-    }
-    .shop-btn .role {
-      font-size: 0.65rem;
-      color: rgba(232, 245, 216, 0.38);
-    }
-    .shop-btn .cs {
-      font-size: 0.75rem;
-      color: #86efac;
-      font-weight: 600;
-      font-family: Syne, system-ui, sans-serif;
-      margin-left: auto;
-      flex-shrink: 0;
-    }
-    .sel-box {
-      min-height: 3rem;
-      font-size: 0.8rem;
-      color: rgba(232, 245, 216, 0.75);
-      line-height: 1.4;
-      margin-bottom: 0.55rem;
-    }
-    .sel-box strong { color: #fff8d6; font-weight: 600; }
-    .sel-head {
-      display: flex;
-      align-items: center;
-      gap: 0.65rem;
-      margin-bottom: 0.5rem;
-    }
-    .sel-head .sel-ico {
-      width: 2.5rem;
-      height: 2.5rem;
-      border-radius: 12px;
-      background: rgba(245, 208, 65, 0.12);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.25rem;
-      flex-shrink: 0;
-    }
-    .sel-head .role-tag {
-      font-size: 0.72rem;
-      color: rgba(232, 245, 216, 0.4);
-    }
-    .sel-desc {
-      margin: 0 0 0.4rem;
-      color: rgba(232, 245, 216, 0.48);
-      font-size: 0.76rem;
-    }
-    .sel-stats {
-      font-size: 0.74rem;
-      margin-bottom: 0.55rem;
-      color: rgba(232, 245, 216, 0.55);
-      letter-spacing: 0.01em;
-    }
-    .sel-stats b { color: #ffe566; font-weight: 600; }
-    .sel-hint {
-      margin: 0.5rem 0 0;
-      font-size: 0.72rem;
-      color: rgba(232, 245, 216, 0.35);
-    }
-    /* Next-only dual paths */
-    .dual-paths {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.4rem;
-      margin: 0.15rem 0 0.2rem;
-    }
-    .path-col {
-      background: rgba(0, 0, 0, 0.22);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      border-radius: 14px;
-      padding: 0.55rem 0.55rem 0.6rem;
-      min-width: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 0.4rem;
-      transition: opacity 0.2s ease;
-    }
-    .path-col.capped { opacity: 0.45; }
-    .path-title {
-      font-family: Syne, system-ui, sans-serif;
-      font-size: 0.68rem;
-      color: rgba(232, 245, 216, 0.5);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.25rem;
-      line-height: 1.2;
-      font-weight: 500;
-    }
-    .path-rank {
-      font-size: 0.65rem;
-      color: rgba(232, 245, 216, 0.35);
-      font-variant-numeric: tabular-nums;
-    }
-    .path-next {
-      flex: 1;
-      text-align: left;
-    }
-    .path-next strong {
-      display: block;
-      font-family: Syne, system-ui, sans-serif;
-      font-size: 0.8rem;
-      color: #fff8d6;
-      font-weight: 600;
-      margin-bottom: 0.15rem;
-      line-height: 1.2;
-    }
-    .path-next small {
-      display: block;
-      font-size: 0.68rem;
-      color: rgba(232, 245, 216, 0.4);
-      line-height: 1.3;
-    }
-    .path-next.maxed strong,
-    .path-next.locked strong {
-      color: rgba(232, 245, 216, 0.45);
-    }
-    .path-buy {
-      width: 100%;
-      margin-top: 0.1rem;
-      font-family: Syne, system-ui, sans-serif !important;
-      font-size: 0.78rem !important;
-      font-weight: 600 !important;
-      padding: 0.45rem 0.4rem !important;
-      border-radius: 10px !important;
-      border: none !important;
-      background: rgba(255, 255, 255, 0.08) !important;
-      color: rgba(232, 245, 216, 0.55) !important;
-      cursor: pointer;
-      transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease !important;
-    }
-    .path-buy.can {
-      background: #f5d041 !important;
-      color: #1a1400 !important;
-    }
-    .path-buy.can:hover {
-      filter: brightness(1.05);
-      transform: translateY(-1px);
-    }
-    .path-buy:disabled { opacity: 0.55; cursor: not-allowed; transform: none !important; }
-    .target-row {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 0.2rem;
-      margin: 0.2rem 0 0.55rem;
-      padding: 0.22rem;
-      border-radius: 12px;
-      background: rgba(0, 0, 0, 0.25);
-    }
-    .tgt-btn {
-      font-family: Syne, system-ui, sans-serif;
-      font-size: 0.65rem;
-      padding: 0.35rem 0.1rem;
-      border-radius: 9px;
-      border: none;
-      background: transparent;
-      color: rgba(232, 245, 216, 0.5);
-      cursor: pointer;
-      transition: background 0.15s ease, color 0.15s ease;
-    }
-    .tgt-btn:hover { color: #fff8d6; }
-    .tgt-btn.on {
-      background: rgba(255, 255, 255, 0.12);
-      color: #fff8d6;
-    }
-    #btnUp { display: none !important; }
-    .td-records {
-      margin: 0.35rem 0 0;
-      font-size: 0.78rem;
-      color: rgba(232, 245, 216, 0.42);
-      text-align: center;
-      letter-spacing: 0.01em;
-    }
-    .td-records.hidden { display: none; }
-    .ability-btn.mute-btn.on {
-      background: rgba(248, 113, 113, 0.15);
-      color: #fca5a5;
-    }
-    .act {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.35rem;
-    }
-    .act .btn {
-      width: 100%;
-      font-family: Syne, system-ui, sans-serif;
-      font-size: 0.8rem !important;
-      border-radius: 12px !important;
-      padding: 0.55rem 0.5rem !important;
-      border: none !important;
-      transition: background 0.15s ease, transform 0.15s ease;
-    }
-    .act .btn-primary {
-      background: #f5d041 !important;
-      color: #1a1400 !important;
-    }
-    .act .btn-ghost {
-      background: rgba(255, 255, 255, 0.06) !important;
-      color: rgba(232, 245, 216, 0.75) !important;
-    }
-    .act .btn:hover:not(:disabled) { transform: translateY(-1px); }
-    .act .btn:disabled { opacity: 0.4; }
-    .act #btnWave { grid-column: 1 / -1; }
-    .hint {
-      display: none;
-    }
-    .mission-box {
-      font-size: 0.78rem;
-      color: rgba(232, 245, 216, 0.65);
-      line-height: 1.45;
-      padding: 0;
-      min-height: 0;
-      background: none;
-      border: none;
-    }
-    .mission-box em {
-      color: #ffe566;
-      font-style: normal;
-      font-weight: 600;
-    }
-    /* ── Overlays & start menu (Apple-simple) ── */
-    .overlay {
-      position: absolute;
-      inset: 0;
-      z-index: 10;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(4, 10, 7, 0.72);
-      backdrop-filter: blur(28px) saturate(1.15);
-      -webkit-backdrop-filter: blur(28px) saturate(1.15);
-      padding: 1.25rem;
-      text-align: center;
-      overflow-y: auto;
-    }
-    .overlay.hidden { display: none; }
-    #startOv {
-      animation: menu-fade-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
-    }
-    @keyframes menu-fade-in {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    .overlay-card {
-      max-width: 420px;
-      width: 100%;
-      padding: 2.25rem 1.75rem 1.75rem;
-      border-radius: 28px;
-      background: rgba(18, 28, 22, 0.88);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow:
-        0 1px 0 rgba(255,255,255,0.06) inset,
-        0 32px 80px rgba(0,0,0,0.45);
-      position: relative;
-      animation: menu-card-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
-    }
-    #startOv .overlay-card {
-      max-width: min(480px, 96vw);
-      max-height: min(92vh, 920px);
-      overflow-y: auto;
-      padding: 2.5rem 2rem 2rem;
-    }
-    @keyframes menu-card-in {
-      from { opacity: 0; transform: translateY(12px) scale(0.98); }
-      to { opacity: 1; transform: translateY(0) scale(1); }
-    }
-    .menu-hero {
-      margin-bottom: 1.75rem;
-    }
-    .menu-hero-art {
-      width: 72px;
-      height: 72px;
-      margin: 0 auto 1.1rem;
-      border-radius: 20px;
-      background: linear-gradient(160deg, #ffe566, #f5d041 55%, #d4a017);
-      box-shadow: 0 12px 32px rgba(245, 208, 65, 0.22);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2.15rem;
-      line-height: 1;
-    }
-    .menu-title {
-      font-family: Syne, system-ui, sans-serif;
-      font-size: clamp(1.85rem, 4vw, 2.25rem);
-      font-weight: 700;
-      line-height: 1.1;
-      letter-spacing: -0.03em;
-      margin: 0 0 0.4rem;
-      color: #fff8d6;
-    }
-    .menu-tagline {
-      margin: 0;
-      font-size: 0.98rem;
-      font-weight: 400;
-      color: rgba(232, 245, 216, 0.55);
-      letter-spacing: -0.01em;
-      line-height: 1.4;
-    }
-    .overlay h2 {
-      font-family: Syne, system-ui, sans-serif;
-      font-size: clamp(1.45rem, 3vw, 1.85rem);
-      color: #fff8d6;
-      margin-bottom: 0.4rem;
-      letter-spacing: -0.02em;
-    }
-    .overlay.lose h2 { color: #fca5a5; }
-    .overlay p {
-      color: rgba(232, 245, 216, 0.58);
-      margin-bottom: 1rem;
-      font-size: 0.92rem;
-      line-height: 1.5;
-    }
-    .overlay .setup-block {
-      text-align: left;
-      margin: 0 0 1.5rem;
-      display: flex;
-      flex-direction: column;
-      gap: 1.15rem;
-    }
-    .setup-row label {
-      display: block;
-      font-size: 0.72rem;
-      font-weight: 600;
-      color: rgba(232, 245, 216, 0.4);
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      margin-bottom: 0.45rem;
-    }
-    /* Segmented controls — Apple style */
-    .chip-row,
-    .map-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.35rem;
-      padding: 0.28rem;
-      border-radius: 14px;
-      background: rgba(0, 0, 0, 0.28);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-    }
-    #modePick .chip-btn {
-      flex: 1 1 calc(50% - 0.35rem);
-      min-width: 0;
-    }
-    .map-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 0.3rem;
-    }
-    .chip-btn,
-    .map-card {
-      font-family: Syne, system-ui, sans-serif;
-      font-size: 0.82rem;
-      font-weight: 500;
-      padding: 0.55rem 0.85rem;
-      border-radius: 11px;
-      border: none;
-      background: transparent;
-      color: rgba(232, 245, 216, 0.65);
-      cursor: pointer;
-      transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
-      flex: 1 1 auto;
-      text-align: center;
-    }
-    .map-card {
-      padding: 0.65rem 0.35rem;
-      font-size: 0.78rem;
-    }
-    .map-card .map-ico {
-      display: block;
-      font-size: 1.05rem;
-      margin-bottom: 0.2rem;
-      line-height: 1;
-      opacity: 0.85;
-    }
-    .chip-btn:hover,
-    .map-card:hover {
-      color: rgba(255, 248, 214, 0.95);
-      background: rgba(255, 255, 255, 0.05);
-    }
-    .chip-btn.on,
-    .map-card.on {
-      background: rgba(255, 255, 255, 0.12);
-      color: #fff8d6;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
-    }
-    .chip-btn.on {
-      background: #f5d041;
-      color: #1a1400;
-      box-shadow: 0 2px 10px rgba(245, 208, 65, 0.28);
-    }
-    .map-card.on {
-      background: rgba(245, 208, 65, 0.18);
-      color: #ffe566;
-      box-shadow: none;
-    }
-    .map-card.on .map-ico { opacity: 1; }
-    .menu-cta {
-      display: flex;
-      width: 100%;
-      align-items: center;
-      justify-content: center;
-      padding: 0.95rem 1.5rem !important;
-      font-size: 1.05rem !important;
-      font-weight: 600 !important;
-      border-radius: 16px !important;
-      border: none !important;
-      background: #f5d041 !important;
-      color: #1a1400 !important;
-      box-shadow: 0 8px 24px rgba(245, 208, 65, 0.28) !important;
-      transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease !important;
-    }
-    .menu-cta:hover {
-      transform: translateY(-1px);
-      filter: brightness(1.05);
-      box-shadow: 0 12px 32px rgba(245, 208, 65, 0.35) !important;
-    }
-    .menu-cta:active {
-      transform: translateY(0);
-      filter: brightness(0.98);
-    }
-    .menu-footnote {
-      margin: 0.9rem 0 0;
-      font-size: 0.75rem;
-      color: rgba(232, 245, 216, 0.32);
-      letter-spacing: 0.01em;
-    }
-    .mode-desc {
-      margin: 0.45rem 0 0;
-      font-size: 0.78rem;
-      color: rgba(232, 245, 216, 0.45);
-      line-height: 1.35;
-      letter-spacing: -0.01em;
-    }
-    .td-save-status {
-      margin: 0.35rem 0 0;
-      min-height: 1.1em;
-      font-size: 0.72rem;
-      color: rgba(134, 239, 172, 0.75);
-      letter-spacing: 0.02em;
-    }
-    .td-save-status.flash {
-      color: #86efac;
-    }
-    .td-save-status.warn {
-      color: rgba(252, 165, 165, 0.9);
-    }
-    .progress-tools {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.4rem;
-      justify-content: center;
-      margin-top: 0.85rem;
-    }
-    .prog-btn {
-      font-family: Syne, system-ui, sans-serif;
-      font-size: 0.72rem;
-      font-weight: 500;
-      padding: 0.4rem 0.75rem;
-      border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      background: rgba(255, 255, 255, 0.05);
-      color: rgba(232, 245, 216, 0.65);
-      cursor: pointer;
-      transition: background 0.15s ease, color 0.15s ease;
-    }
-    .prog-btn:hover {
-      background: rgba(255, 255, 255, 0.1);
-      color: #fff8d6;
-    }
-    .prog-btn.danger:hover {
-      background: rgba(248, 113, 113, 0.15);
-      color: #fca5a5;
-      border-color: rgba(248, 113, 113, 0.3);
-    }
-    /* ── Meta hub: progress / badges / leaderboard ── */
-    .menu-hub {
-      margin: 0.65rem 0 0.15rem;
-      padding: 0.7rem 0.75rem;
-      border-radius: 16px;
-      background: rgba(0, 0, 0, 0.28);
-      border: 1px solid rgba(255, 255, 255, 0.07);
-      text-align: left;
-    }
-    .hub-stats {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.35rem 0.75rem;
-      font-size: 0.72rem;
-      color: rgba(232, 245, 216, 0.55);
-      margin-bottom: 0.45rem;
-    }
-    .hub-stats b {
-      color: #f5d041;
-      font-family: Syne, system-ui, sans-serif;
-      font-weight: 600;
-    }
-    .hub-next {
-      font-size: 0.78rem;
-      color: rgba(232, 245, 216, 0.78);
-      line-height: 1.35;
-      margin: 0 0 0.55rem;
-    }
-    .hub-next span {
-      color: #86efac;
-      font-weight: 600;
-    }
-    .hub-tabs {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.35rem;
-    }
-    .hub-tab {
-      font-family: Syne, system-ui, sans-serif;
-      font-size: 0.72rem;
-      font-weight: 500;
-      padding: 0.38rem 0.7rem;
-      border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      background: rgba(255, 255, 255, 0.05);
-      color: rgba(232, 245, 216, 0.7);
-      cursor: pointer;
-      transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
-    }
-    .hub-tab:hover {
-      background: rgba(255, 255, 255, 0.1);
-      color: #fff8d6;
-    }
-    .hub-tab.on {
-      background: rgba(245, 208, 65, 0.18);
-      border-color: rgba(245, 208, 65, 0.45);
-      color: #ffe566;
-    }
-    .hub-panel {
-      margin-top: 0.55rem;
-      max-height: 11.5rem;
-      overflow-y: auto;
-      padding-right: 0.15rem;
-    }
-    .hub-panel.hidden { display: none; }
-    .badge-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(7.2rem, 1fr));
-      gap: 0.4rem;
-    }
-    .badge-card {
-      border-radius: 12px;
-      padding: 0.45rem 0.4rem;
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      text-align: center;
-      min-height: 4.2rem;
-    }
-    .badge-card.on {
-      background: rgba(134, 239, 172, 0.08);
-      border-color: rgba(134, 239, 172, 0.28);
-    }
-    .badge-card .b-ico {
-      font-size: 1.15rem;
-      line-height: 1.2;
-      filter: grayscale(1);
-      opacity: 0.35;
-    }
-    .badge-card.on .b-ico {
-      filter: none;
-      opacity: 1;
-    }
-    .badge-card .b-name {
-      font-family: Syne, system-ui, sans-serif;
-      font-size: 0.68rem;
-      font-weight: 600;
-      color: rgba(232, 245, 216, 0.45);
-      margin-top: 0.15rem;
-    }
-    .badge-card.on .b-name { color: #fff8d6; }
-    .badge-card .b-desc {
-      font-size: 0.62rem;
-      color: rgba(232, 245, 216, 0.32);
-      line-height: 1.25;
-      margin-top: 0.1rem;
-    }
-    .badge-card.on .b-desc { color: rgba(232, 245, 216, 0.5); }
-    .lb-list { display: flex; flex-direction: column; gap: 0.3rem; }
-    .lb-row {
-      display: grid;
-      grid-template-columns: 1.4rem 1fr auto;
-      gap: 0.4rem;
-      align-items: center;
-      padding: 0.4rem 0.5rem;
-      border-radius: 10px;
-      background: rgba(255, 255, 255, 0.04);
-      font-size: 0.72rem;
-      color: rgba(232, 245, 216, 0.7);
-    }
-    .lb-row .rank {
-      font-family: Syne, system-ui, sans-serif;
-      color: rgba(245, 208, 65, 0.75);
-      font-weight: 600;
-    }
-    .lb-row .score {
-      font-family: Syne, system-ui, sans-serif;
-      color: #f5d041;
-      font-weight: 600;
-      white-space: nowrap;
-    }
-    .lb-row .meta {
-      font-size: 0.65rem;
-      color: rgba(232, 245, 216, 0.4);
-    }
-    .lb-empty, .hub-empty {
-      text-align: center;
-      font-size: 0.75rem;
-      color: rgba(232, 245, 216, 0.4);
-      padding: 0.75rem 0.4rem;
-    }
-    .map-card .map-stars {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: center;
-      gap: 0.15rem;
-      font-size: 0.62rem;
-      letter-spacing: 0.02em;
-      color: rgba(245, 208, 65, 0.85);
-      margin-top: 0.2rem;
-      min-height: 0.95em;
-    }
-    .map-card .ml-pip {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 1rem;
-      height: 1rem;
-      border-radius: 4px;
-      font-family: Syne, system-ui, sans-serif;
-      font-size: 0.58rem;
-      font-weight: 700;
-      color: rgba(232, 245, 216, 0.28);
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-    }
-    .map-card .ml-pip.on {
-      color: #1a1400;
-      background: #f5d041;
-      border-color: rgba(245, 208, 65, 0.8);
-    }
-    .map-card .ml-stars {
-      margin-left: 0.1rem;
-      letter-spacing: 0.04em;
-      color: rgba(245, 208, 65, 0.75);
-    }
-    .mut-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.4rem;
-      justify-content: center;
-    }
-    .mut-btn {
-      font-family: Syne, system-ui, sans-serif;
-      font-size: 0.78rem;
-      font-weight: 500;
-      padding: 0.45rem 0.85rem;
-      border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      background: rgba(255, 255, 255, 0.05);
-      color: rgba(232, 245, 216, 0.65);
-      cursor: pointer;
-      transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
-    }
-    .mut-btn:hover {
-      background: rgba(255, 255, 255, 0.1);
-      color: #fff8d6;
-    }
-    .mut-btn.on {
-      background: rgba(251, 146, 60, 0.2);
-      border-color: rgba(251, 146, 60, 0.55);
-      color: #fdba74;
-    }
-    #mutBlitz.on {
-      background: rgba(250, 204, 21, 0.18);
-      border-color: rgba(250, 204, 21, 0.5);
-      color: #fde047;
-    }
-    .length-desc {
-      margin: 0.4rem 0 0;
-      font-size: 0.74rem;
-      color: rgba(232, 245, 216, 0.42);
-      text-align: center;
-    }
-    .map-tools {
-      display: flex;
-      justify-content: center;
-      margin-top: 0.45rem;
-    }
-    .badge-toast {
-      position: absolute;
-      left: 50%;
-      bottom: 12%;
-      transform: translateX(-50%) translateY(12px);
-      z-index: 12;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.25s ease, transform 0.25s ease;
-      padding: 0.55rem 0.95rem;
-      border-radius: 999px;
-      background: rgba(8, 24, 16, 0.92);
-      border: 1px solid rgba(134, 239, 172, 0.45);
-      box-shadow: 0 10px 32px rgba(0, 0, 0, 0.4);
-      color: #fff8d6;
-      font-family: Syne, system-ui, sans-serif;
-      font-size: 0.9rem;
-      font-weight: 600;
-      white-space: nowrap;
-      max-width: 92%;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .badge-toast.show {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-    }
-    .run-score-line {
-      margin: 0.35rem 0 0.15rem;
-      font-family: Syne, system-ui, sans-serif;
-      font-size: 0.95rem;
-      color: #f5d041;
-    }
-    .run-badges-line {
-      margin: 0.2rem 0 0.6rem;
-      font-size: 0.78rem;
-      color: rgba(134, 239, 172, 0.9);
-      min-height: 1.1em;
-    }
-    .overlay .btn { min-width: 10rem; }
-    .wave-toast {
-      position: absolute;
-      left: 50%;
-      top: 16%;
-      transform: translateX(-50%);
-      font-family: Syne, system-ui, sans-serif;
-      font-size: clamp(1.1rem, 2.5vw, 1.55rem);
-      color: #fff8d6;
-      text-shadow: 0 3px 0 #1a2e1a, 0 0 18px rgba(245,208,65,0.5);
-      opacity: 0;
-      pointer-events: none;
-      z-index: 5;
-      transition: opacity 0.2s;
-      white-space: nowrap;
-      padding: 0.35rem 0.9rem;
-      border-radius: 999px;
-      background: rgba(0,0,0,0.35);
-    }
-    .wave-toast.show { opacity: 1; }
-    .round-summary {
-      text-align: left;
-      margin: 0.5rem auto 1rem;
-      max-width: 22rem;
-      font-size: 0.88rem;
-      color: rgba(232,245,216,0.85);
-    }
-    .round-summary .rs-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 0.75rem;
-      padding: 0.35rem 0.45rem;
-      border-bottom: 1px solid rgba(245,208,65,0.12);
-    }
-    .round-summary .rs-row b { color: #f5d041; font-family: Syne, system-ui, sans-serif; }
-    .round-summary .rs-row.perfect b { color: #86efac; }
-    .round-summary .rs-total {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 0.55rem;
-      padding: 0.55rem 0.45rem;
-      border-radius: 10px;
-      background: rgba(245,208,65,0.12);
-      font-family: Syne, system-ui, sans-serif;
-      font-size: 1.05rem;
-      color: #fff8d6;
-    }
-    .round-summary .rs-total b { color: #ffe566; }
-    .round-summary .rs-meta {
-      margin-top: 0.45rem;
-      font-size: 0.78rem;
-      color: rgba(232,245,216,0.55);
-      text-align: center;
-    }
-    @media (max-width: 700px) {
-      .td-app { width: 100%; padding-inline: 0.25rem; }
-      .td-stage-wrap { min-height: auto; }
-      canvas#game { max-height: 55vh; }
-      .td-side { max-height: none; position: static; }
-      .map-grid { grid-template-columns: repeat(3, 1fr); }
-      .overlay-card,
-      #startOv .overlay-card { padding: 1.75rem 1.25rem 1.4rem; border-radius: 24px; }
-      .menu-hero-art { width: 64px; height: 64px; font-size: 1.85rem; }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      #startOv, .overlay-card { animation: none !important; }
-    }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Banano TD</title>
+  <script type="module" crossorigin src="./td-assets/index-C9vgmJNF.js"></script>
+  <link rel="stylesheet" crossorigin href="./td-assets/index-8HKhnmaI.css">
 </head>
-<body class="td-page">
-  <a href="#main" class="skip-link">Skip to content</a>
-  <header class="nav">
-    <div class="nav-inner">
-      <a href="index.html" class="logo">
-        <img src="favicon.svg" alt="" class="logo-mark" width="36" height="36" decoding="async">
-        <span>BANANO X</span>
-      </a>
-      <ul class="nav-links">
-        <li class="has-dropdown">
-          <button type="button" class="nav-drop-btn" aria-expanded="false" aria-haspopup="true">
-            Play <span class="chev" aria-hidden="true"></span>
-          </button>
-          <ul class="nav-dropdown" role="menu">
-            <li role="none"><a role="menuitem" href="arcade.html">Arcade · Browse games</a></li>
-            <li role="none"><a role="menuitem" href="playTD.html">Defend · Banano TD</a></li>
-            <li role="none"><a role="menuitem" href="play.html">Climb · Potassium Tower</a></li>
-            <li role="none"><a role="menuitem" href="playNFR.html">Fly · Neon Frequency Runner</a></li>
-            <li role="none"><a role="menuitem" href="playBlaster.html">Blast · Banano Blaster</a></li>
-          </ul>
-        </li>
-        <li class="has-dropdown">
-          <button type="button" class="nav-drop-btn" aria-expanded="false" aria-haspopup="true">
-            Explore <span class="chev" aria-hidden="true"></span>
-          </button>
-          <ul class="nav-dropdown" role="menu">
-            <li role="none"><a role="menuitem" href="facts.html">Facts</a></li>
-            <li role="none"><a role="menuitem" href="ecosystem.html">Ecosystem</a></li>
-            <li role="none"><a role="menuitem" href="https://node.bananox.com/">Live Node</a></li>
-          </ul>
-        </li>
-        <li><a href="faucets.html">Get BAN</a></li>
-        <li><a href="community.html">Community</a></li>
-      </ul>
-      <div class="nav-tools">
-        <button type="button" class="theme-toggle" aria-label="Toggle color theme" title="Toggle theme">
-          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
-          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M21 14.5A8.5 8.5 0 1 1 9.5 3 7 7 0 0 0 21 14.5z"/></svg>
-        </button>
-        <button class="nav-toggle" type="button" aria-label="Menu" aria-expanded="false">
-          <span></span><span></span><span></span>
-        </button>
+<body>
+  <div id="app">
+    <section id="screen-hub" class="screen">
+      <div class="panel hub">
+        <p class="eyebrow">Banano X</p>
+        <h1>Banano TD</h1>
+        <p class="tag">6 maps · 4 modes · 10 towers · badges &amp; codex</p>
+        <div class="stats" id="hubStats"></div>
+        <div class="daily-card" id="dailyCard"></div>
+        <button type="button" class="cta" id="btnPlay">Play</button>
+        <button type="button" id="btnLab">Lab / Sandbox</button>
+        <button type="button" id="btnDaily">Play Daily Challenge</button>
+        <p class="fine">Live on bananox.com. Soft BAN only (not on-chain). <a href="/playTD.legacy.html" style="color:#f5d041">Legacy TD</a></p>
+        <div class="row">
+          <button type="button" id="btnCodex">Codex</button>
+          <button type="button" id="btnBadges">Badges</button>
+        </div>
+        <div class="row">
+          <button type="button" id="btnLb">Leaderboard</button>
+          <button type="button" id="btnCosmetics">Cosmetics</button>
+        </div>
+        <button type="button" id="btnSettings">Settings</button>
+        <p class="fine ban-note">In-game <strong>BAN</strong> is soft currency for towers only — <strong>not</strong> Banano on-chain. No wallet required to play.</p>
+        <p class="fine" id="migrateNote"></p>
       </div>
-    </div>
-  </header>
+    </section>
 
-  <main id="main" class="td-app">
-    <div class="td-title">
-      <h1>Banano TD</h1>
-      <p>Defend the Core</p>
-    </div>
+    <section id="screen-lb" class="screen hidden">
+      <div class="panel wide">
+        <h2>Leaderboard</h2>
+        <p class="fine">Local + mock global. Scores never spend real BAN.</p>
+        <label>Nickname <input type="text" id="lbNick" maxlength="24" placeholder="Jungle General" /></label>
+        <h3 class="subh">Local top</h3>
+        <div id="lbLocal" class="scroll-list"></div>
+        <h3 class="subh">Mock global</h3>
+        <div id="lbGlobal" class="scroll-list"></div>
+        <button type="button" id="btnLbRefresh">Refresh global</button>
+        <button type="button" id="btnLbBack">Back</button>
+      </div>
+    </section>
 
-    <div class="td-layout">
-      <div class="td-stage-wrap" id="stage">
-        <div class="td-hud">
-          <div class="hud-left">
-            <span class="pill">BAN <b id="hudBan">900</b></span>
-            <span class="pill">Lives <b id="hudLives">300</b></span>
-            <span class="pill">Wave <b id="hudWave">0</b>/<span id="hudWaveMax">150</span></span>
-            <span class="pill">Pops <b id="hudPops">0</b></span>
-            <span class="pill" id="hudRoundEarn" title="BAN from kills this round">Round +0</span>
-            <span class="pill" id="hudStreak" title="Kill streak" style="opacity:0.45">Streak —</span>
-            <span class="pill fever-pill" id="hudFever" title="Fever — 2× bounties">Fever</span>
-            <span class="pill event-pill" id="hudEvent" title="Active event">Event</span>
-            <span class="pill" id="hudInterest" title="Bank interest on clear">Interest +0</span>
-            <span class="pill" id="hudMapName">Canyon</span>
-          </div>
-          <div class="hud-right">
-            <button type="button" class="ability-btn" id="btnAbilityStorm" title="Q — Storm">Storm</button>
-            <button type="button" class="ability-btn" id="btnAbilityFreeze" title="E — Cryo">Cryo</button>
-            <button type="button" class="ability-btn" id="btnAbilityCash" title="R — Drop">Drop</button>
-            <button type="button" class="ability-btn" id="btnAbilityRage" title="F — Rage">Rage</button>
-            <button type="button" class="ability-btn" id="btnAutoWave" title="Auto-wave (A)">Auto</button>
-            <button type="button" class="ability-btn mute-btn" id="btnMute" title="Mute (M)">Sound</button>
-            <span class="speed-btns">
-              <button type="button" class="spd on" data-spd="1">1×</button>
-              <button type="button" class="spd" data-spd="2">2×</button>
-              <button type="button" class="spd" data-spd="3">3×</button>
-              <button type="button" class="spd" data-spd="5">5×</button>
-              <button type="button" class="spd" data-spd="10">10×</button>
-            </span>
-          </div>
-        </div>
-        <canvas id="game" width="1600" height="1000" aria-label="Banano TD epic map"></canvas>
-        <div class="wave-toast" id="toast">WAVE 1</div>
-
-        <!-- End of round scoreboard -->
-        <div class="overlay hidden" id="roundOv">
-          <div class="overlay-card">
-            <h2>Round clear</h2>
-            <p>End-of-round bonus</p>
-            <div id="roundSummary" class="round-summary"></div>
-            <button type="button" class="btn btn-primary" id="btnRoundContinue">Continue</button>
-          </div>
-        </div>
-
-        <div class="overlay" id="startOv">
-          <div class="overlay-card">
-            <div class="menu-hero">
-              <div class="menu-hero-art" aria-hidden="true">🐵</div>
-              <h1 class="menu-title">Banano TD</h1>
-              <p class="menu-tagline">Pop bananas. Defend the Core.</p>
-              <p class="td-records hidden" id="tdRecords"></p>
-              <p class="td-save-status" id="tdSaveStatus" aria-live="polite"></p>
-            </div>
-
-            <div class="menu-hub" id="menuHub">
-              <div class="hub-stats" id="hubStats"></div>
-              <p class="hub-next" id="hubNext">Next goal: <span>Play your first run</span></p>
-              <div class="hub-tabs" role="tablist">
-                <button type="button" class="hub-tab on" data-hub="badges" role="tab" aria-selected="true">Badges</button>
-                <button type="button" class="hub-tab" data-hub="board" role="tab" aria-selected="false">Leaderboard</button>
-              </div>
-              <div class="hub-panel" id="hubBadges" role="tabpanel"></div>
-              <div class="hub-panel hidden" id="hubBoard" role="tabpanel"></div>
-            </div>
-
-            <div class="setup-block">
-              <div class="setup-row">
-                <label>Mode</label>
-                <div class="chip-row" id="modePick">
-                  <button type="button" class="chip-btn on" data-mode="classic">Classic</button>
-                  <button type="button" class="chip-btn" data-mode="tour">World Tour</button>
-                  <button type="button" class="chip-btn" data-mode="rush">Fever Rush</button>
-                  <button type="button" class="chip-btn" data-mode="party">Party</button>
-                </div>
-                <p class="mode-desc" id="modeDesc">One map. 150 waves. Pure tower defense.</p>
-              </div>
-              <div class="setup-row">
-                <label>Length</label>
-                <div class="chip-row" id="lengthPick">
-                  <button type="button" class="chip-btn" data-length="short" title="Quick packed run">Short</button>
-                  <button type="button" class="chip-btn on" data-length="medium" title="Balanced">Medium</button>
-                  <button type="button" class="chip-btn" data-length="long" title="Full endurance">Long</button>
-                </div>
-                <p class="length-desc" id="lengthDesc">Balanced campaign length.</p>
-              </div>
-              <div class="setup-row">
-                <label>Map</label>
-                <div class="map-grid" id="mapPick">
-                  <button type="button" class="map-card on" data-map="canyon"><span class="map-ico">🏞️</span>Canyon</button>
-                  <button type="button" class="map-card" data-map="helix"><span class="map-ico">🧬</span>Helix</button>
-                  <button type="button" class="map-card" data-map="spiral"><span class="map-ico">🌀</span>Spiral</button>
-                  <button type="button" class="map-card" data-map="fork"><span class="map-ico">🔀</span>Fork</button>
-                  <button type="button" class="map-card" data-map="runway"><span class="map-ico">🚀</span>Runway</button>
-                  <button type="button" class="map-card" data-map="gauntlet"><span class="map-ico">⚔️</span>Gauntlet</button>
-                </div>
-                <div class="map-tools">
-                  <button type="button" class="prog-btn" id="btnRandomMap" title="Pick a random map">Random map</button>
-                </div>
-              </div>
-              <div class="setup-row">
-                <label>Difficulty</label>
-                <div class="chip-row" id="diffPick">
-                  <button type="button" class="chip-btn on" data-diff="normal">Normal</button>
-                  <button type="button" class="chip-btn" data-diff="hard">Hard</button>
-                  <button type="button" class="chip-btn" data-diff="starship">Starship</button>
-                </div>
-              </div>
-              <div class="setup-row">
-                <label>Mutators</label>
-                <div class="mut-row">
-                  <button type="button" class="mut-btn" id="mutReverse" title="Path runs the opposite way">↩ Reverse</button>
-                  <button type="button" class="mut-btn" id="mutBlitz" title="Faster denser bananas, bonus score">⚡ Blitz</button>
-                </div>
-              </div>
-            </div>
-
-            <button type="button" class="btn btn-primary menu-cta" id="btnStart">Play</button>
-            <div class="progress-tools">
-              <button type="button" class="prog-btn" id="btnExportProgress" title="Download a backup JSON file">Export</button>
-              <button type="button" class="prog-btn" id="btnImportProgress" title="Import progress from a file">Import</button>
-              <button type="button" class="prog-btn danger" id="btnResetProgress" title="Wipe all saved progress">Reset</button>
-              <input type="file" id="tdImportFile" accept="application/json,.json" hidden>
-            </div>
-            <p class="menu-footnote">Clear each map on Short / Medium / Long for badges · Reverse &amp; Blitz for extra spice · Progress saves on this device</p>
-          </div>
-        </div>
-        <div class="overlay hidden" id="winOv">
-          <div class="overlay-card">
-            <h2>Complete</h2>
-            <p id="winMsg">You kept the potassium flowing.</p>
-            <p class="run-score-line" id="winScore"></p>
-            <p class="run-badges-line" id="winBadges"></p>
-            <div class="climb-actions" style="display:flex;flex-wrap:wrap;gap:0.55rem;justify-content:center;">
-              <button type="button" class="btn btn-primary" id="btnEndless">Endless</button>
-              <button type="button" class="btn btn-ghost" id="btnWin">Menu</button>
-            </div>
-          </div>
-        </div>
-        <div class="overlay lose hidden" id="loseOv">
-          <div class="overlay-card">
-            <h2>Core drained</h2>
-            <p id="loseMsg">The bananas got through. Rebuild and try again.</p>
-            <p class="run-score-line" id="loseScore"></p>
-            <p class="run-badges-line" id="loseBadges"></p>
-            <button type="button" class="btn btn-primary" id="btnLose">Menu</button>
-          </div>
-        </div>
-        <div class="badge-toast" id="badgeToast" aria-live="polite"></div>
-        <div class="overlay hidden" id="pauseOv">
-          <div class="overlay-card">
-            <h2>Paused</h2>
-            <p>Take a breath.</p>
-            <button type="button" class="btn btn-primary" id="btnResume">Resume</button>
-          </div>
+    <section id="screen-config" class="screen hidden">
+      <div class="panel config wide">
+        <h2>Deploy</h2>
+        <label>Mode
+          <select id="cfgMode">
+            <option value="classic">Classic</option>
+            <option value="tour">World Tour</option>
+            <option value="rush">Fever Rush</option>
+            <option value="party">Party</option>
+          </select>
+        </label>
+        <label id="mapLabel">Map
+          <select id="cfgMap">
+            <option value="canyon">Potassium Canyon</option>
+            <option value="helix">Double Helix</option>
+            <option value="spiral">Peel Spiral</option>
+            <option value="fork">Twin Fork Trail</option>
+            <option value="runway">Starship Runway</option>
+            <option value="gauntlet">Gauntlet Gorge</option>
+          </select>
+        </label>
+        <label>Length
+          <select id="cfgLength">
+            <option value="short">Short</option>
+            <option value="medium" selected>Medium</option>
+            <option value="long">Long</option>
+          </select>
+        </label>
+        <label>Difficulty
+          <select id="cfgDiff">
+            <option value="normal">Normal</option>
+            <option value="hard" selected>Hard</option>
+            <option value="starship">Starship</option>
+          </select>
+        </label>
+        <label class="check"><input type="checkbox" id="cfgReverse" /> Reverse path</label>
+        <label class="check"><input type="checkbox" id="cfgBlitz" /> Blitz mutator</label>
+        <label class="check"><input type="checkbox" id="cfgCoach" checked /> Coach (Short Normal)</label>
+        <div class="row">
+          <button type="button" id="btnConfigBack">Back</button>
+          <button type="button" class="cta" id="btnDeploy">Deploy</button>
         </div>
       </div>
+    </section>
 
-      <aside class="td-side" id="tdSide" aria-hidden="true">
-        <div class="td-card">
-          <h3>Mission</h3>
-          <div class="mission-box" id="missionBox">Clear waves. Side goals pay bonus BAN.</div>
+    <section id="screen-codex" class="screen hidden">
+      <div class="panel wide">
+        <h2>Codex</h2>
+        <div class="tabs" id="codexTabs">
+          <button type="button" data-tab="bananas" class="on">Bananas</button>
+          <button type="button" data-tab="bosses">Bosses</button>
+          <button type="button" data-tab="properties">Props</button>
+          <button type="button" data-tab="towers">Towers</button>
         </div>
-        <div class="td-card">
-          <h3>Shop</h3>
-          <div class="shop" id="shop"></div>
+        <div id="codexList" class="scroll-list"></div>
+        <button type="button" id="btnCodexBack">Back</button>
+      </div>
+    </section>
+
+    <section id="screen-badges" class="screen hidden">
+      <div class="panel wide">
+        <h2>Badges</h2>
+        <div id="badgeList" class="scroll-list badges"></div>
+        <button type="button" id="btnBadgesBack">Back</button>
+      </div>
+    </section>
+
+    <section id="screen-cosmetics" class="screen hidden">
+      <div class="panel wide">
+        <h2>Cosmetics</h2>
+        <p class="fine">Stubs only — never change combat power.</p>
+        <div id="cosmoList" class="scroll-list"></div>
+        <button type="button" id="btnCosmoBack">Back</button>
+      </div>
+    </section>
+
+    <section id="screen-settings" class="screen hidden">
+      <div class="panel">
+        <h2>Settings</h2>
+        <label class="check"><input type="checkbox" id="setMute" /> Mute</label>
+        <label class="check"><input type="checkbox" id="setCoach" checked /> Coach on Short Normal</label>
+        <p class="fine">Save: <code>bananox_td_slice_v2</code> + live import.</p>
+        <button type="button" id="btnSettingsBack">Back</button>
+      </div>
+    </section>
+
+    <section id="screen-game" class="screen hidden game-screen">
+      <header>
+        <h1>Banano TD</h1>
+        <div class="hud">
+          <span>BAN <b id="hudBan">0</b></span>
+          <span>HP <b id="hudLives">0</b></span>
+          <span>W <b id="hudWave">0</b>/<span id="hudMax">0</span></span>
+          <span id="hudMap" class="muted"></span>
+          <span id="hudStreak">-</span>
+          <span id="hudFever" class="fever">Fever</span>
+          <span id="hudEvent" class="muted"></span>
         </div>
-        <div class="td-card">
-          <h3>Selected</h3>
-          <div class="sel-box" id="selBox">Choose a tower, then place on grass.</div>
-          <div class="act">
-            <button type="button" class="btn btn-primary btn-sm" id="btnUp" disabled hidden>Upgrade</button>
-            <button type="button" class="btn btn-ghost btn-sm" id="btnSell" disabled>Sell</button>
-            <button type="button" class="btn btn-ghost btn-sm" id="btnPause">Pause</button>
-            <button type="button" class="btn btn-primary btn-sm" id="btnWave">Send wave</button>
-          </div>
+        <button type="button" id="btnMenu">Pause</button>
+      </header>
+      <div id="coach" class="coach hidden"></div>
+      <div id="stage-wrap"><canvas id="game" width="960" height="600"></canvas></div>
+      <footer>
+        <div class="shop" id="shop"></div>
+        <div id="sel-panel">Select</div>
+        <div class="abilities">
+          <button type="button" id="abStorm">Storm</button>
+          <button type="button" id="abCryo">Cryo</button>
+          <button type="button" id="abDrop">Drop</button>
+          <button type="button" id="abRage">Rage</button>
         </div>
-      </aside>
+        <div class="controls">
+          <button type="button" id="btnWave">Send Wave</button>
+          <button type="button" id="btnSpeed">1x</button>
+        </div>
+        <div class="debug hidden" id="debugBar">
+          <span class="muted">LAB</span>
+          <button type="button" id="dbgCash">+$5k</button>
+          <button type="button" id="dbgRanges">Ranges</button>
+          <button type="button" id="dbgImm">Imm</button>
+        </div>
+      </footer>
+    </section>
+
+    <div id="ov-pause" class="overlay hidden">
+      <div class="panel">
+        <h2>Paused</h2>
+        <button type="button" class="cta" id="btnResume">Resume</button>
+        <button type="button" id="btnSurrender">Surrender</button>
+        <button type="button" id="btnToHub">Hub</button>
+      </div>
     </div>
-  </main>
 
-  <script src="site.js" defer></script>
-  <script src="playTD.js" defer></script>
+    <div id="ov-results" class="overlay hidden">
+      <div class="panel results">
+        <h2 id="resTitle">Core Secure</h2>
+        <p id="resBadges" class="fine"></p>
+        <pre id="resBody" class="share-card"></pre>
+        <div class="row">
+          <button type="button" id="btnCopyShare">Copy share</button>
+          <button type="button" class="cta" id="btnRetry">Retry</button>
+          <button type="button" id="btnResHub">Hub</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="toast"></div>
 </body>
 </html>
