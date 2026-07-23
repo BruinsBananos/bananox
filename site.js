@@ -1,4 +1,4 @@
-/* Banano X — shared site behavior (performance-first) */
+/* Banano X â€” shared site behavior (performance-first) */
 (function () {
   "use strict";
 
@@ -73,7 +73,7 @@
   const links = document.querySelector(".nav-links");
   const dropdownParents = document.querySelectorAll(".has-dropdown");
 
-  // ─── Scroll shadow on nav (rAF-throttled) ───
+  // â”€â”€â”€ Scroll shadow on nav (rAF-throttled) â”€â”€â”€
   if (nav) {
     let ticking = false;
     const apply = () => {
@@ -93,7 +93,7 @@
     );
   }
 
-  // ─── Mobile menu ───
+  // â”€â”€â”€ Mobile menu â”€â”€â”€
   if (toggle && links) {
     toggle.addEventListener("click", () => {
       const open = links.classList.toggle("open");
@@ -174,7 +174,7 @@
     });
   }
 
-  // ─── Active nav ───
+  // â”€â”€â”€ Active nav â”€â”€â”€
   const path = (location.pathname.split("/").pop() || "index.html").toLowerCase();
   const page = path === "" ? "index.html" : path;
 
@@ -195,7 +195,7 @@
     if (logo) logo.setAttribute("aria-current", "page");
   }
 
-  // ─── Instant navigation: Speculation Rules + hover prefetch ───
+  // â”€â”€â”€ Instant navigation: Speculation Rules + hover prefetch â”€â”€â”€
   const EXTRA_ASSETS = {
     "playtd.html": ["playTD.js"],
     "play.html": ["play.js"],
@@ -308,7 +308,6 @@
     "faucets.html",
     "community.html",
     "node.html",
-    "playQuest.html",
   ];
 
   function idlePrefetch() {
@@ -330,7 +329,7 @@
   }
   idlePrefetch();
 
-  // ─── Scroll reveal — only below the fold ───
+  // â”€â”€â”€ Scroll reveal â€” only below the fold â”€â”€â”€
   const reveals = document.querySelectorAll(".reveal");
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -363,7 +362,7 @@
     reveals.forEach((el) => el.classList.add("visible"));
   }
 
-  // ─── Service worker (shell cache for instant revisits) ───
+  // â”€â”€â”€ Service worker (shell cache for instant revisits) â”€â”€â”€
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
       navigator.serviceWorker.register("sw.js", { scope: "./" }).catch(() => {
@@ -372,7 +371,7 @@
     });
   }
 
-  // ─── Hero particles (home only, capped, paused when hidden) ───
+  // â”€â”€â”€ Hero particles (home only, capped, paused when hidden) â”€â”€â”€
   const layer = document.getElementById("particles");
   if (!layer || reduceMotion) return;
 
@@ -389,7 +388,7 @@
     if (particleCount() >= MAX_PARTICLES) return;
     const el = document.createElement("div");
     el.className = "particle";
-    el.textContent = "🍌";
+    el.textContent = "ðŸŒ";
     el.style.left = Math.random() * 100 + "vw";
     el.style.fontSize = 0.9 + Math.random() * 1.1 + "rem";
     el.style.animationDuration = 12 + Math.random() * 8 + "s";

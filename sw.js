@@ -1,5 +1,5 @@
-﻿/* Banano X â€” lightweight shell cache for instant revisits */
-const CACHE = "bananox-shell-v6-climb";
+/* Banano X â€” lightweight shell cache for instant revisits */
+const CACHE = "bananox-shell-v7-noquest";
 
 /* Keep install fast â€” heavy game HTML/JS cache on first visit, not at SW install */
 const PRECACHE = [
@@ -15,7 +15,6 @@ const PRECACHE = [
   "./faucets.html",
   "./community.html",
   "./node.html",
-  "./playQuest.html",
   "./arcade.html",
 ];
 
