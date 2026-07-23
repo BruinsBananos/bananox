@@ -1,0 +1,31 @@
+{
+  "simHz": 60,
+  "sellRate": 0.7,
+  "cols": 40,
+  "rows": 25,
+  "startBan": 900,
+  "startLives": 300,
+  "interestRate": 0.12,
+  "interestCap": 300,
+  "clearBonusBase": 50,
+  "clearBonusPerWave": 5,
+  "waveMulPerWave": 0.012,
+  "fortifiedBlocksPop1": true,
+  "maxPathTier": 4,
+  "freeCrosspathTier": 2,
+  "layers": {
+    "green":  { "name": "Unripe",  "next": null,     "speed": 50,  "value": 2,  "r": 11, "lives": 1, "color": "#86efac" },
+    "ripe":   { "name": "Ripe",    "next": "green",  "speed": 60,  "value": 3,  "r": 12, "lives": 1, "color": "#facc15" },
+    "gold":   { "name": "Golden",  "next": "ripe",   "speed": 72,  "value": 5,  "r": 13, "lives": 2, "color": "#f59e0b" },
+    "purple": { "name": "Meme",    "next": "gold",   "speed": 88,  "value": 7,  "r": 14, "lives": 3, "color": "#c084fc" },
+    "star":   { "name": "Cosmic",  "next": "purple", "speed": 105, "value": 9,  "r": 15, "lives": 4, "color": "#f472b6" },
+    "zebra":  { "name": "Zebra",   "next": "star",   "speed": 96,  "value": 12, "r": 16, "lives": 5, "color": "#f8fafc" },
+    "golden": { "name": "JACKPOT", "next": "zebra",  "speed": 70,  "value": 40, "r": 18, "lives": 6, "color": "#fef08a" }
+  },
+  "specials": {
+    "ceramic":   { "hp": 14,   "speed": 44, "value": 32,   "lives": 5,  "children": "zebra",     "childCount": 2, "r": 17, "color": "#d6b38a" },
+    "boss":      { "hp": 260,  "speed": 24, "value": 220,  "lives": 25, "children": "ceramic",   "childCount": 4, "r": 28, "color": "#fb923c", "lead": true },
+    "freighter": { "hp": 800,  "speed": 16, "value": 500,  "lives": 50, "children": "boss",      "childCount": 2, "r": 36, "color": "#f59e0b", "lead": true },
+    "titan":     { "hp": 2000, "speed": 12, "value": 1200, "lives": 99, "children": "freighter", "childCount": 2, "r": 44, "color": "#e11d48", "lead": true }
+  }
+}
