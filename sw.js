@@ -1,5 +1,5 @@
 /* Banano X ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â lightweight shell cache for instant revisits */
-const CACHE = "bananox-shell-v12-jumpalways";
+const CACHE = "bananox-shell-v13-zoom-exit";
 
 /* Keep install fast ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â heavy game HTML/JS cache on first visit, not at SW install */
 const PRECACHE = [
