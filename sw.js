@@ -1,7 +1,7 @@
-/* Banano X â€” lightweight shell cache for instant revisits */
-const CACHE = "bananox-shell-v7-noquest";
+/* Banano X Ã¢â‚¬â€ lightweight shell cache for instant revisits */
+const CACHE = "bananox-shell-v8-floaty";
 
-/* Keep install fast â€” heavy game HTML/JS cache on first visit, not at SW install */
+/* Keep install fast Ã¢â‚¬â€ heavy game HTML/JS cache on first visit, not at SW install */
 const PRECACHE = [
   "./",
   "./index.html",
