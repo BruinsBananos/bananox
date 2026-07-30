@@ -1,0 +1,24 @@
+# Internal design / engineering docs — keep local, do not publish on GitHub Pages
+ARCHITECTURE.md
+ART-BIBLE.md
+AUDIO-BIBLE.md
+CLIMB_DEPLOY.md
+CONTENT-BIBLE.md
+ClimbGDD.md
+ClimbTODO.md
+DESIGN-LOCK.md
+GDD.md
+SYSTEMS-BIBLE.md
+TECH-ARCHITECTURE.md
+TODO.md
+UI-UX-SPEC.md
+
+# Dev sandbox and tooling (not a public product surface)
+td-sandbox/
+
+# Source maps (don't ship client source maps to production)
+*.map
+
+# Local-only / untracked asset dumps
+assets/td/
+td/assets/td-assets/
