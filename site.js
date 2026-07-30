@@ -196,10 +196,8 @@
   }
 
   // â”€â”€â”€ Instant navigation: Speculation Rules + hover prefetch â”€â”€â”€
-  const EXTRA_ASSETS = {
-    "playtd.html": ["playTD.js"],
-    "play.html": ["play.js"],
-  };
+  // Game asset prefetch shelved with Play nav (re-add when games return)
+  const EXTRA_ASSETS = {};
 
   const prefetched = new Set();
 

@@ -1,0 +1,24 @@
+# https://bananox.com
+User-agent: *
+Allow: /
+
+# Shelved browser games (kept on disk; not marketed)
+Disallow: /play
+Disallow: /play.html
+Disallow: /play.js
+Disallow: /playTD
+Disallow: /playTD.html
+Disallow: /playTD.js
+Disallow: /playTD.legacy
+Disallow: /play-legacy
+Disallow: /playBlaster
+Disallow: /playNFR
+Disallow: /playRunner
+Disallow: /arcade
+Disallow: /arcade.html
+Disallow: /banano-defense/
+Disallow: /td/
+Disallow: /td-sandbox/
+Disallow: /td-assets/
+
+Sitemap: https://bananox.com/sitemap.xml

@@ -1,0 +1,7 @@
+Contact: https://bananox.com/community.html
+Preferred-Languages: en
+Canonical: https://bananox.com/.well-known/security.txt
+Policy: https://bananox.com/
+# Fan site for Banano. No bug bounty program.
+# Report obvious site issues via community channels.
+Expires: 2027-07-30T00:00:00.000Z

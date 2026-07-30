@@ -22,3 +22,9 @@ td-sandbox/
 # Local-only / untracked asset dumps
 assets/td/
 td/assets/td-assets/
+
+# Local one-off scripts
+_fix_encoding.py
+
+# Extra game prototype (not marketed)
+banano-defense/

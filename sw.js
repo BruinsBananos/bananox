@@ -1,5 +1,5 @@
 /* Banano X ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â lightweight shell cache for instant revisits */
-const CACHE = "bananox-shell-v14-no-play";
+const CACHE = "bananox-shell-v15-hardened";
 
 /* Keep install fast — heavy assets cache on first visit, not at SW install */
 const PRECACHE = [
