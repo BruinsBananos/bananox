@@ -1,7 +1,7 @@
 /* Banano X ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â lightweight shell cache for instant revisits */
-const CACHE = "bananox-shell-v13b-zoom-exit";
+const CACHE = "bananox-shell-v14-no-play";
 
-/* Keep install fast ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â heavy game HTML/JS cache on first visit, not at SW install */
+/* Keep install fast — heavy assets cache on first visit, not at SW install */
 const PRECACHE = [
   "./",
   "./index.html",
@@ -15,7 +15,6 @@ const PRECACHE = [
   "./faucets.html",
   "./community.html",
   "./node.html",
-  "./arcade.html",
 ];
 
 self.addEventListener("install", (event) => {
