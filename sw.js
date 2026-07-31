@@ -1,5 +1,5 @@
 /* Banano X ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â lightweight shell cache for instant revisits */
-const CACHE = "bananox-shell-v15-hardened";
+const CACHE = "bananox-shell-v17-no-arcade";
 
 /* Keep install fast — heavy assets cache on first visit, not at SW install */
 const PRECACHE = [
@@ -13,6 +13,7 @@ const PRECACHE = [
   "./facts.html",
   "./ecosystem.html",
   "./faucets.html",
+  "./faucet.html",
   "./community.html",
   "./node.html",
 ];

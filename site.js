@@ -300,10 +300,10 @@
 
   // Idle-prefetch light content pages only (games HTML/JS stay hover-prefetch)
   const IDLE_PREFETCH = [
-    "arcade.html",
     "facts.html",
     "ecosystem.html",
     "faucets.html",
+    "faucet.html",
     "community.html",
     "node.html",
   ];
