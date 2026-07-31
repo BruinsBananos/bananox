@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
   <title>Faucet · Banano X</title>
-  <meta name="description" content="Claim free Banano from the Banano X faucet — powered by the banano-x live node. Small drips, feeless sends, jungle vibes.">
+  <meta name="description" content="Claim free Banano from the Banano X faucet. Captcha + daily limits.">
   <meta name="theme-color" content="#000000">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="favicon.svg">
@@ -12,11 +13,11 @@
   <meta property="og:site_name" content="Banano X">
   <meta property="og:url" content="https://bananox.com/faucet.html">
   <meta property="og:title" content="Faucet · Banano X">
-  <meta property="og:description" content="Claim free Banano from the Banano X faucet — powered by the banano-x live node.">
+  <meta property="og:description" content="Claim free Banano from the Banano X faucet. Captcha + daily limits.">
   <meta property="og:image" content="https://bananox.com/og-image.jpg">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Faucet · Banano X">
-  <meta name="twitter:description" content="Claim free Banano from the Banano X faucet — powered by the banano-x live node.">
+  <meta name="twitter:description" content="Claim free Banano from the Banano X faucet. Captcha + daily limits.">
   <meta name="twitter:image" content="https://bananox.com/og-image.jpg">
   <script>
     (function () {
@@ -36,6 +37,7 @@
   <link rel="preload" href="fonts/syne-700.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="fonts/dm-sans.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="styles.css">
+  <script defer src="https://cloud.umami.is/script.js" data-website-id="327f6a7f-a0c3-42a1-8f77-a7f263839dc0"></script>
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to content</a>
@@ -47,19 +49,6 @@
         <span>BANANO X</span>
       </a>
       <ul class="nav-links">
-        <li class="has-dropdown">
-          <button type="button" class="nav-drop-btn" aria-expanded="false" aria-haspopup="true">
-            Play <span class="chev" aria-hidden="true"></span>
-          </button>
-          <ul class="nav-dropdown" role="menu">
-            <li role="none"><a role="menuitem" href="arcade.html">Arcade · Browse games</a></li>
-            <li role="none"><a role="menuitem" href="playTD.html">Defend · Banano TD</a></li>
-            <li role="none"><a role="menuitem" href="play.html">Climb · Banana Tower</a></li>
-            <li role="none"><a role="menuitem" href="playQuest.html">Quest · Banano Browser Quest</a></li>
-            <li role="none"><a role="menuitem" href="playNFR.html">Fly · Neon Frequency Runner</a></li>
-            <li role="none"><a role="menuitem" href="playBlaster.html">Blast · Banano Blaster</a></li>
-          </ul>
-        </li>
         <li class="has-dropdown">
           <button type="button" class="nav-drop-btn" aria-expanded="false" aria-haspopup="true">
             Explore <span class="chev" aria-hidden="true"></span>
@@ -86,141 +75,59 @@
     </div>
   </header>
 
-  <main id="main" class="page faucet-page">
-    <div class="container">
-      <div class="faucet-hero reveal">
-        <div class="badge" style="margin-bottom: 1rem;">
-          <span class="badge-dot" aria-hidden="true"></span>
-          Banano X drip
+  <main id="main" class="page">
+    <div class="container faucet-simple">
+      <div class="section-header reveal">
+        <div class="badge" style="margin-bottom: 1rem;">Faucet</div>
+        <h1 class="glow-text">Get free BAN</h1>
+        <p id="faucet-blurb">Paste your address, pass captcha, claim once a day.</p>
+      </div>
+
+      <form class="faucet-panel reveal" id="faucet-form" novalidate>
+        <label class="faucet-label" for="ban-address">Banano address</label>
+        <input
+          class="faucet-input"
+          type="text"
+          id="ban-address"
+          name="address"
+          autocomplete="off"
+          spellcheck="false"
+          placeholder="ban_…"
+          maxlength="64"
+          required
+          aria-describedby="faucet-message"
+        >
+
+        <!-- Honeypot: leave empty. Hidden from humans. -->
+        <div class="faucet-hp" aria-hidden="true">
+          <label for="website">Website</label>
+          <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
         </div>
-        <h1 class="glow-text">Free potassium,<br>on the house</h1>
-        <p class="faucet-lead">
-          Paste your Banano address, claim a small daily drip, and feel the feeless magic.
-          Powered by the <a href="https://node.bananox.com/" target="_blank" rel="noopener">banano-x live node</a>.
+
+        <div id="captcha-slot" class="faucet-captcha">
+          <!-- Turnstile widget or math challenge injected here -->
+        </div>
+
+        <button type="submit" class="btn btn-primary faucet-submit" id="faucet-submit" disabled>
+          Claim
+        </button>
+
+        <ul class="faucet-rules" id="faucet-rules">
+          <li>1 claim per address / day</li>
+          <li>1 claim per IP / day</li>
+          <li>Captcha required</li>
+        </ul>
+
+        <p class="faucet-meta">
+          Need a wallet?
+          <a href="https://kalium.banano.cc" target="_blank" rel="noopener">Kalium</a>
+          ·
+          <a href="https://thebananostand.com" target="_blank" rel="noopener">Banano Stand</a>
+          ·
+          <a href="faucets.html">More faucets</a>
         </p>
-      </div>
-
-      <div class="faucet-layout">
-        <section class="faucet-panel reveal" aria-labelledby="claim-heading">
-          <div class="faucet-panel-head">
-            <div>
-              <p class="faucet-kicker">Claim</p>
-              <h2 id="claim-heading">Banano X Faucet</h2>
-            </div>
-            <span class="faucet-status" id="faucet-status" data-state="preview">
-              <span class="faucet-status-dot" aria-hidden="true"></span>
-              Preview UI
-            </span>
-          </div>
-
-          <div class="faucet-stats" role="list">
-            <div class="faucet-stat" role="listitem">
-              <span class="faucet-stat-value">0.05</span>
-              <span class="faucet-stat-label">BAN per drip</span>
-            </div>
-            <div class="faucet-stat" role="listitem">
-              <span class="faucet-stat-value">24h</span>
-              <span class="faucet-stat-label">Cooldown</span>
-            </div>
-            <div class="faucet-stat" role="listitem">
-              <span class="faucet-stat-value">$0</span>
-              <span class="faucet-stat-label">Network fee</span>
-            </div>
-          </div>
-
-          <form class="faucet-form" id="faucet-form" novalidate>
-            <label class="faucet-label" for="ban-address">Your Banano address</label>
-            <div class="faucet-input-row">
-              <input
-                class="faucet-input"
-                type="text"
-                id="ban-address"
-                name="address"
-                inputmode="text"
-                autocomplete="off"
-                spellcheck="false"
-                placeholder="ban_…"
-                maxlength="64"
-                required
-                aria-describedby="ban-hint faucet-message"
-              >
-              <button type="submit" class="btn btn-primary faucet-submit" id="faucet-submit">
-                Claim drip
-              </button>
-            </div>
-            <p class="faucet-hint" id="ban-hint">
-              Need a wallet?
-              <a href="https://kalium.banano.cc" target="_blank" rel="noopener">Kalium</a>
-              or
-              <a href="https://thebananostand.com" target="_blank" rel="noopener">The Banano Stand</a>
-            </p>
-            <div class="faucet-message" id="faucet-message" role="status" aria-live="polite" hidden></div>
-          </form>
-
-          <p class="faucet-footnote">
-            Payout backend is next — this page is the real claim UI. Captcha + node sends will wire in without changing the look.
-          </p>
-        </section>
-
-        <aside class="faucet-aside">
-          <article class="card reveal reveal-delay-1">
-            <div class="card-icon" aria-hidden="true">🍌</div>
-            <h3>How it works</h3>
-            <ol class="faucet-steps-list">
-              <li>Copy your <code>ban_</code> address from Kalium or Banano Stand.</li>
-              <li>Paste it here and hit claim (once every 24 hours).</li>
-              <li>We generate work on <strong>banano-x</strong> and send a tiny feeless drip.</li>
-            </ol>
-          </article>
-
-          <article class="card reveal reveal-delay-2">
-            <div class="card-icon" aria-hidden="true">🛡️</div>
-            <h3>Fair play</h3>
-            <p>
-              One drip per address (and IP) per day. No investment claims — just free potassium for monkeys learning the ropes.
-            </p>
-          </article>
-
-          <article class="card reveal reveal-delay-2">
-            <div class="card-icon" aria-hidden="true">📡</div>
-            <h3>Live node</h3>
-            <p>
-              Claims will ride the same stack as
-              <a href="https://node.bananox.com/" target="_blank" rel="noopener">node.bananox.com</a>
-              — synced Banano node, local PoW, no public RPC.
-            </p>
-            <a href="https://node.bananox.com/" target="_blank" rel="noopener" class="card-action">View node status →</a>
-          </article>
-        </aside>
-      </div>
-
-      <div class="steps faucet-how" style="margin-top: 3rem;">
-        <article class="step reveal">
-          <h3>1 · Wallet</h3>
-          <p>Grab Kalium or The Banano Stand and copy your address.</p>
-          <a href="https://kalium.banano.cc" target="_blank" rel="noopener" class="btn btn-ghost btn-sm">Kalium</a>
-        </article>
-        <article class="step reveal reveal-delay-1">
-          <h3>2 · Claim here</h3>
-          <p>Use the form above for the Banano X drip when payouts go live.</p>
-          <a href="#claim-heading" class="btn btn-ghost btn-sm">Back to claim</a>
-        </article>
-        <article class="step reveal reveal-delay-2">
-          <h3>3 · More BAN</h3>
-          <p>Hungry for more? Browse community faucets and Banano Miner.</p>
-          <a href="faucets.html" class="btn btn-ghost btn-sm">Faucet list</a>
-        </article>
-      </div>
-
-      <div class="cta-band reveal" style="margin-top: 3rem;">
-        <h2>Want more free BAN?</h2>
-        <p>Community faucets and folding rewards while this drip finishes wiring to the node.</p>
-        <div class="hero-actions">
-          <a href="faucets.html" class="btn btn-primary">Browse faucets</a>
-          <a href="arcade.html" class="btn btn-ghost">Play games</a>
-          <a href="https://node.bananox.com/" target="_blank" rel="noopener" class="btn btn-ghost">Live node</a>
-        </div>
-      </div>
+        <div class="faucet-message" id="faucet-message" role="status" aria-live="polite" hidden></div>
+      </form>
     </div>
   </main>
 
@@ -233,17 +140,6 @@
             <span>BANANO X</span>
           </a>
           <p>Feeless. Instant. Meme-fueled crypto. A fan site for the midnight jungle.</p>
-        </div>
-        <div class="footer-col">
-          <h4>Play</h4>
-          <ul>
-            <li><a href="arcade.html">Arcade</a></li>
-            <li><a href="playTD.html">Banano TD</a></li>
-            <li><a href="play.html">Banana Tower</a></li>
-            <li><a href="playQuest.html">Browser Quest</a></li>
-            <li><a href="playNFR.html">Neon Frequency</a></li>
-            <li><a href="playBlaster.html">Banano Blaster</a></li>
-          </ul>
         </div>
         <div class="footer-col">
           <h4>Explore</h4>
@@ -272,14 +168,30 @@
   <script src="site.js" defer></script>
   <script>
     (function () {
+      var FAUCET_API = "https://node.bananox.com/faucet.php";
+      // Local override for testing: ?api=http://127.0.0.1:8080/faucet.php
+      try {
+        var q = new URLSearchParams(location.search).get("api");
+        if (q && /^https?:\/\/(localhost|127\.0\.0\.1|node\.bananox\.com)/i.test(q)) {
+          FAUCET_API = q;
+        }
+      } catch (e) {}
+
       var form = document.getElementById("faucet-form");
       var input = document.getElementById("ban-address");
       var msg = document.getElementById("faucet-message");
-      var status = document.getElementById("faucet-status");
-      if (!form || !input || !msg) return;
+      var submitBtn = document.getElementById("faucet-submit");
+      var captchaSlot = document.getElementById("captcha-slot");
+      var blurb = document.getElementById("faucet-blurb");
+      var hp = document.getElementById("website");
+      if (!form || !input || !msg || !submitBtn || !captchaSlot) return;
 
-      // Banano addresses: ban_ + 60 chars of base32-ish alphabet (approximate client check)
       var BAN_RE = /^ban_[13][13456789abcdefghijkmnopqrstuwxyz]{59}$/i;
+      var meta = null;
+      var turnstileWidgetId = null;
+      var turnstileToken = "";
+      var mathState = null;
+      var busy = false;
 
       function setMessage(text, type) {
         msg.hidden = !text;
@@ -287,36 +199,200 @@
         msg.className = "faucet-message" + (type ? " is-" + type : "");
       }
 
-      form.addEventListener("submit", function (e) {
+      function formatRetry(sec) {
+        sec = Math.max(0, parseInt(sec, 10) || 0);
+        if (sec < 60) return sec + "s";
+        if (sec < 3600) return Math.ceil(sec / 60) + " min";
+        if (sec < 86400) return Math.ceil(sec / 3600) + " h";
+        return Math.ceil(sec / 86400) + " day(s)";
+      }
+
+      function loadScript(src) {
+        return new Promise(function (resolve, reject) {
+          var s = document.createElement("script");
+          s.src = src;
+          s.async = true;
+          s.onload = function () { resolve(); };
+          s.onerror = function () { reject(new Error("script_load_failed")); };
+          document.head.appendChild(s);
+        });
+      }
+
+      function renderMathCaptcha(challengePayload) {
+        mathState = challengePayload;
+        captchaSlot.innerHTML =
+          '<label class="faucet-label" for="math-answer">Captcha: what is <strong id="math-q"></strong>?</label>' +
+          '<input class="faucet-input" type="text" inputmode="numeric" id="math-answer" name="mathAnswer" autocomplete="off" maxlength="4" required placeholder="Answer">';
+        document.getElementById("math-q").textContent = challengePayload.challenge;
+        submitBtn.disabled = false;
+      }
+
+      async function refreshMath() {
+        var res = await fetch(FAUCET_API + "?challenge=1&_=" + Date.now(), { cache: "no-store" });
+        var data = await res.json();
+        if (!data.ok || !data.math) throw new Error("challenge_failed");
+        renderMathCaptcha(data.math);
+      }
+
+      function renderTurnstile(sitekey) {
+        captchaSlot.innerHTML = '<div id="cf-turnstile" class="cf-turnstile"></div>';
+        function mount() {
+          if (!window.turnstile) return;
+          turnstileWidgetId = window.turnstile.render("#cf-turnstile", {
+            sitekey: sitekey,
+            theme: document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark",
+            callback: function (token) {
+              turnstileToken = token || "";
+              submitBtn.disabled = false;
+            },
+            "expired-callback": function () {
+              turnstileToken = "";
+              submitBtn.disabled = true;
+            },
+            "error-callback": function () {
+              turnstileToken = "";
+              submitBtn.disabled = true;
+              setMessage("Captcha failed to load. Refresh the page.", "error");
+            }
+          });
+        }
+        if (window.turnstile) {
+          mount();
+        } else {
+          window.onloadTurnstileCallback = mount;
+          loadScript("https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=onloadTurnstileCallback")
+            .catch(function () {
+              setMessage("Could not load captcha. Check blockers or try again.", "error");
+            });
+        }
+      }
+
+      async function init() {
+        setMessage("Loading faucet…", "info");
+        submitBtn.disabled = true;
+        try {
+          var res = await fetch(FAUCET_API + "?meta=1&_=" + Date.now(), { cache: "no-store" });
+          meta = await res.json();
+          if (!meta || meta.ok === false) throw new Error("meta_failed");
+
+          var amt = meta.amount_ban || "0.05";
+          var cd = meta.cooldown_sec || 86400;
+          if (blurb) {
+            blurb.textContent = "Paste your address, pass captcha, claim ~" + amt + " BAN (once per " + formatRetry(cd) + ").";
+          }
+
+          if (!meta.enabled) {
+            setMessage("Faucet controls are live, but payouts are not enabled yet.", "info");
+          } else {
+            setMessage("", "");
+          }
+
+          if (meta.captcha === "turnstile" && meta.turnstile_sitekey) {
+            renderTurnstile(meta.turnstile_sitekey);
+          } else if (meta.captcha === "math") {
+            await refreshMath();
+          } else {
+            captchaSlot.innerHTML = "";
+            submitBtn.disabled = false;
+          }
+        } catch (err) {
+          setMessage("Could not reach faucet API. Try again later.", "error");
+          submitBtn.disabled = true;
+        }
+      }
+
+      form.addEventListener("submit", async function (e) {
         e.preventDefault();
+        if (busy) return;
+
         var addr = (input.value || "").trim();
         if (!addr) {
-          setMessage("Paste a Banano address starting with ban_.", "error");
+          setMessage("Paste a ban_ address first.", "error");
           input.focus();
           return;
         }
         if (!BAN_RE.test(addr)) {
-          setMessage("That doesn’t look like a valid ban_ address. Double-check and try again.", "error");
+          setMessage("That doesn’t look like a valid ban_ address.", "error");
           input.focus();
           return;
         }
 
-        setMessage(
-          "Address looks good. Payouts aren’t live yet — the claim API will send ~0.05 BAN from banano-x when wired up. Hang tight, monkey.",
-          "info"
-        );
-        if (status) {
-          status.dataset.state = "preview";
-          status.innerHTML =
-            '<span class="faucet-status-dot" aria-hidden="true"></span> Preview UI';
+        var payload = {
+          address: addr,
+          website: (hp && hp.value) || ""
+        };
+
+        if (meta && meta.captcha === "turnstile") {
+          if (!turnstileToken) {
+            setMessage("Complete the captcha first.", "error");
+            return;
+          }
+          payload.turnstileToken = turnstileToken;
+        } else if (meta && meta.captcha === "math") {
+          var ansEl = document.getElementById("math-answer");
+          if (!mathState || !ansEl || !ansEl.value.trim()) {
+            setMessage("Solve the captcha first.", "error");
+            return;
+          }
+          payload.mathChallenge = mathState.challenge;
+          payload.mathExp = mathState.exp;
+          payload.mathToken = mathState.token;
+          payload.mathAnswer = ansEl.value.trim();
+        }
+
+        busy = true;
+        submitBtn.disabled = true;
+        setMessage("Submitting claim…", "info");
+
+        try {
+          var res = await fetch(FAUCET_API, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+            cache: "no-store"
+          });
+          var data = await res.json().catch(function () { return {}; });
+
+          if (data.ok) {
+            var okMsg = data.message || "Claim sent.";
+            if (data.explorer) {
+              setMessage(okMsg + " View on explorer (link in console if needed).", "success");
+              msg.innerHTML = okMsg + ' <a href="' + data.explorer + '" target="_blank" rel="noopener">View block</a>';
+              msg.hidden = false;
+              msg.className = "faucet-message is-success";
+            } else {
+              setMessage(okMsg, "success");
+            }
+          } else {
+            var err = data.message || "Claim failed.";
+            if (data.retry_after) {
+              err += " Retry in " + formatRetry(data.retry_after) + ".";
+            }
+            setMessage(err, "error");
+          }
+        } catch (err) {
+          setMessage("Network error. Try again.", "error");
+        } finally {
+          busy = false;
+          // Reset captcha for next attempt
+          turnstileToken = "";
+          if (meta && meta.captcha === "turnstile" && window.turnstile && turnstileWidgetId !== null) {
+            try { window.turnstile.reset(turnstileWidgetId); } catch (e) {}
+            submitBtn.disabled = true;
+          } else if (meta && meta.captcha === "math") {
+            refreshMath().catch(function () {});
+            submitBtn.disabled = false;
+          } else {
+            submitBtn.disabled = false;
+          }
         }
       });
 
       input.addEventListener("input", function () {
-        if (!msg.hidden && msg.classList.contains("is-error")) {
-          setMessage("", "");
-        }
+        if (!msg.hidden && msg.classList.contains("is-error")) setMessage("", "");
       });
+
+      init();
     })();
   </script>
 </body>
