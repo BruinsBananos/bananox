@@ -1931,7 +1931,7 @@ main .section {
   .has-dropdown.open > .nav-dropdown {
     transform: none;
     pointer-events: auto;
-    max-height: 280px;
+    max-height: 340px;
     padding: 0.25rem 0.35rem 0.5rem;
   }
 
@@ -1960,6 +1960,330 @@ main .section {
   .footer-grid {
     grid-template-columns: 1fr;
     gap: 1.5rem;
+  }
+}
+
+/* ─── Banano X Faucet landing ─── */
+
+.faucet-page {
+  padding-top: calc(var(--nav-h) + 2.5rem);
+}
+
+.faucet-hero {
+  text-align: center;
+  max-width: 720px;
+  margin: 0 auto 2.5rem;
+}
+
+.faucet-hero h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2.2rem, 5.5vw, 3.4rem);
+  line-height: 1.08;
+  margin: 0 0 1rem;
+  letter-spacing: -0.02em;
+}
+
+.faucet-lead {
+  color: var(--text-muted);
+  font-size: 1.08rem;
+  line-height: 1.65;
+  margin: 0;
+}
+
+.faucet-lead a {
+  color: var(--banana);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.faucet-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.9fr);
+  gap: 1.5rem;
+  align-items: start;
+  max-width: 1040px;
+  margin: 0 auto;
+}
+
+.faucet-panel {
+  position: relative;
+  padding: 1.75rem 1.75rem 1.5rem;
+  background:
+    var(--card-shine),
+    radial-gradient(120% 80% at 10% 0%, rgba(245, 208, 65, 0.1), transparent 55%),
+    var(--bg-card);
+  border: 1px solid var(--border-strong);
+  border-radius: calc(var(--radius) + 4px);
+  box-shadow: var(--glow-soft), var(--shadow-card), var(--surface-edge);
+  overflow: hidden;
+}
+
+.faucet-panel::after {
+  content: "";
+  position: absolute;
+  inset: auto -20% -40% auto;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(184, 232, 106, 0.16), transparent 68%);
+  pointer-events: none;
+}
+
+.faucet-panel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.35rem;
+  position: relative;
+  z-index: 1;
+}
+
+.faucet-kicker {
+  margin: 0 0 0.25rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  font-weight: 600;
+}
+
+.faucet-panel-head h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.45rem, 3vw, 1.85rem);
+  color: var(--banana);
+}
+
+.faucet-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  background: var(--badge-bg);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.faucet-status-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--banana);
+  box-shadow: 0 0 10px rgba(245, 208, 65, 0.7);
+}
+
+.faucet-status[data-state="preview"] .faucet-status-dot {
+  background: var(--lime);
+  box-shadow: 0 0 10px rgba(184, 232, 106, 0.65);
+  animation: faucet-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes faucet-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.55; transform: scale(0.85); }
+}
+
+.faucet-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+.faucet-stat {
+  text-align: center;
+  padding: 0.9rem 0.5rem;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.18);
+  border: 1px solid var(--border-hair);
+}
+
+[data-theme="light"] .faucet-stat {
+  background: rgba(255, 255, 255, 0.45);
+}
+
+.faucet-stat-value {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  color: var(--banana-bright);
+  line-height: 1.15;
+}
+
+.faucet-stat-label {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.75rem;
+  color: var(--text-faint);
+  letter-spacing: 0.02em;
+}
+
+.faucet-form {
+  position: relative;
+  z-index: 1;
+}
+
+.faucet-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.faucet-input-row {
+  display: flex;
+  gap: 0.65rem;
+  align-items: stretch;
+}
+
+.faucet-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.9rem 1rem;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  color: var(--text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.88rem;
+  letter-spacing: 0.01em;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.faucet-input::placeholder {
+  color: var(--text-faint);
+}
+
+.faucet-input:focus {
+  border-color: var(--border-strong);
+  box-shadow: var(--focus);
+}
+
+.faucet-submit {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.faucet-hint {
+  margin: 0.75rem 0 0;
+  font-size: 0.86rem;
+  color: var(--text-muted);
+}
+
+.faucet-hint a {
+  color: var(--banana);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.faucet-message {
+  margin-top: 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  border: 1px solid var(--border);
+  background: var(--badge-bg);
+  color: var(--text);
+}
+
+.faucet-message.is-error {
+  border-color: rgba(255, 120, 100, 0.35);
+  background: rgba(255, 80, 60, 0.08);
+  color: #ffb4a8;
+}
+
+[data-theme="light"] .faucet-message.is-error {
+  color: #a33a2a;
+  background: rgba(200, 60, 40, 0.08);
+}
+
+.faucet-message.is-info {
+  border-color: rgba(184, 232, 106, 0.35);
+  background: rgba(184, 232, 106, 0.08);
+  color: var(--mint);
+}
+
+[data-theme="light"] .faucet-message.is-info {
+  color: #2f5a12;
+}
+
+.faucet-footnote {
+  position: relative;
+  z-index: 1;
+  margin: 1.15rem 0 0;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--text-faint);
+}
+
+.faucet-aside {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.faucet-aside .card {
+  margin: 0;
+}
+
+.faucet-steps-list {
+  margin: 0;
+  padding-left: 1.15rem;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.faucet-steps-list li + li {
+  margin-top: 0.45rem;
+}
+
+.faucet-steps-list code {
+  font-size: 0.85em;
+  color: var(--banana);
+}
+
+.faucet-how {
+  max-width: 1040px;
+  margin-inline: auto;
+}
+
+@media (max-width: 900px) {
+  .faucet-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .faucet-input-row {
+    flex-direction: column;
+  }
+
+  .faucet-submit {
+    width: 100%;
+  }
+
+  .faucet-panel-head {
+    flex-direction: column;
+  }
+
+  .faucet-stats {
+    gap: 0.5rem;
+  }
+
+  .faucet-stat-value {
+    font-size: 1.15rem;
   }
 }
 

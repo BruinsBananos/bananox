@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Faucet · Banano X</title>
+  <meta name="description" content="Claim free Banano from the Banano X faucet — powered by the banano-x live node. Small drips, feeless sends, jungle vibes.">
+  <meta name="theme-color" content="#000000">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="favicon.svg">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Banano X">
+  <meta property="og:url" content="https://bananox.com/faucet.html">
+  <meta property="og:title" content="Faucet · Banano X">
+  <meta property="og:description" content="Claim free Banano from the Banano X faucet — powered by the banano-x live node.">
+  <meta property="og:image" content="https://bananox.com/og-image.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Faucet · Banano X">
+  <meta name="twitter:description" content="Claim free Banano from the Banano X faucet — powered by the banano-x live node.">
+  <meta name="twitter:image" content="https://bananox.com/og-image.jpg">
+  <script>
+    (function () {
+      try {
+        var k = "bx-theme";
+        var t = localStorage.getItem(k);
+        if (t !== "light" && t !== "dark") {
+          t = matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+        }
+        document.documentElement.setAttribute("data-theme", t);
+        document.documentElement.style.colorScheme = t;
+      } catch (e) {
+        document.documentElement.setAttribute("data-theme", "dark");
+      }
+    })();
+  </script>
+  <link rel="preload" href="fonts/syne-700.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/dm-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a href="#main" class="skip-link">Skip to content</a>
+
+  <header class="nav">
+    <div class="nav-inner">
+      <a href="index.html" class="logo">
+        <img src="favicon.svg" alt="" class="logo-mark" width="36" height="36" decoding="async">
+        <span>BANANO X</span>
+      </a>
+      <ul class="nav-links">
+        <li class="has-dropdown">
+          <button type="button" class="nav-drop-btn" aria-expanded="false" aria-haspopup="true">
+            Play <span class="chev" aria-hidden="true"></span>
+          </button>
+          <ul class="nav-dropdown" role="menu">
+            <li role="none"><a role="menuitem" href="arcade.html">Arcade · Browse games</a></li>
+            <li role="none"><a role="menuitem" href="playTD.html">Defend · Banano TD</a></li>
+            <li role="none"><a role="menuitem" href="play.html">Climb · Banana Tower</a></li>
+            <li role="none"><a role="menuitem" href="playQuest.html">Quest · Banano Browser Quest</a></li>
+            <li role="none"><a role="menuitem" href="playNFR.html">Fly · Neon Frequency Runner</a></li>
+            <li role="none"><a role="menuitem" href="playBlaster.html">Blast · Banano Blaster</a></li>
+          </ul>
+        </li>
+        <li class="has-dropdown">
+          <button type="button" class="nav-drop-btn" aria-expanded="false" aria-haspopup="true">
+            Explore <span class="chev" aria-hidden="true"></span>
+          </button>
+          <ul class="nav-dropdown" role="menu">
+            <li role="none"><a role="menuitem" href="facts.html">Facts</a></li>
+            <li role="none"><a role="menuitem" href="ecosystem.html">Ecosystem</a></li>
+            <li role="none"><a role="menuitem" href="faucet.html" aria-current="page">Faucet</a></li>
+            <li role="none"><a role="menuitem" href="https://node.bananox.com/">Live Node</a></li>
+          </ul>
+        </li>
+        <li><a href="faucets.html">Get BAN</a></li>
+        <li><a href="community.html">Community</a></li>
+      </ul>
+      <div class="nav-tools">
+        <button type="button" class="theme-toggle" aria-label="Toggle color theme" title="Toggle theme">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M21 14.5A8.5 8.5 0 1 1 9.5 3 7 7 0 0 0 21 14.5z"/></svg>
+        </button>
+        <button class="nav-toggle" type="button" aria-label="Menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" class="page faucet-page">
+    <div class="container">
+      <div class="faucet-hero reveal">
+        <div class="badge" style="margin-bottom: 1rem;">
+          <span class="badge-dot" aria-hidden="true"></span>
+          Banano X drip
+        </div>
+        <h1 class="glow-text">Free potassium,<br>on the house</h1>
+        <p class="faucet-lead">
+          Paste your Banano address, claim a small daily drip, and feel the feeless magic.
+          Powered by the <a href="https://node.bananox.com/" target="_blank" rel="noopener">banano-x live node</a>.
+        </p>
+      </div>
+
+      <div class="faucet-layout">
+        <section class="faucet-panel reveal" aria-labelledby="claim-heading">
+          <div class="faucet-panel-head">
+            <div>
+              <p class="faucet-kicker">Claim</p>
+              <h2 id="claim-heading">Banano X Faucet</h2>
+            </div>
+            <span class="faucet-status" id="faucet-status" data-state="preview">
+              <span class="faucet-status-dot" aria-hidden="true"></span>
+              Preview UI
+            </span>
+          </div>
+
+          <div class="faucet-stats" role="list">
+            <div class="faucet-stat" role="listitem">
+              <span class="faucet-stat-value">0.05</span>
+              <span class="faucet-stat-label">BAN per drip</span>
+            </div>
+            <div class="faucet-stat" role="listitem">
+              <span class="faucet-stat-value">24h</span>
+              <span class="faucet-stat-label">Cooldown</span>
+            </div>
+            <div class="faucet-stat" role="listitem">
+              <span class="faucet-stat-value">$0</span>
+              <span class="faucet-stat-label">Network fee</span>
+            </div>
+          </div>
+
+          <form class="faucet-form" id="faucet-form" novalidate>
+            <label class="faucet-label" for="ban-address">Your Banano address</label>
+            <div class="faucet-input-row">
+              <input
+                class="faucet-input"
+                type="text"
+                id="ban-address"
+                name="address"
+                inputmode="text"
+                autocomplete="off"
+                spellcheck="false"
+                placeholder="ban_…"
+                maxlength="64"
+                required
+                aria-describedby="ban-hint faucet-message"
+              >
+              <button type="submit" class="btn btn-primary faucet-submit" id="faucet-submit">
+                Claim drip
+              </button>
+            </div>
+            <p class="faucet-hint" id="ban-hint">
+              Need a wallet?
+              <a href="https://kalium.banano.cc" target="_blank" rel="noopener">Kalium</a>
+              or
+              <a href="https://thebananostand.com" target="_blank" rel="noopener">The Banano Stand</a>
+            </p>
+            <div class="faucet-message" id="faucet-message" role="status" aria-live="polite" hidden></div>
+          </form>
+
+          <p class="faucet-footnote">
+            Payout backend is next — this page is the real claim UI. Captcha + node sends will wire in without changing the look.
+          </p>
+        </section>
+
+        <aside class="faucet-aside">
+          <article class="card reveal reveal-delay-1">
+            <div class="card-icon" aria-hidden="true">🍌</div>
+            <h3>How it works</h3>
+            <ol class="faucet-steps-list">
+              <li>Copy your <code>ban_</code> address from Kalium or Banano Stand.</li>
+              <li>Paste it here and hit claim (once every 24 hours).</li>
+              <li>We generate work on <strong>banano-x</strong> and send a tiny feeless drip.</li>
+            </ol>
+          </article>
+
+          <article class="card reveal reveal-delay-2">
+            <div class="card-icon" aria-hidden="true">🛡️</div>
+            <h3>Fair play</h3>
+            <p>
+              One drip per address (and IP) per day. No investment claims — just free potassium for monkeys learning the ropes.
+            </p>
+          </article>
+
+          <article class="card reveal reveal-delay-2">
+            <div class="card-icon" aria-hidden="true">📡</div>
+            <h3>Live node</h3>
+            <p>
+              Claims will ride the same stack as
+              <a href="https://node.bananox.com/" target="_blank" rel="noopener">node.bananox.com</a>
+              — synced Banano node, local PoW, no public RPC.
+            </p>
+            <a href="https://node.bananox.com/" target="_blank" rel="noopener" class="card-action">View node status →</a>
+          </article>
+        </aside>
+      </div>
+
+      <div class="steps faucet-how" style="margin-top: 3rem;">
+        <article class="step reveal">
+          <h3>1 · Wallet</h3>
+          <p>Grab Kalium or The Banano Stand and copy your address.</p>
+          <a href="https://kalium.banano.cc" target="_blank" rel="noopener" class="btn btn-ghost btn-sm">Kalium</a>
+        </article>
+        <article class="step reveal reveal-delay-1">
+          <h3>2 · Claim here</h3>
+          <p>Use the form above for the Banano X drip when payouts go live.</p>
+          <a href="#claim-heading" class="btn btn-ghost btn-sm">Back to claim</a>
+        </article>
+        <article class="step reveal reveal-delay-2">
+          <h3>3 · More BAN</h3>
+          <p>Hungry for more? Browse community faucets and Banano Miner.</p>
+          <a href="faucets.html" class="btn btn-ghost btn-sm">Faucet list</a>
+        </article>
+      </div>
+
+      <div class="cta-band reveal" style="margin-top: 3rem;">
+        <h2>Want more free BAN?</h2>
+        <p>Community faucets and folding rewards while this drip finishes wiring to the node.</p>
+        <div class="hero-actions">
+          <a href="faucets.html" class="btn btn-primary">Browse faucets</a>
+          <a href="arcade.html" class="btn btn-ghost">Play games</a>
+          <a href="https://node.bananox.com/" target="_blank" rel="noopener" class="btn btn-ghost">Live node</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="index.html" class="logo">
+            <img src="favicon.svg" alt="" class="logo-mark" width="36" height="36" decoding="async">
+            <span>BANANO X</span>
+          </a>
+          <p>Feeless. Instant. Meme-fueled crypto. A fan site for the midnight jungle.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Play</h4>
+          <ul>
+            <li><a href="arcade.html">Arcade</a></li>
+            <li><a href="playTD.html">Banano TD</a></li>
+            <li><a href="play.html">Banana Tower</a></li>
+            <li><a href="playQuest.html">Browser Quest</a></li>
+            <li><a href="playNFR.html">Neon Frequency</a></li>
+            <li><a href="playBlaster.html">Banano Blaster</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Explore</h4>
+          <ul>
+            <li><a href="facts.html">Facts</a></li>
+            <li><a href="ecosystem.html">Ecosystem</a></li>
+            <li><a href="faucet.html">Faucet</a></li>
+            <li><a href="faucets.html">Faucet list</a></li>
+            <li><a href="https://node.bananox.com/">Live Node</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <ul>
+            <li><a href="community.html">Community</a></li>
+            <li><a href="https://banano.cc" target="_blank" rel="noopener">Official Banano</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>Built for billions · Fan site · Official: <a class="footer-official" href="https://banano.cc" target="_blank" rel="noopener">banano.cc</a></p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="site.js" defer></script>
+  <script>
+    (function () {
+      var form = document.getElementById("faucet-form");
+      var input = document.getElementById("ban-address");
+      var msg = document.getElementById("faucet-message");
+      var status = document.getElementById("faucet-status");
+      if (!form || !input || !msg) return;
+
+      // Banano addresses: ban_ + 60 chars of base32-ish alphabet (approximate client check)
+      var BAN_RE = /^ban_[13][13456789abcdefghijkmnopqrstuwxyz]{59}$/i;
+
+      function setMessage(text, type) {
+        msg.hidden = !text;
+        msg.textContent = text || "";
+        msg.className = "faucet-message" + (type ? " is-" + type : "");
+      }
+
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        var addr = (input.value || "").trim();
+        if (!addr) {
+          setMessage("Paste a Banano address starting with ban_.", "error");
+          input.focus();
+          return;
+        }
+        if (!BAN_RE.test(addr)) {
+          setMessage("That doesn’t look like a valid ban_ address. Double-check and try again.", "error");
+          input.focus();
+          return;
+        }
+
+        setMessage(
+          "Address looks good. Payouts aren’t live yet — the claim API will send ~0.05 BAN from banano-x when wired up. Hang tight, monkey.",
+          "info"
+        );
+        if (status) {
+          status.dataset.state = "preview";
+          status.innerHTML =
+            '<span class="faucet-status-dot" aria-hidden="true"></span> Preview UI';
+        }
+      });
+
+      input.addEventListener("input", function () {
+        if (!msg.hidden && msg.classList.contains("is-error")) {
+          setMessage("", "");
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
