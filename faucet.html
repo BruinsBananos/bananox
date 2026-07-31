@@ -98,12 +98,6 @@
           aria-describedby="faucet-message"
         >
 
-        <!-- Honeypot: leave empty. Hidden from humans. -->
-        <div class="faucet-hp" aria-hidden="true">
-          <label for="website">Website</label>
-          <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
-        </div>
-
         <div id="captcha-slot" class="faucet-captcha">
           <!-- Turnstile widget or math challenge injected here -->
         </div>
@@ -188,7 +182,6 @@
       var submitBtn = document.getElementById("faucet-submit");
       var captchaSlot = document.getElementById("captcha-slot");
       var blurb = document.getElementById("faucet-blurb");
-      var hp = document.getElementById("website");
       if (!form || !input || !msg || !submitBtn || !captchaSlot) return;
 
       var BAN_RE = /^ban_[13][13456789abcdefghijkmnopqrstuwxyz]{59}$/i;
@@ -338,8 +331,7 @@
         }
 
         var payload = {
-          address: addr,
-          website: (hp && hp.value) || ""
+          address: addr
         };
 
         if (meta && meta.captcha === "turnstile") {
