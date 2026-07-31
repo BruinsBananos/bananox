@@ -1904,3 +1904,182 @@ main .section {
     text-shadow: 0 0 40px rgba(245, 208, 65, 0.45), 0 0 80px rgba(245, 208, 65, 0.2);
   }
 }
+
+
+/* ─── Faucet (simple) ─── */
+
+.faucet-simple {
+  max-width: 520px;
+  margin-inline: auto;
+}
+
+.faucet-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--surface-edge);
+}
+
+.faucet-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.faucet-input {
+  width: 100%;
+  padding: 0.9rem 1rem;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  color: var(--text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.88rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.faucet-input::placeholder {
+  color: var(--text-faint);
+}
+
+.faucet-input:focus {
+  border-color: var(--border-strong);
+  box-shadow: var(--focus);
+}
+
+.faucet-submit {
+  width: 100%;
+}
+
+.faucet-meta {
+  margin: 0.15rem 0 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-align: center;
+  line-height: 1.5;
+}
+
+.faucet-meta a {
+  color: var(--banana);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.faucet-message {
+  margin: 0;
+  padding: 0.75rem 0.9rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  border: 1px solid var(--border);
+  background: var(--badge-bg);
+  color: var(--text);
+}
+
+.faucet-message.is-error {
+  border-color: rgba(255, 120, 100, 0.35);
+  background: rgba(255, 80, 60, 0.08);
+  color: #ffb4a8;
+}
+
+[data-theme="light"] .faucet-message.is-error {
+  color: #a33a2a;
+  background: rgba(200, 60, 40, 0.08);
+}
+
+.faucet-message.is-info {
+  border-color: rgba(184, 232, 106, 0.35);
+  background: rgba(184, 232, 106, 0.08);
+  color: var(--mint);
+}
+
+[data-theme="light"] .faucet-message.is-info {
+  color: #2f5a12;
+}
+
+.faucet-message.is-success {
+  border-color: rgba(184, 232, 106, 0.45);
+  background: rgba(184, 232, 106, 0.12);
+  color: var(--mint);
+}
+
+.faucet-message.is-success a {
+  color: var(--banana);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+[data-theme="light"] .faucet-message.is-success {
+  color: #2f5a12;
+}
+
+/* Honeypot — off-screen, not display:none (some bots skip display:none) */
+.faucet-hp {
+  position: absolute;
+  left: -10000px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.faucet-captcha {
+  min-height: 0;
+}
+
+.faucet-captcha .cf-turnstile {
+  display: flex;
+  justify-content: center;
+}
+
+.faucet-rules {
+  margin: 0;
+  padding-left: 1.15rem;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+
+.faucet-panel {
+  position: relative;
+}
+
+.faucet-odds {
+  margin: 0.25rem 0 0;
+  padding: 0.75rem 0.9rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--badge-bg);
+}
+
+.faucet-odds-title {
+  margin: 0 0 0.4rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.faucet-odds-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.25rem 0.75rem;
+  font-size: 0.85rem;
+  color: var(--text);
+}
+
+.faucet-odds-list .is-rare {
+  color: var(--banana);
+  font-weight: 600;
+  grid-column: 1 / -1;
+}
+

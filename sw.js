@@ -1,5 +1,5 @@
-/* Banano X ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â lightweight shell cache for instant revisits */
-const CACHE = "bananox-shell-v17-no-arcade";
+﻿/* Banano X — lightweight shell cache for instant revisits */
+const CACHE = "bananox-shell-v18-faucet-gamble";
 
 /* Keep install fast — heavy assets cache on first visit, not at SW install */
 const PRECACHE = [
@@ -43,7 +43,6 @@ function isCacheableGet(request) {
   if (request.method !== "GET") return false;
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return false;
-  // Skip large game scripts on install path; runtime cache-on-success only
   return true;
 }
 
@@ -52,60 +51,33 @@ self.addEventListener("fetch", (event) => {
   if (!isCacheableGet(request)) return;
 
   const url = new URL(request.url);
-  const isNavigate = request.mode === "navigate" || request.destination === "document";
-  const isShellAsset =
-    /\.(css|js|woff2|svg)$/i.test(url.pathname) ||
-    /\/fonts\//i.test(url.pathname);
-
-  // Shell assets: cache-first (versioned by CACHE name)
-  if (isShellAsset) {
-    event.respondWith(
-      caches.match(request).then((cached) => {
-        if (cached) return cached;
-        return fetch(request).then((response) => {
-          if (response && response.ok) {
-            const clone = response.clone();
-            caches.open(CACHE).then((cache) => cache.put(request, clone));
-          }
-          return response;
-        });
-      })
-    );
-    return;
-  }
+  const isHtml = request.mode === "navigate" || url.pathname.endsWith(".html") || url.pathname === "/";
 
   // HTML navigations: network-first, fall back to cache (fresh content preferred)
-  if (isNavigate) {
+  if (isHtml) {
     event.respondWith(
       fetch(request)
-        .then((response) => {
-          if (response && response.ok) {
-            const clone = response.clone();
-            caches.open(CACHE).then((cache) => cache.put(request, clone));
-          }
-          return response;
+        .then((res) => {
+          const copy = res.clone();
+          caches.open(CACHE).then((c) => c.put(request, copy));
+          return res;
         })
-        .catch(() =>
-          caches.match(request).then((cached) => cached || caches.match("./index.html"))
-        )
+        .catch(() => caches.match(request).then((r) => r || caches.match("./index.html")))
     );
     return;
   }
 
-  // Other same-origin (e.g. game JS): stale-while-revalidate
+  // Static assets: cache-first
   event.respondWith(
     caches.match(request).then((cached) => {
-      const network = fetch(request)
-        .then((response) => {
-          if (response && response.ok) {
-            const clone = response.clone();
-            caches.open(CACHE).then((cache) => cache.put(request, clone));
-          }
-          return response;
-        })
-        .catch(() => cached);
-      return cached || network;
+      if (cached) return cached;
+      return fetch(request).then((res) => {
+        if (res && res.ok) {
+          const copy = res.clone();
+          caches.open(CACHE).then((c) => c.put(request, copy));
+        }
+        return res;
+      });
     })
   );
 });
-
