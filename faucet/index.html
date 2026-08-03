@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; img-src 'self' data: https:; font-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' https://cloud.umami.is https://challenges.cloudflare.com; connect-src 'self' https://node.bananox.com https://cloud.umami.is https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; worker-src 'self'; upgrade-insecure-requests">
   <title>Faucet | Banano X</title>
   <meta name="description" content="Claim free Banano from the Banano X faucet. Captcha and daily limits.">
   <meta name="theme-color" content="#000000">
@@ -168,13 +169,16 @@
   <script src="/site.js" defer></script>
   <script>
     (function () {
+      // Fixed production API only (no query-string override — prevents malicious api= links)
       var FAUCET_API = "https://node.bananox.com/faucet.php";
-      try {
-        var q = new URLSearchParams(location.search).get("api");
-        if (q && /^https?:\/\/(localhost|127\.0\.0\.1|node\.bananox\.com)/i.test(q)) {
-          FAUCET_API = q;
-        }
-      } catch (e) {}
+      if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
+        try {
+          var q = new URLSearchParams(location.search).get("api");
+          if (q && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?(\/|$)/i.test(q)) {
+            FAUCET_API = q;
+          }
+        } catch (e) {}
+      }
 
       var form = document.getElementById("faucet-form");
       var input = document.getElementById("ban-address");
@@ -185,16 +189,41 @@
       if (!form || !input || !msg || !submitBtn || !captchaSlot) return;
 
       var BAN_RE = /^ban_[13][13456789abcdefghijkmnopqrstuwxyz]{59}$/i;
+      var EXPLORER_RE = /^https:\/\/(creeper\.banano\.cc|yellowspyglass\.com|bananolooker\.com)\/[A-Za-z0-9_./\-?#=&%]+$/i;
       var meta = null;
       var turnstileWidgetId = null;
       var turnstileToken = "";
       var mathState = null;
       var busy = false;
 
+      function clearEl(el) {
+        while (el.firstChild) el.removeChild(el.firstChild);
+      }
+
       function setMessage(text, type) {
+        clearEl(msg);
         msg.hidden = !text;
-        msg.textContent = text || "";
+        if (text) msg.appendChild(document.createTextNode(text));
         msg.className = "faucet-message" + (type ? " is-" + type : "");
+      }
+
+      function setMessageWithLink(text, href, linkLabel, type) {
+        clearEl(msg);
+        msg.hidden = false;
+        msg.appendChild(document.createTextNode(text + " "));
+        if (href && EXPLORER_RE.test(href)) {
+          var a = document.createElement("a");
+          a.href = href;
+          a.target = "_blank";
+          a.rel = "noopener noreferrer";
+          a.textContent = linkLabel || "View block";
+          msg.appendChild(a);
+        }
+        msg.className = "faucet-message" + (type ? " is-" + type : "");
+      }
+
+      function safeText(v) {
+        return String(v == null ? "" : v).replace(/[<>&"'`]/g, "");
       }
 
       function formatRetry(sec) {
@@ -210,6 +239,7 @@
           var s = document.createElement("script");
           s.src = src;
           s.async = true;
+          s.crossOrigin = "anonymous";
           s.onload = function () { resolve(); };
           s.onerror = function () { reject(new Error("script_load_failed")); };
           document.head.appendChild(s);
@@ -218,10 +248,28 @@
 
       function renderMathCaptcha(challengePayload) {
         mathState = challengePayload;
-        captchaSlot.innerHTML =
-          '<label class="faucet-label" for="math-answer">Captcha: what is <strong id="math-q"></strong>?</label>' +
-          '<input class="faucet-input" type="text" inputmode="numeric" id="math-answer" name="mathAnswer" autocomplete="off" maxlength="4" required placeholder="Answer">';
-        document.getElementById("math-q").textContent = challengePayload.challenge;
+        clearEl(captchaSlot);
+        var label = document.createElement("label");
+        label.className = "faucet-label";
+        label.htmlFor = "math-answer";
+        label.appendChild(document.createTextNode("Captcha: what is "));
+        var strong = document.createElement("strong");
+        strong.id = "math-q";
+        strong.textContent = String(challengePayload.challenge || "");
+        label.appendChild(strong);
+        label.appendChild(document.createTextNode("?"));
+        var ans = document.createElement("input");
+        ans.className = "faucet-input";
+        ans.type = "text";
+        ans.inputMode = "numeric";
+        ans.id = "math-answer";
+        ans.name = "mathAnswer";
+        ans.autocomplete = "off";
+        ans.maxLength = 4;
+        ans.required = true;
+        ans.placeholder = "Answer";
+        captchaSlot.appendChild(label);
+        captchaSlot.appendChild(ans);
         submitBtn.disabled = false;
       }
 
@@ -233,7 +281,15 @@
       }
 
       function renderTurnstile(sitekey) {
-        captchaSlot.innerHTML = '<div id="cf-turnstile" class="cf-turnstile"></div>';
+        if (!/^[A-Za-z0-9_-]{10,120}$/.test(String(sitekey || ""))) {
+          setMessage("Captcha misconfigured.", "error");
+          return;
+        }
+        clearEl(captchaSlot);
+        var box = document.createElement("div");
+        box.id = "cf-turnstile";
+        box.className = "cf-turnstile";
+        captchaSlot.appendChild(box);
         function mount() {
           if (!window.turnstile) return;
           turnstileWidgetId = window.turnstile.render("#cf-turnstile", {
@@ -265,6 +321,23 @@
         }
       }
 
+      function renderOdds(tiers) {
+        var odds = document.getElementById("faucet-odds");
+        var oddsList = document.getElementById("faucet-odds-list");
+        if (!odds || !oddsList || !tiers || !tiers.length) return;
+        clearEl(oddsList);
+        odds.hidden = false;
+        tiers.forEach(function (t) {
+          var li = document.createElement("li");
+          if (t.rare) li.className = "is-rare";
+          var strong = document.createElement("strong");
+          strong.textContent = safeText(t.amount) + " BAN";
+          li.appendChild(strong);
+          li.appendChild(document.createTextNode(" - " + safeText(t.chance_pct) + "%"));
+          oddsList.appendChild(li);
+        });
+      }
+
       async function init() {
         setMessage("Loading faucet...", "info");
         submitBtn.disabled = true;
@@ -273,8 +346,8 @@
           meta = await res.json();
           if (!meta || meta.ok === false) throw new Error("meta_failed");
 
-          var minA = meta.amount_min_ban || "0.01";
-          var maxA = meta.amount_max_ban || meta.amount_ban || "0.05";
+          var minA = safeText(meta.amount_min_ban || "0.01");
+          var maxA = safeText(meta.amount_max_ban || meta.amount_ban || "0.05");
           var cd = meta.cooldown_sec || 86400;
           if (blurb) {
             if (meta.gamble) {
@@ -284,14 +357,8 @@
             }
           }
 
-          var odds = document.getElementById("faucet-odds");
-          var oddsList = document.getElementById("faucet-odds-list");
-          if (odds && oddsList && meta.gamble && meta.tiers && meta.tiers.length) {
-            odds.hidden = false;
-            oddsList.innerHTML = meta.tiers.map(function (t) {
-              var rare = t.rare ? ' class="is-rare"' : "";
-              return "<li" + rare + "><strong>" + t.amount + " BAN</strong> - " + t.chance_pct + "%</li>";
-            }).join("");
+          if (meta.gamble && meta.tiers && meta.tiers.length) {
+            renderOdds(meta.tiers);
           }
 
           if (!meta.enabled) {
@@ -305,7 +372,7 @@
           } else if (meta.captcha === "math") {
             await refreshMath();
           } else {
-            captchaSlot.innerHTML = "";
+            clearEl(captchaSlot);
             submitBtn.disabled = false;
           }
         } catch (err) {
@@ -330,9 +397,7 @@
           return;
         }
 
-        var payload = {
-          address: addr
-        };
+        var payload = { address: addr };
 
         if (meta && meta.captcha === "turnstile") {
           if (!turnstileToken) {
@@ -366,19 +431,19 @@
           var data = await res.json().catch(function () { return {}; });
 
           if (data.ok) {
-            var okMsg = data.message || "Claim sent.";
+            var okMsg = safeText(data.message || "Claim sent.");
             if (data.amount_ban) {
-              okMsg = (data.jackpot ? "JACKPOT! " : "You rolled ") + data.amount_ban + " BAN. " + (data.message || "");
+              okMsg = (data.jackpot ? "JACKPOT! " : "You rolled ") +
+                safeText(data.amount_ban) + " BAN. " + safeText(data.message || "");
             }
-            if (data.explorer) {
-              msg.innerHTML = okMsg + ' <a href="' + data.explorer + '" target="_blank" rel="noopener">View block</a>';
-              msg.hidden = false;
-              msg.className = "faucet-message is-success" + (data.jackpot ? " is-jackpot" : "");
+            var type = "success" + (data.jackpot ? " is-jackpot" : "");
+            if (data.explorer && EXPLORER_RE.test(String(data.explorer))) {
+              setMessageWithLink(okMsg, String(data.explorer), "View block", type);
             } else {
-              setMessage(okMsg, "success");
+              setMessage(okMsg, type.indexOf("jackpot") >= 0 ? "success is-jackpot" : "success");
             }
           } else {
-            var err = data.message || "Claim failed.";
+            var err = safeText(data.message || "Claim failed.");
             if (data.retry_after) {
               err += " Retry in " + formatRetry(data.retry_after) + ".";
             }

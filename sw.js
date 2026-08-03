@@ -1,20 +1,13 @@
 /* Banano X — lightweight shell cache for instant revisits */
-const CACHE = "bananox-shell-v18-clean-urls";
+const CACHE = "bananox-shell-v19-hardened";
 
+/* Install stays fast: only shell assets. HTML is network-first at runtime. */
 const PRECACHE = [
-  "/",
-  "/index.html",
   "/styles.css",
   "/site.js",
   "/favicon.svg",
   "/fonts/dm-sans.woff2",
   "/fonts/syne-700.woff2",
-  "/facts/",
-  "/ecosystem/",
-  "/faucets/",
-  "/faucet/",
-  "/community/",
-  "/node/",
 ];
 
 self.addEventListener("install", (event) => {
@@ -42,6 +35,8 @@ function isCacheableGet(request) {
   if (request.method !== "GET") return false;
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return false;
+  // Never cache API-ish paths if any appear on this origin later
+  if (/faucet\.php|\/api\//i.test(url.pathname)) return false;
   return true;
 }
 
@@ -55,6 +50,7 @@ self.addEventListener("fetch", (event) => {
     /\.(css|js|woff2|svg)$/i.test(url.pathname) ||
     /\/fonts\//i.test(url.pathname);
 
+  // Shell assets: cache-first (busted by CACHE name)
   if (isShellAsset) {
     event.respondWith(
       caches.match(request).then((cached) => {
@@ -71,6 +67,7 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  // HTML navigations: network-first, fall back to cache
   if (isNavigate) {
     event.respondWith(
       fetch(request)
@@ -88,6 +85,7 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  // Other same-origin: stale-while-revalidate
   event.respondWith(
     caches.match(request).then((cached) => {
       const network = fetch(request)

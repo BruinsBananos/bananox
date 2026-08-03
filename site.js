@@ -253,7 +253,16 @@
     }
   }
 
+  function prefersReducedData() {
+    try {
+      const c = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+      if (c && (c.saveData || /2g/.test(String(c.effectiveType || "")))) return true;
+    } catch (_) {}
+    return false;
+  }
+
   function injectSpeculationRules() {
+    if (prefersReducedData()) return;
     if (!HTMLScriptElement.supports || !HTMLScriptElement.supports("speculationrules")) {
       return;
     }
@@ -262,26 +271,8 @@
     el.textContent = JSON.stringify({
       prefetch: [
         {
-          where: {
-            and: [
-              { href_matches: "/*" },
-              { not: { href_matches: "https://*" } },
-            ],
-          },
+          urls: ["/faucet", "/faucets", "/ecosystem"],
           eagerness: "moderate",
-        },
-      ],
-      prerender: [
-        {
-          where: {
-            and: [
-              { href_matches: "/*" },
-              { not: { href_matches: "https://*" } },
-              { not: { selector_matches: "[target=_blank]" } },
-              { not: { selector_matches: "[rel~=external]" } },
-            ],
-          },
-          eagerness: "conservative",
         },
       ],
     });
@@ -290,53 +281,37 @@
 
   injectSpeculationRules();
 
-  // Hover / focus / touchstart prefetch for browsers without Speculation Rules
   let hoverTimer = 0;
-  document.addEventListener(
-    "pointerover",
-    (e) => {
-      const a = e.target.closest && e.target.closest("a[href]");
-      if (!a) return;
-      clearTimeout(hoverTimer);
-      hoverTimer = setTimeout(() => prefetchPage(a.getAttribute("href")), 65);
-    },
-    { passive: true }
-  );
+  if (!prefersReducedData()) {
+    document.addEventListener(
+      "pointerover",
+      (e) => {
+        if (e.pointerType === "touch") return;
+        const a = e.target.closest && e.target.closest("a[href]");
+        if (!a) return;
+        clearTimeout(hoverTimer);
+        hoverTimer = setTimeout(() => prefetchPage(a.getAttribute("href")), 80);
+      },
+      { passive: true }
+    );
+  }
 
-  document.addEventListener(
-    "touchstart",
-    (e) => {
-      const a = e.target.closest && e.target.closest("a[href]");
-      if (a) prefetchPage(a.getAttribute("href"));
-    },
-    { passive: true }
-  );
-
-  // Idle-prefetch light content pages only (games HTML/JS stay hover-prefetch)
-  const IDLE_PREFETCH = [
-    "/facts",
-    "/ecosystem",
-    "/faucets",
-    "/faucet",
-    "/community",
-    "/node",
-  ];
+  const IDLE_PREFETCH = prefersReducedData() ? [] : ["/faucet", "/faucets"];
 
   function idlePrefetch() {
+    if (!IDLE_PREFETCH.length) return;
     const run = (deadline) => {
-      while (IDLE_PREFETCH.length && (!deadline || deadline.timeRemaining() > 8)) {
+      while (IDLE_PREFETCH.length && (!deadline || deadline.timeRemaining() > 12)) {
         prefetchPage(IDLE_PREFETCH.shift());
       }
-      if (IDLE_PREFETCH.length) {
-        if ("requestIdleCallback" in window) {
-          requestIdleCallback(run, { timeout: 3000 });
-        }
+      if (IDLE_PREFETCH.length && "requestIdleCallback" in window) {
+        requestIdleCallback(run, { timeout: 4000 });
       }
     };
     if ("requestIdleCallback" in window) {
-      requestIdleCallback(run, { timeout: 2500 });
+      requestIdleCallback(run, { timeout: 3500 });
     } else {
-      setTimeout(() => run(null), 1200);
+      setTimeout(() => run(null), 2000);
     }
   }
   idlePrefetch();
