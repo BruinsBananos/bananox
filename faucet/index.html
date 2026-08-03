@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <title>Faucet | Banano X</title>
+  <meta name="description" content="Claim free Banano from the Banano X faucet. Captcha and daily limits.">
+  <meta name="theme-color" content="#000000">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/favicon.svg">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Banano X">
+  <meta property="og:url" content="https://bananox.com/faucet">
+  <meta property="og:title" content="Faucet | Banano X">
+  <meta property="og:description" content="Claim free Banano from the Banano X faucet. Captcha and daily limits.">
+  <meta property="og:image" content="https://bananox.com/og-image.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Faucet | Banano X">
+  <meta name="twitter:description" content="Claim free Banano from the Banano X faucet. Captcha and daily limits.">
+  <meta name="twitter:image" content="https://bananox.com/og-image.jpg">
+  <script>
+    (function () {
+      try {
+        var k = "bx-theme";
+        var t = localStorage.getItem(k);
+        if (t !== "light" && t !== "dark") {
+          t = matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+        }
+        document.documentElement.setAttribute("data-theme", t);
+        document.documentElement.style.colorScheme = t;
+      } catch (e) {
+        document.documentElement.setAttribute("data-theme", "dark");
+      }
+    })();
+  </script>
+  <link rel="preload" href="/fonts/syne-700.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/dm-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/styles.css">
+  <script defer src="https://cloud.umami.is/script.js" data-website-id="327f6a7f-a0c3-42a1-8f77-a7f263839dc0"></script>
+</head>
+<body>
+  <a href="#main" class="skip-link">Skip to content</a>
+
+  <header class="nav">
+    <div class="nav-inner">
+      <a href="/" class="logo">
+        <img src="/favicon.svg" alt="" class="logo-mark" width="36" height="36" decoding="async">
+        <span>BANANO X</span>
+      </a>
+      <ul class="nav-links">
+        <li class="has-dropdown">
+          <button type="button" class="nav-drop-btn" aria-expanded="false" aria-haspopup="true">
+            Explore <span class="chev" aria-hidden="true"></span>
+          </button>
+          <ul class="nav-dropdown" role="menu">
+            <li role="none"><a role="menuitem" href="/facts">Facts</a></li>
+            <li role="none"><a role="menuitem" href="/ecosystem">Ecosystem</a></li>
+            <li role="none"><a role="menuitem" href="/faucet" aria-current="page">Faucet</a></li>
+            <li role="none"><a role="menuitem" href="https://node.bananox.com/">Live Node</a></li>
+          </ul>
+        </li>
+        <li><a href="/faucets">Get BAN</a></li>
+        <li><a href="/community">Community</a></li>
+      </ul>
+      <div class="nav-tools">
+        <button type="button" class="theme-toggle" aria-label="Toggle color theme" title="Toggle theme">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M21 14.5A8.5 8.5 0 1 1 9.5 3 7 7 0 0 0 21 14.5z"/></svg>
+        </button>
+        <button class="nav-toggle" type="button" aria-label="Menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" class="page">
+    <div class="container faucet-simple">
+      <div class="section-header reveal">
+        <div class="badge" style="margin-bottom: 1rem;">Faucet</div>
+        <h1 class="glow-text">Get free BAN</h1>
+        <p id="faucet-blurb">Paste your address, pass captcha, roll a random drop once a day.</p>
+      </div>
+
+      <form class="faucet-panel reveal" id="faucet-form" novalidate>
+        <label class="faucet-label" for="ban-address">Banano address</label>
+        <input
+          class="faucet-input"
+          type="text"
+          id="ban-address"
+          name="address"
+          autocomplete="off"
+          spellcheck="false"
+          placeholder="ban_..."
+          maxlength="64"
+          required
+          aria-describedby="faucet-message"
+        >
+
+        <div id="captcha-slot" class="faucet-captcha">
+          <!-- Turnstile widget or math challenge injected here -->
+        </div>
+
+        <button type="submit" class="btn btn-primary faucet-submit" id="faucet-submit" disabled>
+          Roll claim
+        </button>
+
+        <div class="faucet-odds" id="faucet-odds" hidden>
+          <p class="faucet-odds-title">Payout odds</p>
+          <ul class="faucet-odds-list" id="faucet-odds-list"></ul>
+        </div>
+
+        <ul class="faucet-rules" id="faucet-rules">
+          <li>Random roll: 0.01-0.05 BAN (rare 0.10 jackpot)</li>
+          <li>1 claim per address / day</li>
+          <li>1 claim per IP / day</li>
+          <li>Captcha required</li>
+        </ul>
+
+        <p class="faucet-meta">
+          Need a wallet?
+          <a href="https://kalium.banano.cc" target="_blank" rel="noopener">Kalium</a>
+          |
+          <a href="https://thebananostand.com" target="_blank" rel="noopener">Banano Stand</a>
+          |
+          <a href="/faucets">More faucets</a>
+        </p>
+        <div class="faucet-message" id="faucet-message" role="status" aria-live="polite" hidden></div>
+      </form>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="/" class="logo">
+            <img src="/favicon.svg" alt="" class="logo-mark" width="36" height="36" decoding="async">
+            <span>BANANO X</span>
+          </a>
+          <p>Feeless. Instant. Meme-fueled crypto. A fan site for the midnight jungle.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Explore</h4>
+          <ul>
+            <li><a href="/facts">Facts</a></li>
+            <li><a href="/ecosystem">Ecosystem</a></li>
+            <li><a href="/faucet">Faucet</a></li>
+            <li><a href="/faucets">Faucet list</a></li>
+            <li><a href="https://node.bananox.com/">Live Node</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <ul>
+            <li><a href="/community">Community</a></li>
+            <li><a href="https://banano.cc" target="_blank" rel="noopener">Official Banano</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>Built for billions | Fan site | Official: <a class="footer-official" href="https://banano.cc" target="_blank" rel="noopener">banano.cc</a></p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/site.js" defer></script>
+  <script>
+    (function () {
+      var FAUCET_API = "https://node.bananox.com/faucet.php";
+      try {
+        var q = new URLSearchParams(location.search).get("api");
+        if (q && /^https?:\/\/(localhost|127\.0\.0\.1|node\.bananox\.com)/i.test(q)) {
+          FAUCET_API = q;
+        }
+      } catch (e) {}
+
+      var form = document.getElementById("faucet-form");
+      var input = document.getElementById("ban-address");
+      var msg = document.getElementById("faucet-message");
+      var submitBtn = document.getElementById("faucet-submit");
+      var captchaSlot = document.getElementById("captcha-slot");
+      var blurb = document.getElementById("faucet-blurb");
+      if (!form || !input || !msg || !submitBtn || !captchaSlot) return;
+
+      var BAN_RE = /^ban_[13][13456789abcdefghijkmnopqrstuwxyz]{59}$/i;
+      var meta = null;
+      var turnstileWidgetId = null;
+      var turnstileToken = "";
+      var mathState = null;
+      var busy = false;
+
+      function setMessage(text, type) {
+        msg.hidden = !text;
+        msg.textContent = text || "";
+        msg.className = "faucet-message" + (type ? " is-" + type : "");
+      }
+
+      function formatRetry(sec) {
+        sec = Math.max(0, parseInt(sec, 10) || 0);
+        if (sec < 60) return sec + "s";
+        if (sec < 3600) return Math.ceil(sec / 60) + " min";
+        if (sec < 86400) return Math.ceil(sec / 3600) + " h";
+        return Math.ceil(sec / 86400) + " day(s)";
+      }
+
+      function loadScript(src) {
+        return new Promise(function (resolve, reject) {
+          var s = document.createElement("script");
+          s.src = src;
+          s.async = true;
+          s.onload = function () { resolve(); };
+          s.onerror = function () { reject(new Error("script_load_failed")); };
+          document.head.appendChild(s);
+        });
+      }
+
+      function renderMathCaptcha(challengePayload) {
+        mathState = challengePayload;
+        captchaSlot.innerHTML =
+          '<label class="faucet-label" for="math-answer">Captcha: what is <strong id="math-q"></strong>?</label>' +
+          '<input class="faucet-input" type="text" inputmode="numeric" id="math-answer" name="mathAnswer" autocomplete="off" maxlength="4" required placeholder="Answer">';
+        document.getElementById("math-q").textContent = challengePayload.challenge;
+        submitBtn.disabled = false;
+      }
+
+      async function refreshMath() {
+        var res = await fetch(FAUCET_API + "?challenge=1&_=" + Date.now(), { cache: "no-store" });
+        var data = await res.json();
+        if (!data.ok || !data.math) throw new Error("challenge_failed");
+        renderMathCaptcha(data.math);
+      }
+
+      function renderTurnstile(sitekey) {
+        captchaSlot.innerHTML = '<div id="cf-turnstile" class="cf-turnstile"></div>';
+        function mount() {
+          if (!window.turnstile) return;
+          turnstileWidgetId = window.turnstile.render("#cf-turnstile", {
+            sitekey: sitekey,
+            theme: document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark",
+            callback: function (token) {
+              turnstileToken = token || "";
+              submitBtn.disabled = false;
+            },
+            "expired-callback": function () {
+              turnstileToken = "";
+              submitBtn.disabled = true;
+            },
+            "error-callback": function () {
+              turnstileToken = "";
+              submitBtn.disabled = true;
+              setMessage("Captcha failed to load. Refresh the page.", "error");
+            }
+          });
+        }
+        if (window.turnstile) {
+          mount();
+        } else {
+          window.onloadTurnstileCallback = mount;
+          loadScript("https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=onloadTurnstileCallback")
+            .catch(function () {
+              setMessage("Could not load captcha. Check blockers or try again.", "error");
+            });
+        }
+      }
+
+      async function init() {
+        setMessage("Loading faucet...", "info");
+        submitBtn.disabled = true;
+        try {
+          var res = await fetch(FAUCET_API + "?meta=1&_=" + Date.now(), { cache: "no-store" });
+          meta = await res.json();
+          if (!meta || meta.ok === false) throw new Error("meta_failed");
+
+          var minA = meta.amount_min_ban || "0.01";
+          var maxA = meta.amount_max_ban || meta.amount_ban || "0.05";
+          var cd = meta.cooldown_sec || 86400;
+          if (blurb) {
+            if (meta.gamble) {
+              blurb.textContent = "Paste your address, pass captcha, roll " + minA + "-" + maxA + " BAN (once per " + formatRetry(cd) + ").";
+            } else {
+              blurb.textContent = "Paste your address, pass captcha, claim ~" + maxA + " BAN (once per " + formatRetry(cd) + ").";
+            }
+          }
+
+          var odds = document.getElementById("faucet-odds");
+          var oddsList = document.getElementById("faucet-odds-list");
+          if (odds && oddsList && meta.gamble && meta.tiers && meta.tiers.length) {
+            odds.hidden = false;
+            oddsList.innerHTML = meta.tiers.map(function (t) {
+              var rare = t.rare ? ' class="is-rare"' : "";
+              return "<li" + rare + "><strong>" + t.amount + " BAN</strong> - " + t.chance_pct + "%</li>";
+            }).join("");
+          }
+
+          if (!meta.enabled) {
+            setMessage("Faucet controls are live, but payouts are not enabled yet.", "info");
+          } else {
+            setMessage("", "");
+          }
+
+          if (meta.captcha === "turnstile" && meta.turnstile_sitekey) {
+            renderTurnstile(meta.turnstile_sitekey);
+          } else if (meta.captcha === "math") {
+            await refreshMath();
+          } else {
+            captchaSlot.innerHTML = "";
+            submitBtn.disabled = false;
+          }
+        } catch (err) {
+          setMessage("Could not reach faucet API. Try again later.", "error");
+          submitBtn.disabled = true;
+        }
+      }
+
+      form.addEventListener("submit", async function (e) {
+        e.preventDefault();
+        if (busy) return;
+
+        var addr = (input.value || "").trim();
+        if (!addr) {
+          setMessage("Paste a ban_ address first.", "error");
+          input.focus();
+          return;
+        }
+        if (!BAN_RE.test(addr)) {
+          setMessage("That does not look like a valid ban_ address.", "error");
+          input.focus();
+          return;
+        }
+
+        var payload = {
+          address: addr
+        };
+
+        if (meta && meta.captcha === "turnstile") {
+          if (!turnstileToken) {
+            setMessage("Complete the captcha first.", "error");
+            return;
+          }
+          payload.turnstileToken = turnstileToken;
+        } else if (meta && meta.captcha === "math") {
+          var ansEl = document.getElementById("math-answer");
+          if (!mathState || !ansEl || !ansEl.value.trim()) {
+            setMessage("Solve the captcha first.", "error");
+            return;
+          }
+          payload.mathChallenge = mathState.challenge;
+          payload.mathExp = mathState.exp;
+          payload.mathToken = mathState.token;
+          payload.mathAnswer = ansEl.value.trim();
+        }
+
+        busy = true;
+        submitBtn.disabled = true;
+        setMessage("Submitting claim...", "info");
+
+        try {
+          var res = await fetch(FAUCET_API, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+            cache: "no-store"
+          });
+          var data = await res.json().catch(function () { return {}; });
+
+          if (data.ok) {
+            var okMsg = data.message || "Claim sent.";
+            if (data.amount_ban) {
+              okMsg = (data.jackpot ? "JACKPOT! " : "You rolled ") + data.amount_ban + " BAN. " + (data.message || "");
+            }
+            if (data.explorer) {
+              msg.innerHTML = okMsg + ' <a href="' + data.explorer + '" target="_blank" rel="noopener">View block</a>';
+              msg.hidden = false;
+              msg.className = "faucet-message is-success" + (data.jackpot ? " is-jackpot" : "");
+            } else {
+              setMessage(okMsg, "success");
+            }
+          } else {
+            var err = data.message || "Claim failed.";
+            if (data.retry_after) {
+              err += " Retry in " + formatRetry(data.retry_after) + ".";
+            }
+            setMessage(err, "error");
+          }
+        } catch (err) {
+          setMessage("Network error. Try again.", "error");
+        } finally {
+          busy = false;
+          turnstileToken = "";
+          if (meta && meta.captcha === "turnstile" && window.turnstile && turnstileWidgetId !== null) {
+            try { window.turnstile.reset(turnstileWidgetId); } catch (e) {}
+            submitBtn.disabled = true;
+          } else if (meta && meta.captcha === "math") {
+            refreshMath().catch(function () {});
+            submitBtn.disabled = false;
+          } else {
+            submitBtn.disabled = false;
+          }
+        }
+      });
+
+      input.addEventListener("input", function () {
+        if (!msg.hidden && msg.classList.contains("is-error")) setMessage("", "");
+      });
+
+      init();
+    })();
+  </script>
+</body>
+</html>

@@ -174,13 +174,27 @@
     });
   }
 
-  // â”€â”€â”€ Active nav â”€â”€â”€
-  const path = (location.pathname.split("/").pop() || "index.html").toLowerCase();
-  const page = path === "" ? "index.html" : path;
+  // â”€â”€â”€ Active nav (clean URLs: /facts, /faucet, …) â”€â”€â”€
+  function normalizePath(p) {
+    try {
+      p = new URL(p, location.origin).pathname;
+    } catch (_) {
+      p = String(p || "/");
+    }
+    p = p.split("?")[0].split("#")[0] || "/";
+    if (p.length > 1 && p.endsWith("/")) p = p.slice(0, -1);
+    if (p.endsWith("/index.html")) p = p.slice(0, -"/index.html".length) || "/";
+    if (p.endsWith(".html")) p = p.slice(0, -5) || "/";
+    if (p === "/index") p = "/";
+    return p || "/";
+  }
+
+  const page = normalizePath(location.pathname);
 
   document.querySelectorAll(".nav-links a[href]").forEach((a) => {
-    const href = (a.getAttribute("href") || "").split("/").pop().toLowerCase();
-    if (href && href === page) {
+    const href = a.getAttribute("href") || "";
+    if (!href || href.startsWith("http") || href.startsWith("#")) return;
+    if (normalizePath(href) === page) {
       a.classList.add("active");
       const parent = a.closest(".has-dropdown");
       if (parent) {
@@ -190,7 +204,7 @@
     }
   });
 
-  if (page === "index.html" || page === "") {
+  if (page === "/") {
     const logo = document.querySelector(".logo");
     if (logo) logo.setAttribute("aria-current", "page");
   }
@@ -300,12 +314,12 @@
 
   // Idle-prefetch light content pages only (games HTML/JS stay hover-prefetch)
   const IDLE_PREFETCH = [
-    "facts.html",
-    "ecosystem.html",
-    "faucets.html",
-    "faucet.html",
-    "community.html",
-    "node.html",
+    "/facts",
+    "/ecosystem",
+    "/faucets",
+    "/faucet",
+    "/community",
+    "/node",
   ];
 
   function idlePrefetch() {
@@ -363,7 +377,7 @@
   // â”€â”€â”€ Service worker (shell cache for instant revisits) â”€â”€â”€
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
-      navigator.serviceWorker.register("sw.js", { scope: "./" }).catch(() => {
+      navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch(() => {
         /* ignore offline / file:// failures */
       });
     });

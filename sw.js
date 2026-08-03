@@ -1,21 +1,20 @@
-﻿/* Banano X — lightweight shell cache for instant revisits */
-const CACHE = "bananox-shell-v18-faucet-gamble";
+/* Banano X — lightweight shell cache for instant revisits */
+const CACHE = "bananox-shell-v18-clean-urls";
 
-/* Keep install fast — heavy assets cache on first visit, not at SW install */
 const PRECACHE = [
-  "./",
-  "./index.html",
-  "./styles.css",
-  "./site.js",
-  "./favicon.svg",
-  "./fonts/dm-sans.woff2",
-  "./fonts/syne-700.woff2",
-  "./facts.html",
-  "./ecosystem.html",
-  "./faucets.html",
-  "./faucet.html",
-  "./community.html",
-  "./node.html",
+  "/",
+  "/index.html",
+  "/styles.css",
+  "/site.js",
+  "/favicon.svg",
+  "/fonts/dm-sans.woff2",
+  "/fonts/syne-700.woff2",
+  "/facts/",
+  "/ecosystem/",
+  "/faucets/",
+  "/faucet/",
+  "/community/",
+  "/node/",
 ];
 
 self.addEventListener("install", (event) => {
@@ -51,33 +50,56 @@ self.addEventListener("fetch", (event) => {
   if (!isCacheableGet(request)) return;
 
   const url = new URL(request.url);
-  const isHtml = request.mode === "navigate" || url.pathname.endsWith(".html") || url.pathname === "/";
+  const isNavigate = request.mode === "navigate" || request.destination === "document";
+  const isShellAsset =
+    /\.(css|js|woff2|svg)$/i.test(url.pathname) ||
+    /\/fonts\//i.test(url.pathname);
 
-  // HTML navigations: network-first, fall back to cache (fresh content preferred)
-  if (isHtml) {
+  if (isShellAsset) {
     event.respondWith(
-      fetch(request)
-        .then((res) => {
-          const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put(request, copy));
-          return res;
-        })
-        .catch(() => caches.match(request).then((r) => r || caches.match("./index.html")))
+      caches.match(request).then((cached) => {
+        if (cached) return cached;
+        return fetch(request).then((response) => {
+          if (response && response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE).then((cache) => cache.put(request, clone));
+          }
+          return response;
+        });
+      })
     );
     return;
   }
 
-  // Static assets: cache-first
+  if (isNavigate) {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          if (response && response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE).then((cache) => cache.put(request, clone));
+          }
+          return response;
+        })
+        .catch(() =>
+          caches.match(request).then((cached) => cached || caches.match("/") || caches.match("/index.html"))
+        )
+    );
+    return;
+  }
+
   event.respondWith(
     caches.match(request).then((cached) => {
-      if (cached) return cached;
-      return fetch(request).then((res) => {
-        if (res && res.ok) {
-          const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put(request, copy));
-        }
-        return res;
-      });
+      const network = fetch(request)
+        .then((response) => {
+          if (response && response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE).then((cache) => cache.put(request, clone));
+          }
+          return response;
+        })
+        .catch(() => cached);
+      return cached || network;
     })
   );
 });
