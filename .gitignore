@@ -31,3 +31,9 @@ banano-defense/
 
 _faucet_server/
 
+
+# Local one-off fix scripts
+_fix_encoding.js
+_fix_encoding.mjs
+_verify_fix.mjs
+

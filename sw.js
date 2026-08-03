@@ -1,5 +1,5 @@
-/* Banano X — lightweight shell cache for instant revisits */
-const CACHE = "bananox-shell-v19-hardened";
+/* Banano X - lightweight shell cache for instant revisits */
+const CACHE = "bananox-shell-v20-clean-urls";
 
 /* Install stays fast: only shell assets. HTML is network-first at runtime. */
 const PRECACHE = [
@@ -79,7 +79,7 @@ self.addEventListener("fetch", (event) => {
           return response;
         })
         .catch(() =>
-          caches.match(request).then((cached) => cached || caches.match("/") || caches.match("/index.html"))
+          caches.match(request).then((cached) => cached || caches.match("/") || caches.match("/index.html") || caches.match("/404.html"))
         )
     );
     return;

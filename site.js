@@ -1,4 +1,4 @@
-/* Banano X â€” shared site behavior (performance-first) */
+/* Banano X — shared site behavior (performance-first) */
 (function () {
   "use strict";
 
@@ -73,7 +73,7 @@
   const links = document.querySelector(".nav-links");
   const dropdownParents = document.querySelectorAll(".has-dropdown");
 
-  // â”€â”€â”€ Scroll shadow on nav (rAF-throttled) â”€â”€â”€
+  // --- Scroll shadow on nav (rAF-throttled) ---
   if (nav) {
     let ticking = false;
     const apply = () => {
@@ -93,7 +93,7 @@
     );
   }
 
-  // â”€â”€â”€ Mobile menu â”€â”€â”€
+  // --- Mobile menu ---
   if (toggle && links) {
     toggle.addEventListener("click", () => {
       const open = links.classList.toggle("open");
@@ -174,7 +174,7 @@
     });
   }
 
-  // â”€â”€â”€ Active nav (clean URLs: /facts, /faucet, …) â”€â”€â”€
+  // --- Active nav (clean URLs: /facts/, /faucet/, ...) ---
   function normalizePath(p) {
     try {
       p = new URL(p, location.origin).pathname;
@@ -209,7 +209,7 @@
     if (logo) logo.setAttribute("aria-current", "page");
   }
 
-  // â”€â”€â”€ Instant navigation: Speculation Rules + hover prefetch â”€â”€â”€
+  // --- Instant navigation: Speculation Rules + hover prefetch ---
   // Game asset prefetch shelved with Play nav (re-add when games return)
   const EXTRA_ASSETS = {};
 
@@ -271,7 +271,7 @@
     el.textContent = JSON.stringify({
       prefetch: [
         {
-          urls: ["/faucet", "/faucets", "/ecosystem"],
+          urls: ["/faucet/", "/faucets/", "/ecosystem/"],
           eagerness: "moderate",
         },
       ],
@@ -296,7 +296,7 @@
     );
   }
 
-  const IDLE_PREFETCH = prefersReducedData() ? [] : ["/faucet", "/faucets"];
+  const IDLE_PREFETCH = prefersReducedData() ? [] : ["/faucet/", "/faucets/"];
 
   function idlePrefetch() {
     if (!IDLE_PREFETCH.length) return;
@@ -316,7 +316,7 @@
   }
   idlePrefetch();
 
-  // â”€â”€â”€ Scroll reveal â€” only below the fold â”€â”€â”€
+  // --- Scroll reveal — only below the fold ---
   const reveals = document.querySelectorAll(".reveal");
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -349,7 +349,7 @@
     reveals.forEach((el) => el.classList.add("visible"));
   }
 
-  // â”€â”€â”€ Service worker (shell cache for instant revisits) â”€â”€â”€
+  // --- Service worker (shell cache for instant revisits) ---
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
       navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch(() => {
@@ -358,7 +358,7 @@
     });
   }
 
-  // â”€â”€â”€ Hero particles (home only, capped, paused when hidden) â”€â”€â”€
+  // --- Hero particles (home only, capped, paused when hidden) ---
   const layer = document.getElementById("particles");
   if (!layer || reduceMotion) return;
 
@@ -375,7 +375,7 @@
     if (particleCount() >= MAX_PARTICLES) return;
     const el = document.createElement("div");
     el.className = "particle";
-    el.textContent = "ðŸŒ";
+    el.textContent = "🍌";
     el.style.left = Math.random() * 100 + "vw";
     el.style.fontSize = 0.9 + Math.random() * 1.1 + "rem";
     el.style.animationDuration = 12 + Math.random() * 8 + "s";

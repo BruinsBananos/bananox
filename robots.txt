@@ -4,15 +4,21 @@ Allow: /
 
 # Shelved browser games (kept on disk; not marketed)
 Disallow: /play
-Disallow: /play.js
-Disallow: /playTD
-Disallow: /playTD.js
-Disallow: /playTD-legacy
+Disallow: /play/
 Disallow: /play-legacy
+Disallow: /play-legacy/
 Disallow: /playBlaster
+Disallow: /playBlaster/
 Disallow: /playNFR
+Disallow: /playNFR/
 Disallow: /playRunner
+Disallow: /playRunner/
+Disallow: /playTD
+Disallow: /playTD/
+Disallow: /playTD-legacy
+Disallow: /playTD-legacy/
 Disallow: /arcade
+Disallow: /arcade/
 Disallow: /banano-defense/
 Disallow: /td/
 Disallow: /td-sandbox/
