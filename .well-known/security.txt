@@ -1,7 +1,7 @@
+Contact: https://github.com/BruinsBananos/bananox/security/advisories/new
 Contact: https://bananox.com/community/
 Preferred-Languages: en
 Canonical: https://bananox.com/.well-known/security.txt
 Policy: https://bananox.com/
 # Fan site for Banano. No bug bounty program.
-# Report site issues via community channels.
-Expires: 2027-08-03T00:00:00.000Z
+Expires: 2027-08-12T00:00:00.000Z
