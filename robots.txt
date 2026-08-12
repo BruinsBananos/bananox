@@ -2,7 +2,7 @@
 User-agent: *
 Allow: /
 
-# Shelved browser games (kept on disk; not marketed)
+# Retired game URLs (no longer published)
 Disallow: /play
 Disallow: /play/
 Disallow: /play-legacy
@@ -23,5 +23,7 @@ Disallow: /banano-defense/
 Disallow: /td/
 Disallow: /td-sandbox/
 Disallow: /td-assets/
+Disallow: /art/
+Disallow: /assets/
 
 Sitemap: https://bananox.com/sitemap.xml

@@ -1,12 +1,11 @@
 /* Banano X - lightweight shell cache for instant revisits */
-const CACHE = "bananox-shell-v20-clean-urls";
+const CACHE = "bananox-shell-v21-hashed";
 
 /* Install stays fast: only shell assets. HTML is network-first at runtime. */
 const PRECACHE = [
-  "/styles.css",
-  "/site.js",
+  "/site.2eaa810e.css",
+  "/site.4c060905.js",
   "/favicon.svg",
-  "/fonts/dm-sans.woff2",
   "/fonts/syne-700.woff2",
 ];
 

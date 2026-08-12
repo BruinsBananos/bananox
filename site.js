@@ -316,6 +316,21 @@
   }
   idlePrefetch();
 
+  // --- Analytics: off the first-paint path ---
+  function loadUmami() {
+    if (document.querySelector('script[data-website-id="327f6a7f-a0c3-42a1-8f77-a7f263839dc0"]')) return;
+    const s = document.createElement("script");
+    s.src = "https://cloud.umami.is/script.js";
+    s.defer = true;
+    s.setAttribute("data-website-id", "327f6a7f-a0c3-42a1-8f77-a7f263839dc0");
+    document.head.appendChild(s);
+  }
+  if ("requestIdleCallback" in window) {
+    requestIdleCallback(loadUmami, { timeout: 4000 });
+  } else {
+    window.addEventListener("load", () => setTimeout(loadUmami, 1800));
+  }
+
   // --- Scroll reveal — only below the fold ---
   const reveals = document.querySelectorAll(".reveal");
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -357,62 +372,4 @@
       });
     });
   }
-
-  // --- Hero particles (home only, capped, paused when hidden) ---
-  const layer = document.getElementById("particles");
-  if (!layer || reduceMotion) return;
-
-  const MAX_PARTICLES = 10;
-  let bananaTimer = 0;
-  let fireflyTimer = 0;
-  let running = false;
-
-  function particleCount() {
-    return layer.childElementCount;
-  }
-
-  function spawnBanana() {
-    if (particleCount() >= MAX_PARTICLES) return;
-    const el = document.createElement("div");
-    el.className = "particle";
-    el.textContent = "🍌";
-    el.style.left = Math.random() * 100 + "vw";
-    el.style.fontSize = 0.9 + Math.random() * 1.1 + "rem";
-    el.style.animationDuration = 12 + Math.random() * 8 + "s";
-    el.style.opacity = String(0.25 + Math.random() * 0.35);
-    layer.appendChild(el);
-    setTimeout(() => el.remove(), 21000);
-  }
-
-  function spawnFirefly() {
-    if (particleCount() >= MAX_PARTICLES) return;
-    const el = document.createElement("div");
-    el.className = "firefly";
-    el.style.left = Math.random() * 100 + "%";
-    el.style.top = Math.random() * 100 + "%";
-    el.style.animationDelay = Math.random() * 4 + "s";
-    layer.appendChild(el);
-    setTimeout(() => el.remove(), 8000);
-  }
-
-  function startParticles() {
-    if (running || document.hidden) return;
-    running = true;
-    for (let i = 0; i < 4; i++) spawnFirefly();
-    bananaTimer = setInterval(spawnBanana, 1400);
-    fireflyTimer = setInterval(spawnFirefly, 900);
-  }
-
-  function stopParticles() {
-    running = false;
-    clearInterval(bananaTimer);
-    clearInterval(fireflyTimer);
-  }
-
-  document.addEventListener("visibilitychange", () => {
-    if (document.hidden) stopParticles();
-    else startParticles();
-  });
-
-  startParticles();
 })();

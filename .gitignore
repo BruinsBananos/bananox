@@ -29,6 +29,26 @@ _fix_encoding.py
 # Extra game prototype (not marketed)
 banano-defense/
 
+# Shelved games — keep local copies, do not publish on GitHub Pages
+art/
+assets/
+play/
+play-legacy/
+playBlaster/
+playNFR/
+playRunner/
+playTD/
+playTD-legacy/
+td/
+td-assets/
+play.js
+play-legacy.js
+playTD.js
+playTD.legacy.js
+playRunner.js
+og-climb.jpg
+fonts/dm-sans.woff2
+
 _faucet_server/
 
 
