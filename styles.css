@@ -72,6 +72,7 @@
   --font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   --max: 1120px;
+  --shell-rev: 23;
 }
 
 /* ΓöÇΓöÇΓöÇ Light: sunlit potassium, cream canopy ΓöÇΓöÇΓöÇ */
@@ -1503,7 +1504,7 @@ main .section {
   }
 }
 
-/* Layout helpers — keep pages free of inline style= (CSP) */
+/* Layout helpers — keep pages free of inline style attributes (CSP) */
 .section-compact { padding-top: 2.5rem; }
 .section-flush { padding-top: 0; }
 .badge.lead { margin-bottom: 1rem; }

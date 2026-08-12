@@ -3,7 +3,7 @@ const CACHE = "bananox-shell-v23-hashed";
 
 /* Install stays fast: only shell assets. HTML is network-first at runtime. */
 const PRECACHE = [
-  "/site.c2e8dcb4.css",
+  "/site.54c92b5a.css",
   "/theme.b6987847.js",
   "/site.4c060905.js",
   "/favicon.svg",
