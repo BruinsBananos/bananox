@@ -53,7 +53,9 @@ function emit(prefix, ext, contents) {
 
 const siteCss = emit("site", "css", minifyCss(readFileSync(join(root, "styles.css"), "utf8")));
 const faucetCss = emit("faucet", "css", minifyCss(readFileSync(join(root, "faucet.css"), "utf8")));
+const themeJs = emit("theme", "js", minifyJs(readFileSync(join(root, "theme.js"), "utf8")));
 const siteJs = emit("site", "js", minifyJs(readFileSync(join(root, "site.js"), "utf8")));
+const faucetJs = emit("faucet", "js", minifyJs(readFileSync(join(root, "faucet.js"), "utf8")));
 
 const pages = [
   "index.html",
@@ -68,8 +70,10 @@ const pages = [
 
 function rewriteHtml(html) {
   html = html.replace(/\/(?:styles|site)\.[a-f0-9]{8}\.css|\/styles\.css/g, siteCss);
+  html = html.replace(/\/theme\.[a-f0-9]{8}\.js|\/theme\.js/g, themeJs);
   html = html.replace(/\/site\.[a-f0-9]{8}\.js|\/site\.js/g, siteJs);
   html = html.replace(/\/faucet\.[a-f0-9]{8}\.css|\/faucet\.css/g, faucetCss);
+  html = html.replace(/\/faucet\.[a-f0-9]{8}\.js|\/faucet\.js/g, faucetJs);
   return html;
 }
 
@@ -79,10 +83,10 @@ for (const rel of pages) {
 }
 
 let sw = readFileSync(join(root, "sw.js"), "utf8");
-sw = sw.replace(/const CACHE = "[^"]+";/, 'const CACHE = "bananox-shell-v21-hashed";');
+sw = sw.replace(/const CACHE = "[^"]+";/, 'const CACHE = "bananox-shell-v23-hashed";');
 sw = sw.replace(
   /const PRECACHE = \[[\s\S]*?\];/,
-  `const PRECACHE = [\n  "${siteCss}",\n  "${siteJs}",\n  "/favicon.svg",\n  "/fonts/syne-700.woff2",\n];`
+  `const PRECACHE = [\n  "${siteCss}",\n  "${themeJs}",\n  "${siteJs}",\n  "/favicon.svg",\n  "/fonts/syne-700.woff2",\n];`
 );
 writeFileSync(join(root, "sw.js"), sw);
 

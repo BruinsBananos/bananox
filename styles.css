@@ -1503,3 +1503,55 @@ main .section {
   }
 }
 
+/* Layout helpers — keep pages free of inline style= (CSP) */
+.section-compact { padding-top: 2.5rem; }
+.section-flush { padding-top: 0; }
+.badge.lead { margin-bottom: 1rem; }
+.narrow { max-width: 720px; margin-inline: auto; }
+.mb-xl { margin-bottom: 3rem; }
+.mb-lg { margin-bottom: 2.5rem; }
+.mb-md { margin-bottom: 2rem; }
+.mb-sm { margin-bottom: 1.5rem; }
+.mt-xl { margin-top: 3rem; }
+.mt-md { margin-top: 2rem; }
+.mt-sm { margin-top: 1.25rem; }
+.center-row { justify-content: center; }
+.heading-sm { font-size: clamp(1.5rem, 3vw, 2rem); }
+.heading-md { font-size: clamp(1.6rem, 3.5vw, 2.2rem); }
+.heading-card {
+  font-size: clamp(1.4rem, 3vw, 1.85rem);
+  color: var(--banana);
+  margin-bottom: 0.65rem;
+}
+.link-accent {
+  color: var(--banana);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.text-center { text-align: center; }
+.muted-center {
+  text-align: center;
+  margin-top: 2rem;
+  font-size: 1rem;
+}
+.not-found {
+  text-align: center;
+  padding: 4rem 1rem 5rem;
+}
+.not-found .badge { margin: 0 auto 1rem; }
+.not-found > p {
+  max-width: 32rem;
+  margin: 0.75rem auto 1.75rem;
+  opacity: 0.85;
+}
+.list-item-center {
+  justify-content: center;
+  text-align: center;
+}
+.list-item-center .w-full { width: 100%; }
+.list-item-center strong { margin-bottom: 0.5rem; }
+.list-item-center span {
+  display: block;
+  margin-bottom: 1rem;
+}
+

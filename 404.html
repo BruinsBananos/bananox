@@ -4,57 +4,26 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; font-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'; upgrade-insecure-requests">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; font-src 'self'; style-src 'self'; script-src 'self'; connect-src 'self'; upgrade-insecure-requests">
   <title>Page not found · Banano X</title>
   <meta name="theme-color" content="#000000">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="preload" href="/fonts/syne-700.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="/site.2eaa810e.css">
-  <script>
-    (function () {
-      try {
-        var path = location.pathname || "";
-        // Legacy *.html bookmarks → clean directory URLs
-        if (/\.html$/i.test(path)) {
-          var clean = path.replace(/\.html$/i, "");
-          if (clean === "/index" || clean === "") clean = "/";
-          else if (clean.charAt(clean.length - 1) !== "/") clean += "/";
-          location.replace(clean + location.search + location.hash);
-          return;
-        }
-        // Known clean paths missing trailing slash are handled by the host;
-        // if we landed on 404 for another reason, stay here.
-      } catch (e) {}
-    })();
-  </script>
-  <script>
-    (function () {
-      try {
-        var k = "bx-theme";
-        var t = localStorage.getItem(k);
-        if (t !== "light" && t !== "dark") {
-          t = matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
-        }
-        document.documentElement.setAttribute("data-theme", t);
-        document.documentElement.style.colorScheme = t;
-      } catch (e) {
-        document.documentElement.setAttribute("data-theme", "dark");
-      }
-    })();
-  </script>
+  <link rel="stylesheet" href="/site.c2e8dcb4.css">
+    <script src="/theme.b6987847.js"></script>
 </head>
 <body>
   <main id="main" class="page">
-    <div class="container" style="text-align:center;padding:4rem 1rem 5rem;">
-      <div class="badge" style="margin:0 auto 1rem;">
+    <div class="container not-found">
+      <div class="badge">
         <span class="badge-dot" aria-hidden="true"></span>
         404
       </div>
       <h1 class="glow-text">Lost in the jungle</h1>
-      <p style="max-width:32rem;margin:0.75rem auto 1.75rem;opacity:0.85;">
+      <p>
         That page is not here. It may have moved to a cleaner URL — try the home page or Grab free BAN.
       </p>
-      <div class="hero-actions" style="justify-content:center;gap:0.75rem;flex-wrap:wrap;">
+      <div class="hero-actions center-row">
         <a href="/" class="btn btn-primary btn-lg">Home</a>
         <a href="/faucet/" class="btn btn-ghost btn-lg">Faucet</a>
         <a href="/faucets/" class="btn btn-ghost btn-lg">Faucet list</a>

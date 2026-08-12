@@ -1,9 +1,10 @@
 /* Banano X - lightweight shell cache for instant revisits */
-const CACHE = "bananox-shell-v22-hashed";
+const CACHE = "bananox-shell-v23-hashed";
 
 /* Install stays fast: only shell assets. HTML is network-first at runtime. */
 const PRECACHE = [
-  "/site.2eaa810e.css",
+  "/site.c2e8dcb4.css",
+  "/theme.b6987847.js",
   "/site.4c060905.js",
   "/favicon.svg",
   "/fonts/syne-700.woff2",
@@ -47,7 +48,7 @@ self.addEventListener("fetch", (event) => {
   const isNavigate = request.mode === "navigate" || request.destination === "document";
   // Only hashed build outputs + fonts/icon. Never cache-first source CSS/JS.
   const isShellAsset =
-    /^\/(site|faucet)\.[a-f0-9]{8}\.(css|js)$/i.test(url.pathname) ||
+    /^\/(site|theme|faucet)\.[a-f0-9]{8}\.(css|js)$/i.test(url.pathname) ||
     url.pathname === "/favicon.svg" ||
     url.pathname.startsWith("/fonts/");
 

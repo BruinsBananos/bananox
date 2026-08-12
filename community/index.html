@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="referrer" content="strict-origin-when-cross-origin">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; font-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' https://cloud.umami.is; connect-src 'self' https://cloud.umami.is; worker-src 'self'; upgrade-insecure-requests">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; font-src 'self'; style-src 'self'; script-src 'self' https://cloud.umami.is; connect-src 'self' https://cloud.umami.is; worker-src 'self'; upgrade-insecure-requests">
   <title>Community · Banano X</title>
   <meta name="description" content="Join the Banano community on Discord, Reddit, and X.">
   <meta name="theme-color" content="#000000">
@@ -26,23 +26,9 @@
   <meta name="twitter:description" content="Join the Banano community on Discord, Reddit, and X.">
   <meta name="twitter:image" content="https://bananox.com/og-image.jpg">
   <meta name="twitter:image:alt" content="Banano X — Midnight Potassium">
-  <script>
-    (function () {
-      try {
-        var k = "bx-theme";
-        var t = localStorage.getItem(k);
-        if (t !== "light" && t !== "dark") {
-          t = matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
-        }
-        document.documentElement.setAttribute("data-theme", t);
-        document.documentElement.style.colorScheme = t;
-      } catch (e) {
-        document.documentElement.setAttribute("data-theme", "dark");
-      }
-    })();
-  </script>
+    <script src="/theme.b6987847.js"></script>
   <link rel="preload" href="/fonts/syne-700.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="/site.2eaa810e.css">
+  <link rel="stylesheet" href="/site.c2e8dcb4.css">
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to content</a>
@@ -83,7 +69,7 @@
   <main id="main" class="page">
     <div class="container">
       <div class="section-header reveal">
-        <div class="badge" style="margin-bottom: 1rem;">The troop</div>
+        <div class="badge lead">The troop</div>
         <h1 class="glow-text">Join the midnight jungle</h1>
         <p>Rain Banano, share memes, run nodes, and help the canopy grow.</p>
       </div>
@@ -111,7 +97,7 @@
         </a>
       </div>
 
-      <div class="grid-2" style="max-width: 720px; margin: 0 auto 2.5rem;">
+      <div class="grid-2 narrow mb-lg">
         <article class="card reveal">
           <div class="card-icon" aria-hidden="true">🌧️</div>
           <h3>Rains &amp; tips</h3>
@@ -125,7 +111,7 @@
       </div>
 
       <div class="cta-band reveal">
-        <h3 style="font-size: clamp(1.4rem, 3vw, 1.85rem); color: var(--banana); margin-bottom: 0.65rem;">How monkeys hang out</h3>
+        <h3 class="heading-card">How monkeys hang out</h3>
         <p>Tip strangers. Celebrate folds. Build silly tools. The jungle never sleeps — jump in wherever you vibe.</p>
         <div class="hero-actions">
           <a href="/ecosystem/" class="btn btn-primary">Explore tools</a>

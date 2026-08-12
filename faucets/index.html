@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="referrer" content="strict-origin-when-cross-origin">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; font-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' https://cloud.umami.is; connect-src 'self' https://cloud.umami.is; worker-src 'self'; upgrade-insecure-requests">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; font-src 'self'; style-src 'self'; script-src 'self' https://cloud.umami.is; connect-src 'self' https://cloud.umami.is; worker-src 'self'; upgrade-insecure-requests">
   <title>Faucets · Banano X</title>
   <meta name="description" content="Claim free Banano from faucets and earn more by folding for science.">
   <meta name="theme-color" content="#000000">
@@ -26,23 +26,9 @@
   <meta name="twitter:description" content="Claim free Banano from faucets and earn more by folding for science.">
   <meta name="twitter:image" content="https://bananox.com/og-image.jpg">
   <meta name="twitter:image:alt" content="Banano X — Midnight Potassium">
-  <script>
-    (function () {
-      try {
-        var k = "bx-theme";
-        var t = localStorage.getItem(k);
-        if (t !== "light" && t !== "dark") {
-          t = matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
-        }
-        document.documentElement.setAttribute("data-theme", t);
-        document.documentElement.style.colorScheme = t;
-      } catch (e) {
-        document.documentElement.setAttribute("data-theme", "dark");
-      }
-    })();
-  </script>
+    <script src="/theme.b6987847.js"></script>
   <link rel="preload" href="/fonts/syne-700.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="/site.2eaa810e.css">
+  <link rel="stylesheet" href="/site.c2e8dcb4.css">
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to content</a>
@@ -82,12 +68,12 @@
   <main id="main" class="page">
     <div class="container">
       <div class="section-header reveal">
-        <div class="badge" style="margin-bottom: 1rem;">Free potassium</div>
+        <div class="badge lead">Free potassium</div>
         <h1 class="glow-text">Grab free bananos</h1>
         <p>Start small with faucets, or earn more by folding for science. YouΓÇÖll need a wallet first.</p>
       </div>
 
-      <div class="steps" style="margin-bottom: 3rem;">
+      <div class="steps mb-xl">
         <article class="step reveal">
           <h3>Get a wallet address</h3>
           <p>Kalium (mobile) or The Banano Stand (browser). Copy your BAN address before you claim.</p>
@@ -130,22 +116,22 @@
           <a href="https://bananominer.com" target="_blank" rel="noopener" class="btn btn-primary btn-sm">Start</a>
         </div>
 
-        <div class="list-item reveal" style="justify-content: center; text-align: center;">
-          <div style="width: 100%;">
-            <strong style="margin-bottom: 0.5rem;">Full faucet list</strong>
-            <span style="display: block; margin-bottom: 1rem;">Community-maintained directory of active faucets</span>
+        <div class="list-item reveal list-item-center">
+          <div class="w-full">
+            <strong>Full faucet list</strong>
+            <span>Community-maintained directory of active faucets</span>
             <a href="https://thefreebananofaucet.com/active-banano-faucet-list" target="_blank" rel="noopener" class="btn btn-ghost btn-sm">See all active faucets</a>
           </div>
         </div>
       </div>
 
-      <div class="cta-band reveal" style="margin-top: 3rem;">
+      <div class="cta-band reveal mt-xl">
         <h2>Wallet ready?</h2>
         <p>
           Grab
-          <a href="https://kalium.banano.cc" target="_blank" rel="noopener" style="color: var(--banana); text-decoration: underline; text-underline-offset: 3px;">Kalium</a>
+          <a href="https://kalium.banano.cc" target="_blank" rel="noopener" class="link-accent">Kalium</a>
           or
-          <a href="https://thebananostand.com" target="_blank" rel="noopener" style="color: var(--banana); text-decoration: underline; text-underline-offset: 3px;">The Banano Stand</a>
+          <a href="https://thebananostand.com" target="_blank" rel="noopener" class="link-accent">The Banano Stand</a>
           first ΓÇö then claim some free BAN.
         </p>
         <div class="hero-actions">

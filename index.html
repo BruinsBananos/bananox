@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="referrer" content="strict-origin-when-cross-origin">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; font-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' https://cloud.umami.is; connect-src 'self' https://cloud.umami.is; worker-src 'self'; upgrade-insecure-requests">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; font-src 'self'; style-src 'self'; script-src 'self' https://cloud.umami.is; connect-src 'self' https://cloud.umami.is; worker-src 'self'; upgrade-insecure-requests">
   <title>Banano X — Midnight Potassium</title>
   <meta name="description" content="Feeless. Instant. Meme-fueled crypto. Explore Banano wallets, faucets, ecosystem, and community.">
   <meta name="theme-color" content="#000000">
@@ -26,23 +26,9 @@
   <meta name="twitter:description" content="Feeless. Instant. Meme-fueled crypto. Grab free BAN, explore tools, join the crew.">
   <meta name="twitter:image" content="https://bananox.com/og-image.jpg">
   <meta name="twitter:image:alt" content="Banano X — Midnight Potassium">
-  <script>
-    (function () {
-      try {
-        var k = "bx-theme";
-        var t = localStorage.getItem(k);
-        if (t !== "light" && t !== "dark") {
-          t = matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
-        }
-        document.documentElement.setAttribute("data-theme", t);
-        document.documentElement.style.colorScheme = t;
-      } catch (e) {
-        document.documentElement.setAttribute("data-theme", "dark");
-      }
-    })();
-  </script>
+    <script src="/theme.b6987847.js"></script>
   <link rel="preload" href="/fonts/syne-700.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="/site.2eaa810e.css">
+  <link rel="stylesheet" href="/site.c2e8dcb4.css">
 </head>
 <body>
   <a href="#main" class="skip-link">Skip to content</a>
@@ -119,7 +105,7 @@
       </div>
     </section>
 
-    <section class="section" style="padding-top: 2.5rem;">
+    <section class="section" class="section section-compact">
       <div class="container">
         <div class="section-header reveal">
           <h2 class="glow-text">Why Banano?</h2>
@@ -145,7 +131,7 @@
       </div>
     </section>
 
-    <section class="section" style="padding-top: 0;">
+    <section class="section section-flush">
       <div class="container">
         <div class="section-header reveal">
           <h2>Get started in 3 peels</h2>
@@ -171,7 +157,7 @@
       </div>
     </section>
 
-    <section class="section" style="padding-top: 0;">
+    <section class="section section-flush">
       <div class="container">
         <div class="cta-band reveal">
           <h2>Dive deeper into the jungle</h2>
