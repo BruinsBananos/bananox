@@ -1,5 +1,5 @@
 /* Banano X - lightweight shell cache for instant revisits */
-const CACHE = "bananox-shell-v23-hashed";
+const CACHE = "bananox-shell-v24-hashed";
 
 /* Install stays fast: only shell assets. HTML is network-first at runtime. */
 const PRECACHE = [
@@ -87,7 +87,11 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Other same-origin: stale-while-revalidate
+  // Only a few non-shell files are worth SWR (not source maps / build tools)
+  if (!/^\/(og-image\.jpg|sitemap\.xml|robots\.txt)$/i.test(url.pathname)) {
+    return;
+  }
+
   event.respondWith(
     caches.match(request).then((cached) => {
       const network = fetch(request)
